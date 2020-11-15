@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<gexf xmlns="http://www.gexf.net/1.2draft" xmlns:viz="http://www.gexf.net/1.2draft/viz" version="1.2">
+ <meta lastmodifieddate="2020-11-13">
+  <creator>sayyi</creator>
+  <description>gexf-test</description>
+ </meta>
+ <graph defaultedgetype="undirected" idtype="string" mode="static">
+  <nodes count="2">
+   <node id="Myriel" label="Myriel">
+    <viz:color r="235" g="81" b="72"/>
+    <viz:size value="28.0"/>
+   </node>
+   <node id="Napoleon" label="Napoleon">
+    <viz:color r="235" g="81" b="72"/>
+    <viz:size value="28.0"/>
+   </node>
+  </nodes>
+  <edges count="1">
+   <edge id="0" source="Myriel" target="Napoleon" type="undirected"/>
+  </edges>
+ </graph>
+</gexf>

@@ -1,0 +1,10 @@
+server:
+  port: 8080
+
+spring:
+  mvc:
+    static-path-pattern: /static/**
+
+tbp:
+  store-dir: C:\\Users\\SayYi\\Desktop\\temp\\pkmStore
+  snap-dir: C:\\Users\\SayYi\\Desktop\\temp\\pkmSnap

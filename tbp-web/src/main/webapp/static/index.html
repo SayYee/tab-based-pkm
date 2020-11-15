@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>pkm</title>
+    <link rel="stylesheet" type="text/css" href="styles/iview.css">
+    <script type="text/javascript" src="js/lib/vue.min.js"></script>
+    <script type="text/javascript" src="js/lib/iview.min.js"></script>
+    <script type="text/javascript" src="js/lib/axios.min.js"></script>
+    <script type="text/javascript" src="js/lib/echarts.min.js"></script>
+    <script type="text/javascript" src="js/lib/dataTool.min.js"></script>
+</head>
+<style>
+    .demo-split{
+        height: 900px;
+        border: 1px solid #dcdee2;
+    }
+    .demo-split-pane{
+        padding: 10px;
+    }
+    .demo-split-pane.no-padding{
+        height: 900px;
+        padding: 0;
+    }
+</style>
+<body>
+<div id="app">
+    <div>
+        <Modal
+            v-model="modal"
+            title="Common Modal dialog box title"
+            :loading="loading"
+            @on-ok="updateFile">
+            <div>
+                <i-input v-model="file.filename" placeholder="Enter something..." />
+            </div>
+            <div>
+                <i-input v-model="file.tags" placeholder="Enter something..." />
+            </div>
+        </Modal>
+    </div>
+
+    <div class="demo-split">
+        <Split v-model="split.horizontal">
+            <div slot="left" class="demo-split-pane no-padding">
+                <Split v-model="split.vertical" mode="vertical">
+                    <div slot="top" class="demo-split-pane">
+                        <Upload
+                            :on-success="uploadSuccess"
+                            action="/upload"
+                            webkitdirectory="true"
+                            type="drag">
+                            <div style="padding: 20px 0">
+                                <Icon type="ios-cloud-upload" size="52" style="color: #3399ff"></Icon>
+                                <p>Click or drag files here to upload</p>
+                            </div>
+                        </Upload>
+                    </div>
+                    <div slot="bottom" class="demo-split-pane">
+                        <div id="container" style="height: 100%"></div>
+                    </div>
+                </Split>
+            </div>
+            <div slot="right" class="demo-split-pane">
+                <dive>
+                    <i-input v-model="search.filename" placeholder="输入文件名" />
+                </dive>
+                <dive>
+                    <i-input v-model="search.tags" @on-search="queryData" search enter-button="Search" placeholder="输入标签`.`分隔" />
+                </dive>
+                <div>
+                    <i-table 
+                        context-menu
+                        show-context-menu
+                        border
+                        :columns="columns" 
+                        :data="files" 
+                        @on-row-dblclick="openFile"
+                        @on-contextmenu="handleContextMenu">
+                        <template slot="contextMenu">
+                            <dropdown-item @click.native="handleContextMenuEdit">编辑</dropdown-item>
+                            <dropdown-item @click.native="handleContextMenuDelete" style="color: #ed4014">删除</dropdown-item>
+                        </template>
+                    </i-table>
+                </div>
+            </div>
+        </Split>
+    </div>
+</div>
+</body>
+<script type="text/javascript" src="js/index.js"></script>
+</html>
