@@ -1,5 +1,6 @@
 package com.sayyi.software.tbp.core;
 
+import com.sayyi.software.tbp.common.FileInfo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -126,10 +127,4 @@ public class FileManager {
         return new FileInfo(file.getAbsolutePath().substring(absolutePathStoreDir.length()), file.getName());
     }
 
-    @Data
-    @AllArgsConstructor
-    public static class FileInfo {
-        private String relativePath;
-        private String filename;
-    }
 }

@@ -1,6 +1,7 @@
 package com.sayyi.software.tbp.core;
 
 import com.sayyi.software.tbp.common.FileMetadata;
+import com.sayyi.software.tbp.common.Snapshot;
 import com.sayyi.software.tbp.common.TbpException;
 import it.uniroma1.dis.wsngroup.gexf4j.core.*;
 import it.uniroma1.dis.wsngroup.gexf4j.core.impl.GexfImpl;
@@ -40,6 +41,18 @@ public class TagManager {
     private boolean isModified = true;
     private final GexfGenerator gexfGenerator = new GexfGenerator();
 
+    public void recovery(Snapshot snapshot) {
+        if (snapshot.getLastOpId() == -1) {
+            return;
+        }
+        List<FileMetadata> fileMetadataList = snapshot.getFileMetadataList();
+        for (FileMetadata fileMetadata : fileMetadataList) {
+            for (String tag : fileMetadata.getTags()) {
+                Map<Long, FileMetadata> metadataMap = tagFileMap.computeIfAbsent(tag, o -> new HashMap<>());
+                metadataMap.put(fileMetadata.getId(), fileMetadata);
+            }
+        }
+    }
     /**
      * 文件创建
      * @param fileMetadata

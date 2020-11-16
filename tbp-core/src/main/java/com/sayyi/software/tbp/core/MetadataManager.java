@@ -1,6 +1,8 @@
 package com.sayyi.software.tbp.core;
 
+import com.sayyi.software.tbp.common.FileInfo;
 import com.sayyi.software.tbp.common.FileMetadata;
+import com.sayyi.software.tbp.common.Snapshot;
 import com.sayyi.software.tbp.common.TbpException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,6 +30,17 @@ public class MetadataManager {
      */
     private long nextFileId = 1;
 
+    public void recovery(Snapshot snapshot) {
+        if (snapshot.getLastOpId() == -1) {
+            return;
+        }
+        nextFileId = snapshot.getLastFileId();
+        fileMetadataList.addAll(snapshot.getFileMetadataList());
+        for (FileMetadata fileMetadata : fileMetadataList) {
+            id2FileMap.put(fileMetadata.getId(), fileMetadata);
+        }
+    }
+
     public void delete(long fileId) throws TbpException {
         FileMetadata fileMetadata = getFileById(fileId);
         fileMetadataList.remove(fileMetadata);
@@ -41,7 +54,7 @@ public class MetadataManager {
      * @param fileInfo   重命名后的文件信息
      * @throws TbpException
      */
-    public void rename(long fileId, FileManager.FileInfo fileInfo) throws TbpException {
+    public void rename(long fileId, FileInfo fileInfo) throws TbpException {
         FileMetadata fileMetadata = getFileById(fileId);
         fileMetadata.setRelativePath(fileInfo.getRelativePath());
         fileMetadata.setFilename(fileInfo.getFilename());
@@ -52,7 +65,7 @@ public class MetadataManager {
      * @param fileInfo  文件基本信息
      * @param tags  文件关联标签
      */
-    public FileMetadata initAndSaveFileMetadata(FileManager.FileInfo fileInfo, Set<String> tags) {
+    public FileMetadata initAndSaveFileMetadata(FileInfo fileInfo, Set<String> tags) {
         log.debug("文件存储成功【{}】", fileInfo);
         FileMetadata fileMetadata = new FileMetadata();
         fileMetadata.setId(nextFileId++);
@@ -79,4 +92,7 @@ public class MetadataManager {
         return fileMetadataList;
     }
 
+    public long getNextFileId() {
+        return nextFileId;
+    }
 }

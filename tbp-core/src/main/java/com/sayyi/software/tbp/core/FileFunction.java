@@ -12,6 +12,13 @@ import java.util.Set;
  * @author SayYi
  */
 public interface FileFunction {
+
+    /**
+     * 元数据恢复
+     * @throws TbpException
+     */
+    void recovery() throws TbpException;
+
     /**
      * 通过流的方式，将文件传输入pkm系统
      * @param filename  文件名称。不能与已有文件名重复
