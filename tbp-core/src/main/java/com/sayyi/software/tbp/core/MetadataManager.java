@@ -138,6 +138,8 @@ public class MetadataManager implements MetadataFunction {
             toAddTags.add(newTag);
         }
         // 也许应该改成忽略，而不是报错来着。
+        log.debug("to remove tags【{}】", toRemoveTags);
+        log.debug("to add tags【{}】", toAddTags);
         checkTag(toRemoveTags);
         checkTag(toAddTags);
         for (String toAddTag : toAddTags) {

@@ -56,7 +56,7 @@ public class TbpController {
     public ResultBean<Boolean> update(@RequestBody FileUpdateInfo fileUpdateInfo) throws TbpException {
         long fileId = fileUpdateInfo.getId();
         String newName = fileUpdateInfo.getNewName();
-        Set<String> tagSet = tagStrToSet(fileUpdateInfo.getTagStr());
+        Set<String> tagSet = fileUpdateInfo.getTags();
 
         pkmFunction.rename(fileId, newName);
         pkmFunction.modifyTag(fileId, tagSet);

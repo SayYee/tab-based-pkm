@@ -51,7 +51,13 @@ public class PkmMain implements PkmFunction {
                 if (actionInfo.getOpId() < nextOpId) {
                     continue;
                 }
-                doAction(actionInfo);
+                try {
+                    // 用户在实际进行某些操作时，可能输入无效的参数，但是日志依然会被记录
+                    // 因此需要忽略这些异常，保证后续的行为正常提交
+                    doAction(actionInfo);
+                } catch (Exception e) {
+                    log.warn("恢复行为时出现异常【{}】", e.getMessage());
+                }
             }
 
             Snapshot currentSnap = new Snapshot();
@@ -73,7 +79,6 @@ public class PkmMain implements PkmFunction {
      */
     private void doAction(ActionInfo actionInfo) throws TbpException {
         log.debug("恢复action【{}】，当前opId【{}】", actionInfo, nextOpId);
-        // TODO 创建、打开，时间相关的参数，需要处理
         switch (actionInfo.getOpType()) {
             case CREATE:
                 CreateAction createAction = (CreateAction) actionInfo.getAction();

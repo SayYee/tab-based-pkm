@@ -54,7 +54,7 @@ public class FileBasedDbManager implements DbFunction {
             // 写校验和
             Checksum checksum = checkedOutputStream.getChecksum();
             outputArchive.writeLong(checksum.getValue());
-            log.debug("写入本地文件成功，校验和为【{}】", checksum.getValue());
+            log.debug("写入本地文件【{}】成功，校验和为【{}】", snapshotFile, checksum.getValue());
             checkedOutputStream.flush();
         }
     }
@@ -62,6 +62,7 @@ public class FileBasedDbManager implements DbFunction {
 
     @Override
     public void storeAction(ActionInfo actionInfo) throws IOException {
+        log.debug("store action【{}】", actionInfo);
         if (actionFile == null) {
             final long opId = actionInfo.getOpId();
             actionFile = new File(snapDir, ACTION_FILE_PREFIX + opId);
@@ -116,34 +117,45 @@ public class FileBasedDbManager implements DbFunction {
 
     @Override
     public void cleanOutOfDateFile(long opId) throws IOException {
+        log.debug("开始清理数据【opId={}】", opId);
         List<File> toDeleteFiles = new LinkedList<>();
 
+        log.debug("获取需要清理的snapshot文件");
         final File[] snapShotFiles = listSnapShotFile();
         for (File snapShotFile : snapShotFiles) {
             final long fileOpId = getFileOpId(snapShotFile);
             if (fileOpId < opId) {
                 toDeleteFiles.add(snapShotFile);
+                log.debug("添加待处理快照文件【{}】", snapShotFile);
             }
         }
+        log.debug("snapshot文件处理完毕");
 
+        log.debug("获取需要清理的action文件");
         final File[] actionFiles = listActionFile();
         File file = null;
         long nearestOpId = -1;
         for (File actionFile : actionFiles) {
             final long fileOpId = getFileOpId(actionFile);
+            log.debug("读取本地action文件，fileOpId={}", fileOpId);
             if (fileOpId > opId) {
+                log.debug("fileOpId-{} > opId", fileOpId);
                 continue;
             }
             if (fileOpId > nearestOpId) {
                 if (file != null) {
-                    toDeleteFiles.add(actionFile);
+                    toDeleteFiles.add(file);
+                    log.debug("添加待处理action文件【{}】", file);
                 }
                 nearestOpId = fileOpId;
                 file = actionFile;
+                log.debug("更新 nearestOpId={}", nearestOpId);
             } else {
                 toDeleteFiles.add(actionFile);
+                log.debug("添加待处理action文件【{}】", actionFile);
             }
         }
+        log.debug("action文件处理完毕，开始清理文件");
 
         for (File toDeleteFile : toDeleteFiles) {
             final boolean delete = toDeleteFile.delete();

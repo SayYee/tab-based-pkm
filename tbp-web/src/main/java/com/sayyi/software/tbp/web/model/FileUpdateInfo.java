@@ -2,6 +2,8 @@ package com.sayyi.software.tbp.web.model;
 
 import lombok.Data;
 
+import java.util.Set;
+
 /**
  * @author SayYi
  */
@@ -10,5 +12,5 @@ public class FileUpdateInfo {
 
     private long id;
     private String newName;
-    private String tagStr;
+    private Set<String> tags;
 }

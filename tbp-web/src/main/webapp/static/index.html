@@ -35,7 +35,8 @@
                 <i-input v-model="file.filename" placeholder="Enter something..." />
             </div>
             <div>
-                <i-input v-model="file.tags" placeholder="Enter something..." />
+                <Tag v-for="tag in file.tags" :key="tag" :name="tag" closable @on-close="handleTagRemove">{{tag}}</Tag>
+                <i-input v-model="tagToAdd" @on-enter="handleTagAdd" placeholder="Enter something..." />
             </div>
         </Modal>
     </div>
@@ -51,7 +52,7 @@
                             webkitdirectory="true"
                             type="drag">
                             <div style="padding: 20px 0">
-                                <Icon type="ios-cloud-upload" size="52" style="color: #3399ff"></Icon>
+                                <Icon type="ios-cloud-upload" size="300" style="color: #3399ff"></Icon>
                                 <p>Click or drag files here to upload</p>
                             </div>
                         </Upload>

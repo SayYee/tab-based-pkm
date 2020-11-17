@@ -12,31 +12,53 @@ var vm = new Vue({
         columns: [
             {
                 title: 'id',
-                key: 'id'
+                key: 'id',
+                width: 80,
+                align: 'center'
             },
             {
                 title: '文件名称',
-                key: 'filename'
+                key: 'filename',
+                align: 'center'
             },
             {
                 title: '相对路径',
-                key: 'relativePath'
+                key: 'relativePath',
+                align: 'center'
             },
             {
                 title: '标签',
-                key: 'tags'
+                key: 'tags',
+                render: (h, params) => {
+                    var arr = params.row.tags;
+                    return h('ul', arr.map(function(item, index){
+                        return h('Tag', item);
+                    }))
+                },
+                align: 'center'
             },
             {
                 title: '创建时间',
-                key: 'createTime'
+                key: 'createTime',
+                width: 180,
+                render: (h, params) => {
+                    return h('i-time', {props: {time: params.row.createTime, type: 'datetime'}});
+                },
+                align: 'center'
             },
             {
                 title: '最后打开时间',
-                key: 'lastOpenTime'
+                key: 'lastOpenTime',
+                width: 180,
+                render: (h, params) => {
+                    return h('i-time', {props: {time: params.row.lastOpenTime, type: 'datetime'}});
+                },
+                align: 'center'
             }
         ],
-        files: [{"id":1,"filename":"设计文档.md","relativePath":"\\2020-11\\设计文档.md","tags":["RECENT_MODIFIED"],"createTime":1605420837931,"lastOpenTime":1605420843068}],
+        files: [{"id":1,"filename":"设计文档.md","relativePath":"\\2020-11\\设计文档.md","tags":["RECENT_MODIFIED","doing","todo"],"createTime":1605420837931,"lastOpenTime":1605420843068}],
         file: {id: null, filename: null, tags: []},
+        tagToAdd: null,
         modal: false,
         loading: true
     },
@@ -88,6 +110,7 @@ var vm = new Vue({
             this.file = row;
         },
         handleContextMenuEdit () {
+            this.tagToAdd = null;
             this.modal=true;
         },
         handleContextMenuDelete () {
@@ -107,13 +130,10 @@ var vm = new Vue({
             })
         },
         updateFile () {
-            if (typeof vm.file.tags ==='object') {
-                vm.file.tags = vm.file.tags.join('.');
-            }
             axios.put('/update',{
                 id: vm.file.id,
                 newName: vm.file.filename,
-                tagStr: vm.file.tags
+                tags: vm.file.tags
             })
             .then(function(response) {
                 var data = response.data;
@@ -127,6 +147,14 @@ var vm = new Vue({
             .catch(function(error) {
                 console.log(error);
             })
+        },
+        handleTagRemove (event, name) {
+            const index = this.file.tags.indexOf(name);
+            this.file.tags.splice(index, 1);
+        },
+        handleTagAdd() {
+            this.file.tags.push(this.tagToAdd);
+            this.tagToAdd = null;
         }
     }
 })
