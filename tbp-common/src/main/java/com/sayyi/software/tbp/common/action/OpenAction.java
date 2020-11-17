@@ -18,14 +18,17 @@ import java.io.IOException;
 @AllArgsConstructor
 public class OpenAction implements Record {
     private long id;
+    private long openTime;
 
     @Override
     public void serialize(OutputArchive archive) throws IOException {
         archive.writeLong(id);
+        archive.writeLong(openTime);
     }
 
     @Override
     public void deserialize(InputArchive archive) throws IOException {
         id = archive.readLong();
+        openTime = archive.readLong();
     }
 }

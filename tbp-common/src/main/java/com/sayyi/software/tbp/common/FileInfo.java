@@ -18,16 +18,19 @@ import java.io.IOException;
 public class FileInfo implements Record {
     private String relativePath;
     private String filename;
+    private long modifyTime;
 
     @Override
     public void serialize(OutputArchive archive) throws IOException {
         archive.writeString(relativePath);
         archive.writeString(filename);
+        archive.writeLong(modifyTime);
     }
 
     @Override
     public void deserialize(InputArchive archive) throws IOException {
         relativePath = archive.readString();
         filename = archive.readString();
+        modifyTime = archive.readLong();
     }
 }

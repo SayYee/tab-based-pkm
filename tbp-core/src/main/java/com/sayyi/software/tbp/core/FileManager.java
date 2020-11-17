@@ -1,8 +1,6 @@
 package com.sayyi.software.tbp.core;
 
 import com.sayyi.software.tbp.common.FileInfo;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.awt.*;
@@ -124,7 +122,7 @@ public class FileManager {
     }
 
     private FileInfo createFromFile(File file) {
-        return new FileInfo(file.getAbsolutePath().substring(absolutePathStoreDir.length()), file.getName());
+        return new FileInfo(file.getAbsolutePath().substring(absolutePathStoreDir.length()), file.getName(), System.currentTimeMillis());
     }
 
 }
