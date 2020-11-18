@@ -67,6 +67,7 @@ public class FileManager {
 
     /**
      * 通过流的方式上传文件（js无法获取文件绝对路径，暂时只能这么搞了，反正都上http通信了，不在乎了）
+     * 仅支持文件上传，不支持文件夹传输
      * @param filename  文件名称
      * @param in    输入流
      * @return
@@ -86,6 +87,7 @@ public class FileManager {
 
     /**
      * 将传入目标文件拷贝入文件存储系统中。按照月份，自动创建文件夹存储数据
+     * 支持文件夹复制
      * @param sourceFile    目标文件绝对地址
      */
     public FileInfo copy(String sourceFile) throws IOException {
@@ -97,13 +99,51 @@ public class FileManager {
         if (target.exists()) {
             throw new IOException("file already exists");
         }
-        try (FileInputStream input = new FileInputStream(source);
-             FileChannel inputChannel = input.getChannel();
-             FileOutputStream output = new FileOutputStream(target);
-             FileChannel outputChannel = output.getChannel()) {
-            inputChannel.transferTo(0, source.length(), outputChannel);
+        if (source.isDirectory()) {
+            copyDir(source, target);
+        } else {
+            copyFile(source, target);
         }
         return createFromFile(target);
+    }
+
+    /**
+     * 复制文件
+     * @param sourceFile
+     * @param targetFile
+     * @throws IOException
+     */
+    private void copyFile(File sourceFile, File targetFile) throws IOException {
+        try (FileInputStream input = new FileInputStream(sourceFile);
+             FileChannel inputChannel = input.getChannel();
+             FileOutputStream output = new FileOutputStream(targetFile);
+             FileChannel outputChannel = output.getChannel()) {
+            inputChannel.transferTo(0, sourceFile.length(), outputChannel);
+        }
+    }
+
+    /**
+     * 复制文件夹及其子文件
+     * @param sourceDir
+     * @param targetDir
+     * @throws IOException
+     */
+    private void copyDir(File sourceDir, File targetDir) throws IOException {
+        if (!targetDir.exists()) {
+            targetDir.mkdirs();
+        }
+        final File[] files = sourceDir.listFiles();
+        if (files == null || files.length == 0) {
+            return;
+        }
+        for (File file : files) {
+            if (file.isDirectory()) {
+                copyDir(file, new File(targetDir, file.getName()));
+            } else {
+                File targetFile = new File(targetDir, file.getName());
+                copyFile(file, targetFile);
+            }
+        }
     }
 
     /**

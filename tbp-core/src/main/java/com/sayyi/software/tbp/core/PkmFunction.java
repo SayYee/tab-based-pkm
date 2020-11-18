@@ -31,12 +31,11 @@ public interface PkmFunction {
     /**
      * 从本地文件系统，拷贝文件到pkm系统
      * @param filepath  本地文件路径
-     * @param filename  文件名称。不能与已有文件名重复
      * @param tags  文件标签
      * @return  文件元数据
      * @throws TbpException
      */
-    FileMetadata copy(String filepath, String filename, Set<String> tags) throws TbpException;
+    FileMetadata copy(String filepath, Set<String> tags) throws TbpException;
 
     /**
      * 文件重命名

@@ -11,7 +11,6 @@
     <modules>
         <module>tbp-core</module>
         <module>tbp-common</module>
-        <module>tbp-javafx</module>
         <module>tbp-web</module>
     </modules>
     <parent>

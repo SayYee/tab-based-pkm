@@ -178,7 +178,11 @@ public class MetadataManager implements MetadataFunction {
         final String tag = deleteTagAction.getTag();
         checkTag(tag);
         Map<Long, FileMetadata> metadataMap = tagFileMap.get(tag);
-        metadataMap.forEach((id, file) -> removeFileTag(tag, file, true));
+        // 遍历同时修改集合，只能通过迭代器来处理来着。
+        // 怎么办呢？只能重新组装一个集合出来才行了。
+        Set<FileMetadata> toModify = new HashSet<>(metadataMap.size());
+        toModify.addAll(metadataMap.values());
+        toModify.forEach(file -> removeFileTag(tag, file, true));
     }
 
     @Override
@@ -186,15 +190,19 @@ public class MetadataManager implements MetadataFunction {
         isModified = true;
         final String tag = renameTagAction.getTag();
         final String newTag = renameTagAction.getNewTag();
+        if (tag.equals(newTag)) {
+            log.info("标签没有发生变化");
+            return;
+        }
         checkTag(tag);
         checkTag(newTag);
-        if (tagFileMap.containsKey(newTag)) {
-            throw new TbpException("目标标签【" + newTag + "】已存在");
-        }
-        final Map<Long, FileMetadata> metadataMap = tagFileMap.remove(tag);
-        metadataMap.forEach((id, file) -> {
-            file.getTags().remove(tag);
-            file.getTags().add(newTag);
+
+        Map<Long, FileMetadata> metadataMap = tagFileMap.get(tag);
+        Set<FileMetadata> toModify = new HashSet<>(metadataMap.size());
+        toModify.addAll(metadataMap.values());
+        toModify.forEach(file -> {
+            removeFileTag(tag, file, false);
+            addFileTag(newTag, file);
         });
     }
 
@@ -276,7 +284,7 @@ public class MetadataManager implements MetadataFunction {
      * 删除文件的某个标签
      * @param tagName
      * @param fileMetadata
-     * @param checkEmpty 是否要进行无标签校验。主要是为了删除文件时，清理标签的场景
+     * @param checkEmpty 是否要进行无标签校验。主要是为了删除文件时，清理标签的场景。一般就是true就可以
      */
     private void removeFileTag(String tagName, FileMetadata fileMetadata, boolean checkEmpty) {
         final Map<Long, FileMetadata> metadataMap = tagFileMap.get(tagName);
@@ -324,7 +332,7 @@ public class MetadataManager implements MetadataFunction {
                 Optional<FileMetadata> first = metadataMap.values().stream()
                         .min(Comparator.comparingLong(FileMetadata::getLastOpenTime));
                 removeFileTag(RECENT_OPENED_TAG, first.get(), true);
-                log.info("移除文件【{}-{}】的最近打开标签", fileMetadata.getId(), fileMetadata.getFilename());
+                log.info("移除文件【{}-{}】的最近打开标签", first.get().getId(), first.get().getFilename());
             }
         }
     }
@@ -392,6 +400,8 @@ public class MetadataManager implements MetadataFunction {
                 for (FileMetadata fileMetadata : tagEntry.getValue().values()) {
                     targetTags.addAll(fileMetadata.getTags());
                 }
+                // 避免自己连接自己
+                targetTags.remove(sourceTag);
                 // 这里不使用 graph 自带的查找方法。那个底层是基于ArrayList实现的，遍历查找，挺坑爹的
                 Node sourceNode = nodeMap.get(sourceTag);
                 for (String targetTag : targetTags) {

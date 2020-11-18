@@ -77,12 +77,16 @@ public class PkmMain implements PkmFunction {
      *
      * @param actionInfo
      */
-    private void doAction(ActionInfo actionInfo) throws TbpException {
-        log.debug("恢复action【{}】，当前opId【{}】", actionInfo, nextOpId);
+    private Object doAction(ActionInfo actionInfo) throws TbpException {
+        log.debug("执行action【{}】，当前opId【{}】", actionInfo, nextOpId);
+        // 进入这个方法，说明action已经持久化成功。
+        // 此时不管执行action是否成功，opId都应该增加，避免因为执行出错，出现重复的opId
+        nextOpId++;
+        Object result = null;
         switch (actionInfo.getOpType()) {
             case CREATE:
                 CreateAction createAction = (CreateAction) actionInfo.getAction();
-                metadataManager.create(createAction);
+                result = metadataManager.create(createAction);
                 break;
             case RENAME:
                 RenameAction renameAction = (RenameAction) actionInfo.getAction();
@@ -111,40 +115,39 @@ public class PkmMain implements PkmFunction {
             default:
                 throw new IllegalArgumentException("找不到对应的操作实体类");
         }
-        nextOpId++;
+        return result;
     }
 
     @Override
     public FileMetadata upload(String filename, InputStream in) throws TbpException {
         FileInfo fileInfo;
-        CreateAction createAction;
+        ActionInfo actionInfo;
         try {
             fileInfo = fileManager.upload(filename, in);
-            createAction = new CreateAction(fileInfo, new HashSet<>());
-            dbFunction.storeAction(new ActionInfo(nextOpId, CREATE, createAction));
-            nextOpId++;
+            actionInfo = new ActionInfo(nextOpId, CREATE, new CreateAction(fileInfo, new HashSet<>()));
+            dbFunction.storeAction(actionInfo);
         } catch (Exception e) {
             throw new TbpException(e.getMessage(), e);
         }
-        return metadataManager.create(createAction);
+        return (FileMetadata) doAction(actionInfo);
     }
 
     @Override
-    public FileMetadata copy(String filepath, String filename, Set<String> tags) throws TbpException {
+    public FileMetadata copy(String filepath, Set<String> tags) throws TbpException {
+        log.info("文件复制【filepath={}】", filepath);
         if (tags == null || tags.isEmpty()) {
             tags = new HashSet<>();
         }
         FileInfo fileInfo;
-        CreateAction createAction;
+        ActionInfo actionInfo;
         try {
             fileInfo = fileManager.copy(filepath);
-            createAction = new CreateAction(fileInfo, tags);
-            dbFunction.storeAction(new ActionInfo(nextOpId, CREATE, createAction));
-            nextOpId++;
+            actionInfo = new ActionInfo(nextOpId, CREATE, new CreateAction(fileInfo, tags));
+            dbFunction.storeAction(actionInfo);
         } catch (Exception e) {
             throw new TbpException(e.getMessage(), e);
         }
-        return metadataManager.create(createAction);
+        return (FileMetadata) doAction(actionInfo);
     }
 
     @Override
@@ -156,30 +159,29 @@ public class PkmMain implements PkmFunction {
             return;
         }
         FileInfo fileInfo;
-        RenameAction renameAction;
+        ActionInfo actionInfo;
         try {
             fileInfo = fileManager.rename(fileMetadata.getRelativePath(), newName);
-            renameAction = new RenameAction(fileId, fileInfo);
-            dbFunction.storeAction(new ActionInfo(nextOpId, RENAME, renameAction));
-            nextOpId++;
+            actionInfo = new ActionInfo(nextOpId, RENAME, new RenameAction(fileId, fileInfo));
+            dbFunction.storeAction(actionInfo);
         } catch (Exception e) {
             throw new TbpException("文件重命名失败", e);
         }
-        metadataManager.rename(renameAction);
+        doAction(actionInfo);
     }
 
     @Override
     public void modifyTag(long fileId, Set<String> newTags) throws TbpException {
         FileMetadata fileMetadata = getFileById(fileId);
         log.debug("modify tags. now: {}, target: {}", fileMetadata.getTags(), newTags);
-        ModifyTagAction modifyTagAction = new ModifyTagAction(fileId, newTags);
+        ActionInfo actionInfo;
         try {
-            dbFunction.storeAction(new ActionInfo(nextOpId, MODIFY_TAG, modifyTagAction));
-            nextOpId++;
+            actionInfo = new ActionInfo(nextOpId, MODIFY_TAG, new ModifyTagAction(fileId, newTags));
+            dbFunction.storeAction(actionInfo);
         } catch (IOException e) {
             throw new TbpException(e.getMessage(), e);
         }
-        metadataManager.modifyTag(modifyTagAction);
+        doAction(actionInfo);
     }
 
     @Override
@@ -187,30 +189,30 @@ public class PkmMain implements PkmFunction {
         FileMetadata fileMetadata = getFileById(fileId);
         log.debug("打开文件【{}】", fileMetadata);
         long currentTime = System.currentTimeMillis();
-        OpenAction openAction = new OpenAction(fileId, currentTime);
+        ActionInfo actionInfo;
         try {
             fileManager.open(fileMetadata.getRelativePath());
-            dbFunction.storeAction(new ActionInfo(nextOpId, OPEN, openAction));
-            nextOpId++;
+            actionInfo = new ActionInfo(nextOpId, OPEN, new OpenAction(fileId, currentTime));
+            dbFunction.storeAction(actionInfo);
         } catch (Exception e) {
             throw new TbpException("打开文件【" + fileId + "】失败", e);
         }
-        metadataManager.open(openAction);
+        doAction(actionInfo);
     }
 
     @Override
     public void delete(long fileId) throws TbpException {
         FileMetadata fileMetadata = getFileById(fileId);
-        DeleteAction deleteAction = new DeleteAction(fileId);
+        ActionInfo actionInfo;
         try {
             fileManager.delete(fileMetadata.getRelativePath());
             log.info("删除文件【{}】", fileMetadata.getRelativePath());
-            dbFunction.storeAction(new ActionInfo(nextOpId, DELETE, deleteAction));
-            nextOpId++;
+            actionInfo = new ActionInfo(nextOpId, DELETE, new DeleteAction(fileId));
+            dbFunction.storeAction(actionInfo);
         } catch (IOException e) {
             throw new TbpException(e.getMessage(), e);
         }
-        metadataManager.delete(deleteAction);
+        doAction(actionInfo);
     }
 
     @Override
@@ -247,26 +249,26 @@ public class PkmMain implements PkmFunction {
 
     @Override
     public void deleteTag(String tagName) throws TbpException {
-        DeleteTagAction deleteTagAction = new DeleteTagAction(tagName);
+        ActionInfo actionInfo;
         try {
-            dbFunction.storeAction(new ActionInfo(nextOpId, DELETE_TAG, deleteTagAction));
-            nextOpId++;
+            actionInfo = new ActionInfo(nextOpId, DELETE_TAG, new DeleteTagAction(tagName));
+            dbFunction.storeAction(actionInfo);
         } catch (IOException e) {
             throw new TbpException(e.getMessage(), e);
         }
-        metadataManager.deleteTag(deleteTagAction);
+        doAction(actionInfo);
     }
 
     @Override
     public void renameTag(String tagName, String newName) throws TbpException {
-        RenameTagAction renameTagAction = new RenameTagAction(tagName, newName);
+        ActionInfo actionInfo;
         try {
-            dbFunction.storeAction(new ActionInfo(nextOpId, RENAME_TAG, renameTagAction));
-            nextOpId++;
+            actionInfo = new ActionInfo(nextOpId, RENAME_TAG, new RenameTagAction(tagName, newName));
+            dbFunction.storeAction(actionInfo);
         } catch (IOException e) {
             throw new TbpException(e.getMessage(), e);
         }
-        metadataManager.renameTag(renameTagAction);
+        doAction(actionInfo);
     }
 
     @Override

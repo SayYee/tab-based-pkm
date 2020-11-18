@@ -28,7 +28,7 @@
     <div>
         <Modal
             v-model="modal"
-            title="Common Modal dialog box title"
+            title="文件元数据编辑"
             :loading="loading"
             @on-ok="updateFile">
             <div>
@@ -40,25 +40,56 @@
             </div>
         </Modal>
     </div>
+    <div>
+        <Modal
+            v-model="tagMenu.modal"
+            title="标签重命名"
+            :loading="tagMenu.loading"
+            @on-ok="handleTagRename">
+            <div>
+                <i-input v-model="tagMenu.newTag">
+                    <span slot="prepend">{{tagMenu.tag}}</span>
+                </i-input>
+            </div>
+        </Modal>
+    </div>
 
     <div class="demo-split">
         <Split v-model="split.horizontal">
             <div slot="left" class="demo-split-pane no-padding">
                 <Split v-model="split.vertical" mode="vertical">
                     <div slot="top" class="demo-split-pane">
-                        <Upload
-                            :on-success="uploadSuccess"
-                            action="/upload"
-                            webkitdirectory="true"
-                            type="drag">
-                            <div style="padding: 20px 0">
-                                <Icon type="ios-cloud-upload" size="300" style="color: #3399ff"></Icon>
-                                <p>Click or drag files here to upload</p>
-                            </div>
-                        </Upload>
+                        <div>
+                            <i-input v-model="uploadFilePath" @on-enter="uploadByPath" placeholder="通过本地路径上传文件，回车确认" />
+                        </div>
+                        <div>
+                            <Upload
+                                :on-success="uploadSuccess"
+                                action="/upload"
+                                webkitdirectory="true"
+                                type="drag">
+                                <div style="padding: 20px 0">
+                                    <Icon type="ios-cloud-upload" size="280" style="color: #3399ff"></Icon>
+                                    <p>Click or drag files here to upload</p>
+                                </div>
+                            </Upload>
+                        </div>
                     </div>
                     <div slot="bottom" class="demo-split-pane">
-                        <div id="container" style="height: 100%"></div>
+                        <dropdown 
+                            transfer
+                            palcement="right-start"
+                            trigger="custom"
+                            ref="contextMenu"
+                            :visible="tagMenu.visible"
+                            @on-clickoutside="handleTagMenuCancel"
+                        >
+                            <dropdown-menu slot="list">
+                                <dropdown-item @click.native="handleTagMenuRename">重命名</dropdown-item>
+                                <dropdown-item @click.native="handleTagMenuDelete" style="color: #ed4014">删除</dropdown-item>
+                            </dropdown-menu>
+                        </dropdown>
+                        <div id="container" :style="{width: '550px', height: '400px'}"></div>
                     </div>
                 </Split>
             </div>
@@ -74,6 +105,7 @@
                         context-menu
                         show-context-menu
                         border
+                        :height=800
                         :columns="columns" 
                         :data="files" 
                         @on-row-dblclick="openFile"

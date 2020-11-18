@@ -5,6 +5,7 @@ import com.sayyi.software.tbp.common.TbpException;
 import com.sayyi.software.tbp.core.PkmFunction;
 import com.sayyi.software.tbp.web.common.ResultBean;
 import com.sayyi.software.tbp.web.model.FileUpdateInfo;
+import com.sayyi.software.tbp.web.model.TagRenameInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,6 +28,22 @@ public class TbpController {
     private PkmFunction pkmFunction;
 
     /**
+     * 通过输入的文件路径，将文件纳入管理。
+     * 这里的path，可以是文件夹
+     * @param path
+     * @return
+     */
+    // 用get吧，别给自己找麻烦了
+    @GetMapping("/copy")
+    public ResultBean<Long> copy(String path) throws TbpException {
+        if (null == path || "".equals(path.trim())) {
+            return ResultBean.error("文件路径为空");
+        }
+        FileMetadata fileMetadata = pkmFunction.copy(path, new HashSet<>());
+        return ResultBean.ok(fileMetadata.getId());
+    }
+
+    /**
      * 文件上传
      * @param file
      * @return
@@ -39,6 +56,12 @@ public class TbpController {
         return ResultBean.ok(fileMetadata.getId());
     }
 
+    /**
+     * 通过标签、文件名查询文件
+     * @param tags  . 分隔的标签
+     * @param filename
+     * @return
+     */
     @GetMapping("/query")
     public ResultBean<List<FileMetadata>> query(String tags, String filename) {
         Set<String> tagSet = tagStrToSet(tags);
@@ -46,12 +69,24 @@ public class TbpController {
         return ResultBean.ok(fileMetadata);
     }
 
+    /**
+     * 打开文件
+     * @param id    文件id
+     * @return
+     * @throws TbpException
+     */
     @GetMapping("/open/{id}")
     public ResultBean<Boolean> open(@PathVariable("id") long id) throws TbpException {
         pkmFunction.open(id);
         return ResultBean.ok(true);
     }
 
+    /**
+     * 更新文件元数据（名称、标签）
+     * @param fileUpdateInfo
+     * @return
+     * @throws TbpException
+     */
     @PutMapping("/update")
     public ResultBean<Boolean> update(@RequestBody FileUpdateInfo fileUpdateInfo) throws TbpException {
         long fileId = fileUpdateInfo.getId();
@@ -63,6 +98,12 @@ public class TbpController {
         return ResultBean.ok(true);
     }
 
+    /**
+     * 删除文件
+     * @param id    文件id
+     * @return
+     * @throws TbpException
+     */
     @DeleteMapping("/delete/{id}")
     public ResultBean<Boolean> delete(@PathVariable("id") long id) throws TbpException {
         // 我是为什么要用restful风格的，这不是把自己当智障吗？
@@ -70,6 +111,36 @@ public class TbpController {
         return ResultBean.ok(true);
     }
 
+    /**
+     * 标签重命名。允许重命名为已经存在的标签
+     * @param tagRenameInfo
+     * @return
+     * @throws TbpException
+     */
+    @PutMapping("/renameTag")
+    public ResultBean<Boolean> renameTag(@RequestBody TagRenameInfo tagRenameInfo) throws TbpException {
+        pkmFunction.renameTag(tagRenameInfo.getTag(), tagRenameInfo.getNewTag());
+        return ResultBean.ok(true);
+    }
+
+    /**
+     * 删除标签
+     * @param tag
+     * @return
+     * @throws TbpException
+     */
+    @DeleteMapping("/deleteTag/{tag}")
+    public ResultBean<Boolean> deleteTag(@PathVariable("tag") String tag) throws TbpException {
+        pkmFunction.deleteTag(tag);
+        return ResultBean.ok(true);
+    }
+
+    /**
+     * 获取标签图
+     * @param response
+     * @throws IOException
+     * @throws TbpException
+     */
     @GetMapping("/tagMap")
     @CrossOrigin
     public void tagMap(HttpServletResponse response) throws IOException, TbpException {

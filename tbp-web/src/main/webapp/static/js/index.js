@@ -1,3 +1,10 @@
+Vue.prototype.$echarts = echarts;
+
+// 禁用右键菜单
+document.oncontextmenu=function (ev){
+    return false;
+};
+
 var vm = new Vue({
     el: '#app',
     data: {
@@ -5,9 +12,10 @@ var vm = new Vue({
             horizontal: 0.3,
             vertical : 0.5
         },
+        uploadFilePath: null,
         search: {
             filename: null,
-            tags: null
+            tags: "RECENT_MODIFIED"
         },
         columns: [
             {
@@ -60,12 +68,54 @@ var vm = new Vue({
         file: {id: null, filename: null, tags: []},
         tagToAdd: null,
         modal: false,
-        loading: true
+        loading: true,
+        myChart: null,
+        tagMenu: {
+            visible: false,
+            posX: 0,
+            posY: 0,
+            locator: null,
+            tag: null,
+            newTag: null,
+            modal: false,
+            loading: true
+        }
+    },
+    mounted() {
+        this.drawTagMap();
     },
     methods: {
+        refresh: function() {
+            vm.queryData();
+            vm.loadTagMap();
+        },
+        uploadByPath: function() {
+            axios.get('/copy', {
+                params: {
+                    path: this.uploadFilePath
+                }
+            })
+            .then(function(response) {
+                var data = response.data;
+                if (data.code === 1) {
+                    vm.uploadFilePath = null;
+                    vm.$Message.success('Success');
+                    vm.refresh();
+                } else {
+                    vm.$Message.error(data.message);
+                }
+            })
+            .catch(function(error) {
+                vm.$Message.error("error");
+                console.log(error);
+            })
+        },
         uploadSuccess: function(response) {
             if (response.code === 1) {
                 this.$Message.success('Success');
+                this.search.filename = null;
+                this.search.tags = 'RECENT_MODIFIED';
+                vm.refresh();
             } else {
                 this.$Message.error(response.message);
             }
@@ -124,6 +174,7 @@ var vm = new Vue({
                 } else {
                     vm.$Message.error(data.message);
                 }
+                vm.refresh();
             })
             .catch(function(error) {
                 console.log(error);
@@ -143,6 +194,7 @@ var vm = new Vue({
                 } else {
                     vm.$Message.error(data.message);
                 }
+                vm.refresh();
             })
             .catch(function(error) {
                 console.log(error);
@@ -155,70 +207,150 @@ var vm = new Vue({
         handleTagAdd() {
             this.file.tags.push(this.tagToAdd);
             this.tagToAdd = null;
+        },
+        drawTagMap() {
+            this.myChart= this.$echarts.init(document.getElementById("container"));
+            this.myChart.on('contextmenu', {dataType : 'node'}, function(params) {
+                vm.handleTagMenuCancel();
+                vm.tagMenu.tag = params.name;
+                const clientX = params.event.event.clientX;
+                const clientY = params.event.event.clientY;
+                vm.handleContextmenu(clientX, clientY);
+            })
+            this.loadTagMap();
+        },
+        loadTagMap() {
+            axios.get('/tagMap')
+            .then(function(response) {
+                var data = response.data;
+                vm.myChart.hideLoading();
+                var graph = echarts.dataTool.gexf.parse(data);
+
+                graph.nodes.forEach(function (node) {
+                    node.itemStyle = null;
+                    node.value = node.symbolSize;
+                    node.symbolSize *= 5;
+                    node.label = {
+                        normal: {
+                            show: true
+                        }
+                    };
+                });
+                option = {
+                    title: {
+                        text: 'tag map',
+                        subtext: 'Circular layout',
+                        top: 'bottom',
+                        left: 'right'
+                    },
+                    tooltip: {},
+                    toolbox: {
+                        feature: {
+                            myTool1: {
+                                show: true,
+                                title: "刷新",
+                                icon: "image://styles/imgs/refresh.svg",
+                                onclick: function() {
+                                    vm.loadTagMap();
+                                }
+                            }
+                        }
+                    },
+                    animationDurationUpdate: 1500,
+                    animationEasingUpdate: 'quinticInOut',
+                    series: [
+                        {
+                            name: 'tag map',
+                            type: 'graph',
+                            layout: 'circular',
+                            circular: {
+                                rotateLabel: true
+                            },
+                            data: graph.nodes,
+                            links: graph.links,
+                            roam: true,
+                            label: {
+                                position: 'right',
+                                formatter: '{b}'
+                            },
+                            lineStyle: {
+                                color: 'source',
+                                curveness: 0.3
+                            }
+                        }
+                    ]
+                };
+
+                vm.myChart.setOption(option);
+            })
+            .catch(function(error) {
+                console.log(error);
+            });
+        },
+        createLocator() {
+               // 获取Dropdown
+            const contextmenu = this.$refs.contextMenu
+            // 创建locator
+            const locator = document.createElement('div')
+            locator.style.cssText = `position:fixed;left:${this.tagMenu.posX}px;top:${this.tagMenu.posY}px`
+            document.body.appendChild(locator)
+            // 将locator绑定到Dropdown的reference上
+            contextmenu.$refs.reference = locator
+            this.tagMenu.locator = locator
+        },
+        removeLocator () {
+            if (this.tagMenu.locator) document.body.removeChild(this.tagMenu.locator)
+            this.tagMenu.locator = null
+        },
+        handleContextmenu (clientX, clientY) {
+            if (this.tagMenu.posX !== clientX) this.tagMenu.posX = clientX
+            if (this.tagMenu.posY !== clientY) this.tagMenu.posY = clientY
+            if (this.trigger !== 'custom') {
+                this.createLocator()
+                this.tagMenu.visible = true
+            }
+        },
+        handleTagMenuCancel: function() {
+            this.tagMenu.visible = false;
+            this.removeLocator();
+        },
+        handleTagMenuRename: function() {
+            this.tagMenu.newTag = null;
+            this.tagMenu.modal = true;
+        },
+        handleTagRename: function() {
+            axios.put('/renameTag',{
+                tag: vm.tagMenu.tag,
+                newTag: vm.tagMenu.newTag
+            })
+            .then(function(response) {
+                var data = response.data;
+                if (data.code === 1) {
+                    vm.$Message.success('Success');
+                    vm.tagMenu.modal=false;
+                } else {
+                    vm.$Message.error(data.message);
+                }
+                vm.refresh();
+            })
+            .catch(function(error) {
+                console.log(error);
+            })
+        },
+        handleTagMenuDelete: function() {
+            axios.delete('/deleteTag/' + vm.tagMenu.tag)
+            .then(function(response) {
+                var data = response.data;
+                if (data.code === 1) {
+                    vm.$Message.success('Success');
+                } else {
+                    vm.$Message.error(data.message);
+                }
+                vm.refresh();
+            })
+            .catch(function(error) {
+                console.log(error);
+            })
         }
     }
 })
-
-var dom = document.getElementById("container");
-var myChart = echarts.init(dom);
-var app = {};
-option = null;
-myChart.showLoading();
-axios.get('/tagMap')
-.then(function(response) {
-    var data = response.data;
-    myChart.hideLoading();
-    var graph = echarts.dataTool.gexf.parse(data);
-
-    graph.nodes.forEach(function (node) {
-        node.itemStyle = null;
-        node.value = node.symbolSize;
-        node.symbolSize /= 1.5;
-        node.label = {
-            normal: {
-                show: node.symbolSize > 10
-            }
-        };
-        node.category = node.attributes.modularity_class;
-    });
-    option = {
-        title: {
-            text: 'Les Miserables',
-            subtext: 'Circular layout',
-            top: 'bottom',
-            left: 'right'
-        },
-        tooltip: {},
-        animationDurationUpdate: 1500,
-        animationEasingUpdate: 'quinticInOut',
-        series: [
-            {
-                name: 'Les Miserables',
-                type: 'graph',
-                layout: 'circular',
-                circular: {
-                    rotateLabel: true
-                },
-                data: graph.nodes,
-                links: graph.links,
-                roam: true,
-                label: {
-                    position: 'right',
-                    formatter: '{b}'
-                },
-                lineStyle: {
-                    color: 'source',
-                    curveness: 0.3
-                }
-            }
-        ]
-    };
-
-    myChart.setOption(option);
-})
-.catch(function(error) {
-    console.log(error);
-});
-if (option && typeof option === "object") {
-    myChart.setOption(option, true);
-}
