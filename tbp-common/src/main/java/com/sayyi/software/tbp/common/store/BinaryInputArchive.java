@@ -1,10 +1,10 @@
 package com.sayyi.software.tbp.common.store;
 
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 从 zookeeper的jute中拿过来的模块
@@ -16,6 +16,37 @@ public class BinaryInputArchive implements InputArchive {
 
     public static BinaryInputArchive getArchive(InputStream strm) {
         return new BinaryInputArchive(new DataInputStream(strm));
+    }
+
+    public static BinaryInputArchive getArchive(byte[] data) {
+        return new BinaryInputArchive(new DataInputStream(new ByteArrayInputStream(data)));
+    }
+
+    public static <B extends Record> void deserialize(B record, byte[] data) throws IOException {
+        final BinaryInputArchive archive = new BinaryInputArchive(new DataInputStream(new ByteArrayInputStream(data)));
+        archive.readRecord(record);
+    }
+
+    public static<B extends Record> List<B> deserialize(Class<B> recordClass, byte[] data) throws IOException, IllegalAccessException, InstantiationException {
+        BinaryInputArchive archive = new BinaryInputArchive(new DataInputStream(new ByteArrayInputStream(data)));
+        final int size = archive.readInt();
+        List<B> array = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            B record = recordClass.newInstance();
+            archive.readRecord(record);
+            array.add(record);
+        }
+        return array;
+    }
+
+    public static<B extends Record> void deserialize(Collection<B> collection, Class<B> recordClass, byte[] data) throws IOException, IllegalAccessException, InstantiationException {
+        BinaryInputArchive archive = new BinaryInputArchive(new DataInputStream(new ByteArrayInputStream(data)));
+        final int size = archive.readInt();
+        for (int i = 0; i < size; i++) {
+            B record = recordClass.newInstance();
+            archive.readRecord(record);
+            collection.add(record);
+        }
     }
 
     /**

@@ -12,8 +12,13 @@ import org.springframework.context.annotation.Configuration;
 public class TbpConfiguration {
 
     @Bean
-    public PkmFunction pkmFunction(FileManager fileManager, MetadataFunction metadataFunction, DbFunction dbFunction) {
-        return new PkmMain(fileManager, metadataFunction, dbFunction);
+    public PkmFunction pkmFunction(MetadataFunction metadataFunction, PkmService pkmService) {
+        return new PkmMain(metadataFunction, pkmService);
+    }
+
+    @Bean
+    public PkmService pkmService(FileManager fileManager, MetadataFunction metadataManager, DbFunction dbFunction) {
+        return new PkmServiceImpl(fileManager, metadataManager, dbFunction);
     }
 
     /**

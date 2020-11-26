@@ -1,10 +1,10 @@
 package com.sayyi.software.tbp.core;
 
-import com.sayyi.software.tbp.common.FileInfo;
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.Snapshot;
+import com.sayyi.software.tbp.common.TagInfo;
 import com.sayyi.software.tbp.common.TbpException;
-import com.sayyi.software.tbp.common.action.*;
+import com.sayyi.software.tbp.common.flow.FileBaseInfo;
 import it.uniroma1.dis.wsngroup.gexf4j.core.*;
 import it.uniroma1.dis.wsngroup.gexf4j.core.impl.GexfImpl;
 import it.uniroma1.dis.wsngroup.gexf4j.core.impl.StaxGraphWriter;
@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,7 +32,7 @@ public class MetadataManager implements MetadataFunction {
     /**
      * 最近被打开 标签
      */
-    private static final String RECENT_OPENED_TAG = "RECENT_MODIFIED";
+    public static final String RECENT_OPENED_TAG = "RECENT_MODIFIED";
     /** 最近打开 标签允许关联的文件上限 */
     private static final int OPENED_TAG_LIMIT = 20;
 
@@ -75,15 +76,14 @@ public class MetadataManager implements MetadataFunction {
     }
 
     @Override
-    public FileMetadata create(CreateAction createAction) {
+    public FileMetadata create(int resourceType, FileBaseInfo fileBaseInfo) {
         isModified = true;
-        FileInfo fileInfo = createAction.getFileInfo();
-        Set<String> tags = createAction.getTags();
 
-        FileMetadata fileMetadata = createMetadata(fileInfo);
+        FileMetadata fileMetadata = createMetadata(resourceType, fileBaseInfo);
         id2FileMap.put(fileMetadata.getId(), fileMetadata);
         fileMetadataList.add(fileMetadata);
 
+        Set<String> tags = fileBaseInfo.getTags();
         for (String tag : tags) {
             addFileTag(tag, fileMetadata);
         }
@@ -95,33 +95,30 @@ public class MetadataManager implements MetadataFunction {
         return fileMetadata;
     }
 
-    private FileMetadata createMetadata(FileInfo fileInfo) {
+    private FileMetadata createMetadata(int resourceType, FileBaseInfo fileBaseInfo) {
         FileMetadata fileMetadata = new FileMetadata();
         fileMetadata.setId(nextFileId++);
-        fileMetadata.setFilename(fileInfo.getFilename());
-        fileMetadata.setRelativePath(fileInfo.getRelativePath());
+        fileMetadata.setFilename(fileBaseInfo.getFilename());
+        fileMetadata.setResourceType(resourceType);
+        fileMetadata.setResourcePath(fileBaseInfo.getResourcePath());
         fileMetadata.setTags(new HashSet<>());
-        fileMetadata.setCreateTime(fileInfo.getModifyTime());
-        fileMetadata.setLastOpenTime(fileInfo.getModifyTime());
+        fileMetadata.setCreateTime(fileBaseInfo.getModifyTime());
+        fileMetadata.setLastOpenTime(fileBaseInfo.getModifyTime());
         return fileMetadata;
     }
 
     @Override
-    public void rename(RenameAction renameAction) throws TbpException {
-        final FileInfo fileInfo = renameAction.getFileInfo();
-        final long id = renameAction.getId();
+    public void rename(FileBaseInfo fileBaseInfo) {
+        long id = fileBaseInfo.getFileId();
         FileMetadata fileMetadata = getFileById(id);
-        fileMetadata.setRelativePath(fileInfo.getRelativePath());
-        fileMetadata.setFilename(fileInfo.getFilename());
+        fileMetadata.setResourcePath(fileBaseInfo.getResourcePath());
+        fileMetadata.setFilename(fileBaseInfo.getFilename());
     }
 
     @Override
-    public void modifyTag(ModifyTagAction modifyTagAction) throws TbpException {
+    public void modifyTag(long fileId, Set<String> newTags) {
         isModified = true;
-
-        final long id = modifyTagAction.getId();
-        FileMetadata fileMetadata = getFileById(id);
-        final Set<String> newTags = modifyTagAction.getNewTags();
+        FileMetadata fileMetadata = getFileById(fileId);
 
         Set<String> toAddTags = new HashSet<>();
         Set<String> toRemoveTags = new HashSet<>();
@@ -151,31 +148,29 @@ public class MetadataManager implements MetadataFunction {
     }
 
     @Override
-    public void open(OpenAction openAction) throws TbpException {
+    public void open(long fileId, long openTime) {
         isModified = true;
-        FileMetadata fileMetadata = getFileById(openAction.getId());
-        fileMetadata.setLastOpenTime(openAction.getOpenTime());
+        FileMetadata fileMetadata = getFileById(fileId);
+        fileMetadata.setLastOpenTime(openTime);
         addFileTag(RECENT_OPENED_TAG, fileMetadata);
     }
 
     @Override
-    public void delete(DeleteAction deleteAction) throws TbpException {
+    public void delete(long fileId) {
         isModified = true;
-        final long id = deleteAction.getId();
-        FileMetadata fileMetadata = getFileById(deleteAction.getId());
+        FileMetadata fileMetadata = getFileById(fileId);
         fileMetadataList.remove(fileMetadata);
-        id2FileMap.remove(id);
+        id2FileMap.remove(fileId);
 
-        final Set<String> tags = fileMetadata.getTags();
+        Set<String> tags = new HashSet<>(fileMetadata.getTags());
         for (String tag : tags) {
             removeFileTag(tag, fileMetadata, false);
         }
     }
 
     @Override
-    public void deleteTag(DeleteTagAction deleteTagAction) throws TbpException {
+    public void deleteTag(String tag) {
         isModified = true;
-        final String tag = deleteTagAction.getTag();
         checkTag(tag);
         Map<Long, FileMetadata> metadataMap = tagFileMap.get(tag);
         // 遍历同时修改集合，只能通过迭代器来处理来着。
@@ -186,10 +181,8 @@ public class MetadataManager implements MetadataFunction {
     }
 
     @Override
-    public void renameTag(RenameTagAction renameTagAction) throws TbpException {
+    public void renameTag(String tag, String newTag) {
         isModified = true;
-        final String tag = renameTagAction.getTag();
-        final String newTag = renameTagAction.getNewTag();
         if (tag.equals(newTag)) {
             log.info("标签没有发生变化");
             return;
@@ -225,47 +218,67 @@ public class MetadataManager implements MetadataFunction {
         return nextFileId;
     }
 
-    /**
-     * 获取最近被打开的文件集合
-     * @return
-     */
+    private final Comparator<FileMetadata> defaultComparator = Comparator.comparingLong(FileMetadata::getId);
+
     @Override
-    public List<FileMetadata> listRecentOpened() {
-        return listByTags(Collections.singleton(RECENT_OPENED_TAG),
-                Comparator.comparingLong(FileMetadata::getLastOpenTime)
-                        .reversed()
-        );
+    public List<FileMetadata> listResources(String filenameReg, Set<String> tags) {
+        boolean noTags = tags == null || tags.isEmpty();
+        boolean noFilename = filenameReg == null || "".equals(filenameReg.trim());
+        // 这里是获取 关联文件最少的标签
+        Map<Long, FileMetadata> fileMap = null;
+        Stream<FileMetadata> metadataStream;
+        if (!noTags) {
+            for (String tag : tags) {
+                Map<Long, FileMetadata> map = tagFileMap.get(tag);
+                if (fileMap == null) {
+                    fileMap = map;
+                    continue;
+                }
+                if (map.size() < fileMap.size()) {
+                    fileMap = map;
+                }
+            }
+            if (fileMap == null) {
+                return new ArrayList<>();
+            }
+            metadataStream = new ArrayList<>(fileMap.values()).stream()
+                    .filter(file -> file.getTags().containsAll(tags));
+        } else {
+            metadataStream = fileMetadataList.stream();
+        }
+        if (!noFilename) {
+            metadataStream = metadataStream.filter(file -> Pattern.matches(filenameReg, file.getFilename()));
+        }
+
+        return metadataStream.sorted(defaultComparator)
+                .collect(Collectors.toList());
     }
 
-    /**
-     * 通过标签搜素文件列表
-     * @param tags  目标标签集合
-     * @param comparator    排序原则（其实没有必要，前端获取到所有数据，完全可以自己排序，毕竟本地应用，数据量不会太过头吧应该。
-     *                      出问题了再说）
-     * @return  目标文件集合
-     */
-    @Override
-    public List<FileMetadata> listByTags(Set<String> tags, Comparator<FileMetadata> comparator) {
-        Map<Long, FileMetadata> fileMap = null;
-        for (String tag : tags) {
-            Map<Long, FileMetadata> map = tagFileMap.get(tag);
-            if (fileMap == null) {
-                fileMap = map;
-                continue;
-            }
-            if (map.size() < fileMap.size()) {
-                fileMap = map;
-            }
-        }
-        if (fileMap == null) {
-            return new ArrayList<>();
-        }
+    private final Comparator<TagInfo> tagComparator = Comparator.comparingLong(TagInfo::getFileNum).reversed();
 
-        Stream<FileMetadata> metadataStream = new ArrayList<>(fileMap.values()).stream();
-        if (tags.size() > 1) {
-            metadataStream = metadataStream.filter(file -> file.getTags().containsAll(tags));
+    @Override
+    public List<TagInfo> listTags(Set<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return tagFileMap.entrySet().stream()
+                    .map(entry -> new TagInfo(entry.getKey(), entry.getValue().size()))
+                    .sorted(tagComparator)
+                    .collect(Collectors.toList());
         }
-        return metadataStream.sorted(comparator)
+        List<FileMetadata> fileMetadataList = listResources(null, tags);
+        Map<String, Integer> tagInfoMap = new HashMap<>();
+        for (FileMetadata fileMetadata : fileMetadataList) {
+            for (String tag : fileMetadata.getTags()) {
+                if (tags.contains(tag)) {
+                    continue;
+                }
+                Integer count = tagInfoMap.get(tag);
+                count = count == null ? 1 : count + 1;
+                tagInfoMap.put(tag, count);
+            }
+        }
+        return tagInfoMap.entrySet().stream()
+                .map(entry -> new TagInfo(entry.getKey(), entry.getValue()))
+                .sorted(tagComparator)
                 .collect(Collectors.toList());
     }
 

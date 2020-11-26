@@ -1,7 +1,7 @@
 package com.sayyi.software.tbp.core;
 
-import com.sayyi.software.tbp.common.ActionInfo;
 import com.sayyi.software.tbp.common.Snapshot;
+import com.sayyi.software.tbp.common.flow.Request;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -20,11 +20,11 @@ public interface DbFunction {
     void storeSnap(Snapshot snapshot) throws IOException;
 
     /**
-     * 操作信息持久化
-     * @param actionInfo    操作信息
+     * 请求持久化
+     * @param request
      * @throws IOException
      */
-    void storeAction(ActionInfo actionInfo) throws IOException;
+    void storeRequest(Request request) throws IOException;
 
     /**
      * 快照信息加载
@@ -35,10 +35,11 @@ public interface DbFunction {
 
     /**
      * 操作信息迭代器获取
+     * @param lastOpId 用于过滤request文件，减少迭代次数，但是不会迭代到执行的action，仍然需要用户自己迭代
      * @return  操作信息迭代器
      * @throws IOException
      */
-    Iterator<ActionInfo> actionIterator() throws IOException;
+    Iterator<Request> requestIterator(long lastOpId) throws IOException;
 
     /**
      * 清理过期的数据文件。opId之前的文件将会被删除

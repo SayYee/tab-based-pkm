@@ -31,7 +31,7 @@ var vm = new Vue({
             },
             {
                 title: '相对路径',
-                key: 'relativePath',
+                key: 'resourcePath',
                 align: 'center'
             },
             {
@@ -64,7 +64,7 @@ var vm = new Vue({
                 align: 'center'
             }
         ],
-        files: [{"id":1,"filename":"设计文档.md","relativePath":"\\2020-11\\设计文档.md","tags":["RECENT_MODIFIED","doing","todo"],"createTime":1605420837931,"lastOpenTime":1605420843068}],
+        files: [{"id":1,"filename":"设计文档.md","resourcePath":"\\2020-11\\设计文档.md","tags":["RECENT_MODIFIED","doing","todo"],"createTime":1605420837931,"lastOpenTime":1605420843068}],
         file: {id: null, filename: null, tags: []},
         tagToAdd: null,
         modal: false,

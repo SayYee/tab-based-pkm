@@ -35,7 +35,7 @@ public class TbpController {
      */
     // 用get吧，别给自己找麻烦了
     @GetMapping("/copy")
-    public ResultBean<Long> copy(String path) throws TbpException {
+    public ResultBean<Long> copy(String path) throws Exception {
         if (null == path || "".equals(path.trim())) {
             return ResultBean.error("文件路径为空");
         }
@@ -51,8 +51,9 @@ public class TbpController {
      * @throws TbpException
      */
     @PostMapping("/upload")
-    public ResultBean<Long> upload(@RequestParam("file") MultipartFile file) throws IOException, TbpException {
-        FileMetadata fileMetadata = pkmFunction.upload(file.getOriginalFilename(), file.getInputStream());
+    public ResultBean<Long> upload(@RequestParam("file") MultipartFile file) throws Exception {
+        file.getBytes();
+        FileMetadata fileMetadata = pkmFunction.upload(file.getOriginalFilename(), file.getBytes());
         return ResultBean.ok(fileMetadata.getId());
     }
 
@@ -63,7 +64,7 @@ public class TbpController {
      * @return
      */
     @GetMapping("/query")
-    public ResultBean<List<FileMetadata>> query(String tags, String filename) {
+    public ResultBean<List<FileMetadata>> query(String tags, String filename) throws Exception {
         Set<String> tagSet = tagStrToSet(tags);
         List<FileMetadata> fileMetadata = pkmFunction.listByNameAndTag(tagSet, filename);
         return ResultBean.ok(fileMetadata);
@@ -76,7 +77,7 @@ public class TbpController {
      * @throws TbpException
      */
     @GetMapping("/open/{id}")
-    public ResultBean<Boolean> open(@PathVariable("id") long id) throws TbpException {
+    public ResultBean<Boolean> open(@PathVariable("id") long id) throws Exception {
         pkmFunction.open(id);
         return ResultBean.ok(true);
     }
@@ -88,7 +89,7 @@ public class TbpController {
      * @throws TbpException
      */
     @PutMapping("/update")
-    public ResultBean<Boolean> update(@RequestBody FileUpdateInfo fileUpdateInfo) throws TbpException {
+    public ResultBean<Boolean> update(@RequestBody FileUpdateInfo fileUpdateInfo) throws Exception {
         long fileId = fileUpdateInfo.getId();
         String newName = fileUpdateInfo.getNewName();
         Set<String> tagSet = fileUpdateInfo.getTags();
@@ -105,7 +106,7 @@ public class TbpController {
      * @throws TbpException
      */
     @DeleteMapping("/delete/{id}")
-    public ResultBean<Boolean> delete(@PathVariable("id") long id) throws TbpException {
+    public ResultBean<Boolean> delete(@PathVariable("id") long id) throws Exception {
         // 我是为什么要用restful风格的，这不是把自己当智障吗？
         pkmFunction.delete(id);
         return ResultBean.ok(true);
@@ -118,7 +119,7 @@ public class TbpController {
      * @throws TbpException
      */
     @PutMapping("/renameTag")
-    public ResultBean<Boolean> renameTag(@RequestBody TagRenameInfo tagRenameInfo) throws TbpException {
+    public ResultBean<Boolean> renameTag(@RequestBody TagRenameInfo tagRenameInfo) throws Exception {
         pkmFunction.renameTag(tagRenameInfo.getTag(), tagRenameInfo.getNewTag());
         return ResultBean.ok(true);
     }
@@ -130,7 +131,7 @@ public class TbpController {
      * @throws TbpException
      */
     @DeleteMapping("/deleteTag/{tag}")
-    public ResultBean<Boolean> deleteTag(@PathVariable("tag") String tag) throws TbpException {
+    public ResultBean<Boolean> deleteTag(@PathVariable("tag") String tag) throws Exception {
         pkmFunction.deleteTag(tag);
         return ResultBean.ok(true);
     }
@@ -143,7 +144,7 @@ public class TbpController {
      */
     @GetMapping("/tagMap")
     @CrossOrigin
-    public void tagMap(HttpServletResponse response) throws IOException, TbpException {
+    public void tagMap(HttpServletResponse response) throws Exception {
         ServletOutputStream outputStream = response.getOutputStream();
         pkmFunction.tagMap(outputStream);
     }

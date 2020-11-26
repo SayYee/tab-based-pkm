@@ -1,24 +1,20 @@
-package com.sayyi.software.tbp.common.action;
+package com.sayyi.software.tbp.common.flow;
 
 import com.sayyi.software.tbp.common.store.InputArchive;
 import com.sayyi.software.tbp.common.store.OutputArchive;
 import com.sayyi.software.tbp.common.store.Record;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 修改文件标签操作
  * @author SayYi
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class ModifyTagAction implements Record {
+public class ModifyTagRequest implements Record {
+
     private long id;
     private Set<String> newTags;
 

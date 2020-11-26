@@ -1,10 +1,12 @@
 package com.sayyi.software.tbp.core;
 
-import com.sayyi.software.tbp.common.FileInfo;
+import com.sayyi.software.tbp.common.flow.FileBaseInfo;
 import lombok.extern.slf4j.Slf4j;
 
 import java.awt.*;
 import java.io.*;
+import java.net.URI;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,6 +46,15 @@ public class FileManager {
     }
 
     /**
+     * 使用默认浏览器打开网页
+     * @param url
+     * @throws IOException
+     */
+    public void browse(String url) throws IOException {
+        Desktop.getDesktop().browse(URI.create(url));
+    }
+
+    /**
      * 删除文件
      * @param filePath  目标文件相对地址
      */
@@ -58,7 +69,7 @@ public class FileManager {
      * @param newName   新的文件名
      * @return  新的文件信息
      */
-    public FileInfo rename(String filePath, String newName) throws IOException {
+    public FileBaseInfo rename(String filePath, String newName) throws IOException {
         File file = new File(fileStoreDir, filePath);
         Path source = file.toPath();
         Files.move(source, source.resolveSibling(newName));
@@ -73,7 +84,7 @@ public class FileManager {
      * @return
      * @throws IOException
      */
-    public FileInfo upload(String filename, InputStream in) throws IOException {
+    public FileBaseInfo upload(String filename, InputStream in) throws IOException {
         File storePath = getStorePath();
         File target = new File(storePath, filename);
         // TODO-在这里处理文件名重复的问题，挺憨憨的。毕竟会分文件夹。
@@ -86,11 +97,30 @@ public class FileManager {
     }
 
     /**
+     * @param filename
+     * @param data
+     * @return
+     * @throws IOException
+     */
+    public FileBaseInfo upload(String filename, byte[] data) throws IOException {
+        File storePath = getStorePath();
+        File target = new File(storePath, filename);
+        if (target.exists()) {
+            throw new IOException("file already exists");
+        }
+        try (FileOutputStream output = new FileOutputStream(target);
+             FileChannel outputChannel = output.getChannel()) {
+            outputChannel.write(ByteBuffer.wrap(data));
+        }
+        return createFromFile(target);
+    }
+
+    /**
      * 将传入目标文件拷贝入文件存储系统中。按照月份，自动创建文件夹存储数据
      * 支持文件夹复制
      * @param sourceFile    目标文件绝对地址
      */
-    public FileInfo copy(String sourceFile) throws IOException {
+    public FileBaseInfo copy(String sourceFile) throws IOException {
         File source = new File(sourceFile);
 
         String filename = source.getName();
@@ -161,8 +191,8 @@ public class FileManager {
         return storePath;
     }
 
-    private FileInfo createFromFile(File file) {
-        return new FileInfo(file.getAbsolutePath().substring(absolutePathStoreDir.length()), file.getName(), System.currentTimeMillis());
+    private FileBaseInfo createFromFile(File file) {
+        return new FileBaseInfo(file.getAbsolutePath().substring(absolutePathStoreDir.length()), file.getName(), System.currentTimeMillis());
     }
 
 }

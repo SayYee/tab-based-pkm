@@ -1,6 +1,6 @@
 package com.sayyi.software.tbp.core;
 
-import com.sayyi.software.tbp.common.FileInfo;
+import com.sayyi.software.tbp.common.flow.FileBaseInfo;
 import com.sayyi.software.tbp.common.TbpConfig;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,12 +38,12 @@ public class FileManagerTest {
     @Test
     public void test() throws IOException {
         System.out.println("sourceFile: " + sourcePath);
-        FileInfo copy = fileManager.copy(sourcePath);
+        FileBaseInfo copy = fileManager.copy(sourcePath);
         System.out.println("targetFile: " + copy);
-        FileInfo renameFile = fileManager.rename(copy.getRelativePath(), "new-设计文档.md");
+        FileBaseInfo renameFile = fileManager.rename(copy.getResourcePath(), "new-设计文档.md");
         System.out.println("renameFile: " + renameFile);
 
-        fileManager.open(renameFile.getRelativePath());
+        fileManager.open(renameFile.getResourcePath());
         System.out.println("openFile: " + renameFile);
 
 //        fileManager.delete(renameFile.getRelativePath());

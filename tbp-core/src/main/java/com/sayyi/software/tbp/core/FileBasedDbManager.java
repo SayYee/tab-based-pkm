@@ -1,7 +1,7 @@
 package com.sayyi.software.tbp.core;
 
-import com.sayyi.software.tbp.common.ActionInfo;
 import com.sayyi.software.tbp.common.Snapshot;
+import com.sayyi.software.tbp.common.flow.Request;
 import com.sayyi.software.tbp.common.store.BinaryInputArchive;
 import com.sayyi.software.tbp.common.store.BinaryOutputArchive;
 import com.sayyi.software.tbp.common.store.InputArchive;
@@ -24,13 +24,13 @@ import java.util.zip.Checksum;
 public class FileBasedDbManager implements DbFunction {
 
     private static final String SNAPSHOT_FILE_PREFIX = "snapshot-";
-    private static final String ACTION_FILE_PREFIX = "action-";
+    private static final String REQUEST_FILE_PREFIX = "request-";
 
     private final String snapDir;
     private final File snapDirFile;
 
-    private File actionFile;
-    private FileOutputStream actionFileOut;
+    private File requestFile;
+    private FileOutputStream requestFileOut;
 
     public FileBasedDbManager(String snapDir) {
         this.snapDir = snapDir;
@@ -59,18 +59,17 @@ public class FileBasedDbManager implements DbFunction {
         }
     }
 
-
     @Override
-    public void storeAction(ActionInfo actionInfo) throws IOException {
-        log.debug("store action【{}】", actionInfo);
-        if (actionFile == null) {
-            final long opId = actionInfo.getOpId();
-            actionFile = new File(snapDir, ACTION_FILE_PREFIX + opId);
-            actionFileOut = new FileOutputStream(actionFile);
+    public void storeRequest(Request request) throws IOException {
+        log.debug("store request【opId={}, opType={}】", request.getOpId(), request.getOpType());
+        if (requestFile == null) {
+            final long opId = request.getOpId();
+            requestFile = new File(snapDir, REQUEST_FILE_PREFIX + opId);
+            requestFileOut = new FileOutputStream(requestFile);
         }
-        OutputArchive outputArchive = BinaryOutputArchive.getArchive(actionFileOut);
-        outputArchive.writeRecord(actionInfo);
-        actionFileOut.flush();
+        OutputArchive outputArchive = BinaryOutputArchive.getArchive(requestFileOut);
+        outputArchive.writeRecord(request);
+        requestFileOut.flush();
     }
 
     @Override
@@ -111,8 +110,8 @@ public class FileBasedDbManager implements DbFunction {
     }
 
     @Override
-    public Iterator<ActionInfo> actionIterator() throws IOException {
-        return new ActionFileIterator();
+    public Iterator<Request> requestIterator(long lastOpId) throws IOException {
+        return new RequestFileIterator(lastOpId);
     }
 
     @Override
@@ -131,13 +130,13 @@ public class FileBasedDbManager implements DbFunction {
         }
         log.debug("snapshot文件处理完毕");
 
-        log.debug("获取需要清理的action文件");
-        final File[] actionFiles = listActionFile();
+        log.debug("获取需要清理的request文件");
+        final File[] requestFiles = listRequestFile();
         File file = null;
         long nearestOpId = -1;
-        for (File actionFile : actionFiles) {
-            final long fileOpId = getFileOpId(actionFile);
-            log.debug("读取本地action文件，fileOpId={}", fileOpId);
+        for (File requestFile : requestFiles) {
+            final long fileOpId = getFileOpId(requestFile);
+            log.debug("读取本地request文件，fileOpId={}", fileOpId);
             if (fileOpId > opId) {
                 log.debug("fileOpId-{} > opId", fileOpId);
                 continue;
@@ -145,17 +144,17 @@ public class FileBasedDbManager implements DbFunction {
             if (fileOpId > nearestOpId) {
                 if (file != null) {
                     toDeleteFiles.add(file);
-                    log.debug("添加待处理action文件【{}】", file);
+                    log.debug("添加待处理request文件【{}】", file);
                 }
                 nearestOpId = fileOpId;
-                file = actionFile;
+                file = requestFile;
                 log.debug("更新 nearestOpId={}", nearestOpId);
             } else {
-                toDeleteFiles.add(actionFile);
-                log.debug("添加待处理action文件【{}】", actionFile);
+                toDeleteFiles.add(requestFile);
+                log.debug("添加待处理request文件【{}】", requestFile);
             }
         }
-        log.debug("action文件处理完毕，开始清理文件");
+        log.debug("request文件处理完毕，开始清理文件");
 
         for (File toDeleteFile : toDeleteFiles) {
             final boolean delete = toDeleteFile.delete();
@@ -167,12 +166,12 @@ public class FileBasedDbManager implements DbFunction {
         return snapDirFile.listFiles((dir, name) -> name.startsWith(SNAPSHOT_FILE_PREFIX));
     }
 
-    private File[] listActionFile() {
-        return snapDirFile.listFiles((dir, name) -> name.startsWith(ACTION_FILE_PREFIX));
+    private File[] listRequestFile() {
+        return snapDirFile.listFiles((dir, name) -> name.startsWith(REQUEST_FILE_PREFIX));
     }
 
     /**
-     * 从文件名中获取对应的opId。对于snapshot文件，获取到的是文件对应的opId。对于action，获取的是起始opId
+     * 从文件名中获取对应的opId。对于snapshot文件，获取到的是文件对应的opId。对于request，获取的是起始opId
      * @param file
      * @return
      */
@@ -182,7 +181,7 @@ public class FileBasedDbManager implements DbFunction {
         return Long.parseLong(split[1]);
     }
 
-    private class ActionFileIterator implements Iterator<ActionInfo> {
+    private class RequestFileIterator implements Iterator<Request> {
 
         private Iterator<File> fileIterator;
         private ByteArrayInputStream byteArrayInputStream;
@@ -190,23 +189,36 @@ public class FileBasedDbManager implements DbFunction {
 
         private boolean initSuccess = false;
 
-        ActionFileIterator() throws IOException {
-            init();
+        RequestFileIterator(long lastOpId) throws IOException {
+            init(lastOpId);
         }
 
         /**
          * 加载文件，寻找对应的操作
          * @throws IOException
          */
-        private void init() throws IOException {
-            File[] files = listActionFile();
+        private void init(long lastOpId) throws IOException {
+            File[] files = listRequestFile();
             if (files == null || files.length == 0) {
-                log.info("未找到action文件");
+                log.info("未找到request文件");
                 return;
             }
-            fileIterator = Arrays.stream(files)
-                    .sorted(Comparator.comparingLong(FileBasedDbManager.this::getFileOpId))
+            Iterator<File> reversedIterator = Arrays.stream(files)
+                    .sorted(Comparator.comparingLong(FileBasedDbManager.this::getFileOpId)
+                                    .reversed())
                     .iterator();
+            LinkedList<File> fileList = new LinkedList<>();
+            while (reversedIterator.hasNext()) {
+                final File next = reversedIterator.next();
+                if (getFileOpId(next) > lastOpId) {
+                    fileList.push(next);
+                } else {
+                    fileList.push(next);
+                    break;
+                }
+            }
+
+            fileIterator = fileList.iterator();
             while (fileIterator.hasNext()) {
                 loadFromNextFile();
                 if (byteArrayInputStream.available() > 0) {
@@ -224,17 +236,17 @@ public class FileBasedDbManager implements DbFunction {
         }
 
         @Override
-        public ActionInfo next() {
+        public Request next() {
             try {
                 if (!hasNext()) {
                     throw new NoSuchElementException();
                 }
-                ActionInfo actionInfo = new ActionInfo();
+                Request request = new Request();
                 if (byteArrayInputStream.available() <= 0) {
                     loadFromNextFile();
                 }
-                archive.readRecord(actionInfo);
-                return actionInfo;
+                archive.readRecord(request);
+                return request;
             } catch (IOException e) {
                 log.error("unknown error", e);
                 return null;

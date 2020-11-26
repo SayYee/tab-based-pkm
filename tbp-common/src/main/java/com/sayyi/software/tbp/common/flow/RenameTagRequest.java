@@ -1,22 +1,17 @@
-package com.sayyi.software.tbp.common.action;
+package com.sayyi.software.tbp.common.flow;
 
 import com.sayyi.software.tbp.common.store.InputArchive;
 import com.sayyi.software.tbp.common.store.OutputArchive;
 import com.sayyi.software.tbp.common.store.Record;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 
 /**
- * tag重命名action
  * @author SayYi
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class RenameTagAction implements Record {
+public class RenameTagRequest implements Record {
     private String tag;
     private String newTag;
 

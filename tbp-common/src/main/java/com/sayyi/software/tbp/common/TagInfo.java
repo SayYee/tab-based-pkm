@@ -1,4 +1,4 @@
-package com.sayyi.software.tbp.common.action;
+package com.sayyi.software.tbp.common;
 
 import com.sayyi.software.tbp.common.store.InputArchive;
 import com.sayyi.software.tbp.common.store.OutputArchive;
@@ -10,21 +10,25 @@ import lombok.NoArgsConstructor;
 import java.io.IOException;
 
 /**
- * 删除文件操作
  * @author SayYi
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DeleteAction implements Record {
-    private long id;
+public class TagInfo implements Record {
+
+    private String tag;
+    private int fileNum;
+
     @Override
     public void serialize(OutputArchive archive) throws IOException {
-        archive.writeLong(id);
+        archive.writeString(tag);
+        archive.writeInt(fileNum);
     }
 
     @Override
     public void deserialize(InputArchive archive) throws IOException {
-        id = archive.readLong();
+        tag = archive.readString();
+        fileNum = archive.readInt();
     }
 }

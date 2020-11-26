@@ -18,13 +18,10 @@
 
 package com.sayyi.software.tbp.common.store;
 
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.List;
-import java.util.TreeMap;
 
 /**
  * zookeeper的jute中拿过来的模块
@@ -37,6 +34,37 @@ public class BinaryOutputArchive implements OutputArchive {
 
     public static BinaryOutputArchive getArchive(OutputStream strm) {
         return new BinaryOutputArchive(new DataOutputStream(strm));
+    }
+
+    public static byte[] serialize(long num) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final BinaryOutputArchive archive = getArchive(outputStream);
+        archive.writeLong(num);
+        return outputStream.toByteArray();
+    }
+
+    public static byte[] serialize(String str) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final BinaryOutputArchive archive = getArchive(outputStream);
+        archive.writeString(str);
+        return outputStream.toByteArray();
+    }
+
+    public static <B extends Record> byte[] serialize(B record) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final BinaryOutputArchive archive = getArchive(outputStream);
+        archive.writeRecord(record);
+        return outputStream.toByteArray();
+    }
+
+    public static <B extends Record> byte[] serialize(Collection<B> records) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final BinaryOutputArchive archive = getArchive(outputStream);
+        archive.writeInt(records.size());
+        for (B record : records) {
+            archive.writeRecord(record);
+        }
+        return outputStream.toByteArray();
     }
 
     /**

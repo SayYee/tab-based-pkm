@@ -25,9 +25,13 @@ public class FileMetadata implements Comparable<FileMetadata>, Record {
      */
     private String filename;
     /**
-     * 文件相对路径
+     * 资源类型，会影响资源的操作方式。
      */
-    private String relativePath;
+    private int resourceType = 1;
+    /**
+     * 资源路径。如果是本地文件，则是相对路径；如果是网络资源，则是链接地址
+     */
+    private String resourcePath;
     /**
      * 标签集合
      */
@@ -51,7 +55,8 @@ public class FileMetadata implements Comparable<FileMetadata>, Record {
     public void serialize(OutputArchive archive) throws IOException {
         archive.writeLong(id);
         archive.writeString(filename);
-        archive.writeString(relativePath);
+        archive.writeInt(resourceType);
+        archive.writeString(resourcePath);
 
         archive.writeInt(tags.size());
         for (String tag : tags) {
@@ -66,7 +71,8 @@ public class FileMetadata implements Comparable<FileMetadata>, Record {
     public void deserialize(InputArchive archive) throws IOException {
         id = archive.readLong();
         filename = archive.readString();
-        relativePath = archive.readString();
+        resourceType = archive.readInt();
+        resourcePath = archive.readString();
 
         int tagSize = archive.readInt();
         tags = new HashSet<>(tagSize);

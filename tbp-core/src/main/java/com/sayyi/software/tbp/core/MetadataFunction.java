@@ -2,12 +2,12 @@ package com.sayyi.software.tbp.core;
 
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.Snapshot;
+import com.sayyi.software.tbp.common.TagInfo;
 import com.sayyi.software.tbp.common.TbpException;
-import com.sayyi.software.tbp.common.action.*;
+import com.sayyi.software.tbp.common.flow.FileBaseInfo;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -25,54 +25,51 @@ public interface MetadataFunction {
 
     /**
      * 创建文件
-     * @param createAction
+     * @param resourceType
+     * @param fileBaseInfo
      * @return
-     * @throws TbpException
      */
-    FileMetadata create(CreateAction createAction) throws TbpException;
+    FileMetadata create(int resourceType, FileBaseInfo fileBaseInfo);
 
     /**
      * 重命名文件
-     * @param renameAction
-     * @throws TbpException
+     * @param fileBaseInfo
      */
-    void rename(RenameAction renameAction) throws TbpException;
+    void rename(FileBaseInfo fileBaseInfo);
 
     /**
      * 修改文件标签
-     * @param modifyTagAction
-     * @throws TbpException
+     * @param fileId
+     * @param newTags
      */
-    void modifyTag(ModifyTagAction modifyTagAction) throws TbpException;
+    void modifyTag(long fileId, Set<String> newTags);
 
     /**
      * 打开文件
-     * @param openAction
-     * @throws TbpException
+     * @param fileId
+     * @param openTime
      */
-    void open(OpenAction openAction) throws TbpException;
+    void open(long fileId, long openTime);
 
     /**
      * 删除文件
-     * @param deleteAction
-     * @throws TbpException
+     * @param fileId
      */
-    void delete(DeleteAction deleteAction) throws TbpException;
+    void delete(long fileId);
+
 
     /**
      * 删除标签
-     * @param deleteTagAction
-     * @throws TbpException
+     * @param tag
      */
-    void deleteTag(DeleteTagAction deleteTagAction) throws TbpException;
+    void deleteTag(String tag);
 
     /**
-     * 重命名标签
-     * @param renameTagAction
-     * @throws TbpException
+     * 标签重命名
+     * @param tag
+     * @param newTag
      */
-    void renameTag(RenameTagAction renameTagAction) throws TbpException;
-
+    void renameTag(String tag, String newTag);
     /**
      * 通过id，获取文件的元数据信息
      * @param fileId    文件id
@@ -94,20 +91,19 @@ public interface MetadataFunction {
     long getNextFileId();
 
     /**
-     * 获取最近被打开的文件集合
+     * 查询资源列表
+     * @param filenameReg   资源名称匹配表达式
+     * @param tags  标签集合
      * @return
      */
-    List<FileMetadata> listRecentOpened();
+    List<FileMetadata> listResources(String filenameReg, Set<String> tags);
 
     /**
-     * 通过标签搜素文件列表
-     * @param tags  目标标签集合
-     * @param comparator    排序原则（其实没有必要，前端获取到所有数据，完全可以自己排序，毕竟本地应用，数据量不会太过头吧应该。
-     *                      出问题了再说）
-     * @return  目标文件集合
+     * 获取与传入tags关联的标签信息
+     * @param tags
+     * @return
      */
-    List<FileMetadata> listByTags(Set<String> tags, Comparator<FileMetadata> comparator);
-
+    List<TagInfo> listTags(Set<String> tags);
     /**
      * 生成标签gexf文件
      * @param out

@@ -1,11 +1,9 @@
-package com.sayyi.software.tbp.common;
+package com.sayyi.software.tbp.common.flow;
 
 import com.sayyi.software.tbp.common.store.InputArchive;
 import com.sayyi.software.tbp.common.store.OutputArchive;
 import com.sayyi.software.tbp.common.store.Record;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 
@@ -13,24 +11,19 @@ import java.io.IOException;
  * @author SayYi
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class FileInfo implements Record {
-    private String relativePath;
+public class FileWithData implements Record {
     private String filename;
-    private long modifyTime;
+    private byte[] data;
 
     @Override
     public void serialize(OutputArchive archive) throws IOException {
-        archive.writeString(relativePath);
         archive.writeString(filename);
-        archive.writeLong(modifyTime);
+        archive.writeBuffer(data);
     }
 
     @Override
     public void deserialize(InputArchive archive) throws IOException {
-        relativePath = archive.readString();
         filename = archive.readString();
-        modifyTime = archive.readLong();
+        data = archive.readBuffer();
     }
 }
