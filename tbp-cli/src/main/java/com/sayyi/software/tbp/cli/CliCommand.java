@@ -1,8 +1,9 @@
 package com.sayyi.software.tbp.cli;
 
-import com.sayyi.software.tbp.cli.util.RequestSender;
 import com.sayyi.software.tbp.common.TbpConfig;
 import com.sayyi.software.tbp.common.TbpConfigParse;
+import com.sayyi.software.tbp.nio.client.PkmFunction;
+import com.sayyi.software.tbp.nio.client.PkmMain;
 import com.sayyi.software.tbp.nio.client.TbpClient;
 import org.fusesource.jansi.AnsiConsole;
 import org.jline.console.impl.SystemRegistryImpl;
@@ -14,7 +15,8 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.widget.TailTipWidgets;
 import picocli.CommandLine;
-import picocli.CommandLine.*;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.HelpCommand;
 import picocli.shell.jline3.PicocliCommands;
 
 import java.io.IOException;
@@ -35,15 +37,15 @@ public class CliCommand {
     LineReaderImpl reader;
     PrintWriter out;
 
-    RequestSender sender;
+    PkmFunction pkm;
 
     public void setReader(LineReader reader) {
         this.reader = (LineReaderImpl) reader;
         out = reader.getTerminal().writer();
     }
 
-    public void setRequestSender(RequestSender requestSender) {
-        this.sender = requestSender;
+    public void setPkm(PkmFunction pkmFunction) {
+        this.pkm = pkmFunction;
     }
 
     private static Path workDir() {
@@ -74,8 +76,8 @@ public class CliCommand {
                         .build();
 
                 cliCommand.setReader(reader);
-                RequestSender requestSender = new RequestSender(tbpClient);
-                cliCommand.setRequestSender(requestSender);
+                PkmFunction pkmFunction = new PkmMain(tbpClient);
+                cliCommand.setPkm(pkmFunction);
 
                 TailTipWidgets widgets = new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TailTipWidgets.TipType.COMPLETER);
                 widgets.enable();

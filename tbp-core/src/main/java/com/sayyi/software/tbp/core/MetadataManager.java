@@ -10,6 +10,7 @@ import it.uniroma1.dis.wsngroup.gexf4j.core.impl.GexfImpl;
 import it.uniroma1.dis.wsngroup.gexf4j.core.impl.StaxGraphWriter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
@@ -378,6 +379,17 @@ public class MetadataManager implements MetadataFunction {
     @Override
     public void tagMap(OutputStream out) throws IOException {
         gexfGenerator.tagMap(out);
+    }
+
+    @Override
+    public byte[] tagMap() {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            gexfGenerator.tagMap(out);
+        } catch (IOException e) {
+            throw new TbpException("生成tagmap失败", e);
+        }
+        return out.toByteArray();
     }
 
     /**

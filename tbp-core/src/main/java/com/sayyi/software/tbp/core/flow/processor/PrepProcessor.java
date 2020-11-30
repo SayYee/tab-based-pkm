@@ -187,4 +187,9 @@ public class PrepProcessor implements Processor {
     public boolean listTags(Request request, Response response) {
         return true;
     }
+
+    @Override
+    public boolean tagMap(Request request, Response response) {
+        return true;
+    }
 }

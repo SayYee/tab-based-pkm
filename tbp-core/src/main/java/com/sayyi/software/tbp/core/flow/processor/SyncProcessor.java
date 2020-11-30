@@ -100,6 +100,11 @@ public class SyncProcessor implements Processor {
         return true;
     }
 
+    @Override
+    public boolean tagMap(Request request, Response response) {
+        return true;
+    }
+
     private void store(Request request) {
         try {
             dbFunction.storeRequest(request);

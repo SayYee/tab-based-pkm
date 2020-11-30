@@ -1,19 +1,16 @@
-package com.sayyi.software.tbp.core;
+package com.sayyi.software.tbp.nio.client;
 
 import com.sayyi.software.tbp.common.FileMetadata;
+import com.sayyi.software.tbp.common.TagInfo;
 import com.sayyi.software.tbp.common.TbpException;
 import com.sayyi.software.tbp.common.constant.RequestType;
 import com.sayyi.software.tbp.common.flow.*;
 import com.sayyi.software.tbp.common.store.BinaryInputArchive;
 import com.sayyi.software.tbp.common.store.BinaryOutputArchive;
+import com.sayyi.software.tbp.core.MetadataManager;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author SayYi
@@ -21,12 +18,10 @@ import java.util.Set;
 @Slf4j
 public class PkmMain implements PkmFunction {
 
-    private final MetadataFunction metadataManager;
-    private final PkmService pkmService;
+    private final TbpClient client;
 
-    public PkmMain(MetadataFunction metadataManager, PkmService pkmService) {
-        this.metadataManager = metadataManager;
-        this.pkmService = pkmService;
+    public PkmMain(TbpClient tbpClient) {
+        this.client = tbpClient;
     }
 
     @Override
@@ -47,10 +42,26 @@ public class PkmMain implements PkmFunction {
     public FileMetadata copy(String filepath, Set<String> tags) throws Exception {
         FileWithPath fileWithPath = new FileWithPath();
         fileWithPath.setFilepath(filepath);
-        fileWithPath.setTags(tags);
+        fileWithPath.setTags(tags == null ? new HashSet<>() : tags);
         byte[] serialize = BinaryOutputArchive.serialize(fileWithPath);
 
         Response response = process(RequestType.COPY, serialize);
+
+        FileMetadata fileMetadata = new FileMetadata();
+        BinaryInputArchive.deserialize(fileMetadata, response.getResult());
+        return fileMetadata;
+    }
+
+    @Override
+    public FileMetadata url(String name, String url, Set<String> tags) throws Exception {
+        FileBaseInfo fileBaseInfo = new FileBaseInfo();
+        fileBaseInfo.setFilename(name);
+        fileBaseInfo.setResourcePath(url);
+        fileBaseInfo.setTags(tags == null ? new HashSet<>() : tags);
+
+        byte[] serialize = BinaryOutputArchive.serialize(fileBaseInfo);
+
+        Response response = process(RequestType.ADD_URL, serialize);
 
         FileMetadata fileMetadata = new FileMetadata();
         BinaryInputArchive.deserialize(fileMetadata, response.getResult());
@@ -68,10 +79,30 @@ public class PkmMain implements PkmFunction {
     }
 
     @Override
+    public void addFileTag(long fileId, Set<String> newTags) throws Exception {
+        ModifyTagRequest modifyTagRequest = new ModifyTagRequest();
+        modifyTagRequest.setId(fileId);
+        modifyTagRequest.setNewTags(newTags == null ? new HashSet<>() : newTags);
+        byte[] serialize = BinaryOutputArchive.serialize(modifyTagRequest);
+
+        process(RequestType.ADD_RESOURCE_TAG, serialize);
+    }
+
+    @Override
+    public void deleteFileTag(long fileId, Set<String> newTags) throws Exception {
+        ModifyTagRequest modifyTagRequest = new ModifyTagRequest();
+        modifyTagRequest.setId(fileId);
+        modifyTagRequest.setNewTags(newTags == null ? new HashSet<>() : newTags);
+        byte[] serialize = BinaryOutputArchive.serialize(modifyTagRequest);
+
+        process(RequestType.DELETE_RESOURCE_TAG, serialize);
+    }
+
+    @Override
     public void modifyTag(long fileId, Set<String> newTags) throws Exception{
         ModifyTagRequest modifyTagRequest = new ModifyTagRequest();
         modifyTagRequest.setId(fileId);
-        modifyTagRequest.setNewTags(newTags);
+        modifyTagRequest.setNewTags(newTags == null ? new HashSet<>() : newTags);
         byte[] serialize = BinaryOutputArchive.serialize(modifyTagRequest);
 
         process(RequestType.MODIFY_RESOURCE_TAG, serialize);
@@ -107,12 +138,11 @@ public class PkmMain implements PkmFunction {
         return listByNameAndTag(singleton, null);
     }
 
-
     @Override
     public List<FileMetadata> listByNameAndTag(Set<String> tags, String filenameReg) throws Exception {
         QueryFileRequest queryFileRequest = new QueryFileRequest();
         queryFileRequest.setFilenameReg(filenameReg);
-        queryFileRequest.setTags(tags);
+        queryFileRequest.setTags(tags == null ? new HashSet<>() : tags);
         byte[] serialize = BinaryOutputArchive.serialize(queryFileRequest);
 
         Response response = process(RequestType.LIST_RESOURCES, serialize);
@@ -137,20 +167,28 @@ public class PkmMain implements PkmFunction {
     }
 
     @Override
-    public void tagMap(OutputStream out) throws Exception {
-        try {
-            metadataManager.tagMap(out);
-        } catch (IOException e) {
-            throw new TbpException("生成tagMap失败", e);
-        }
+    public List<TagInfo> listTags(Set<String> tags) throws Exception {
+        QueryTagRequest queryTagRequest = new QueryTagRequest();
+        queryTagRequest.setTags(tags == null ? new HashSet<>() : tags);
+        final byte[] serialize = BinaryOutputArchive.serialize(queryTagRequest);
+        Response response = process(RequestType.LIST_TAGS, serialize);
+
+        List<TagInfo> tagInfos = new LinkedList<>();
+        BinaryInputArchive.deserialize(tagInfos, TagInfo.class, response.getResult());
+        return tagInfos;
+    }
+
+    @Override
+    public byte[] tagMap() throws Exception {
+        Response response = process(RequestType.TAG_MAP, new byte[0]);
+        return response.getResult();
     }
 
     private Response process(int requestType, byte[] data) {
         Request request = new Request();
         request.setOpType(requestType);
         request.setData(data);
-        Response response = new Response();
-        pkmService.deal(request, response);
+        Response response = client.postRequest(request);
 
         try {
             response.waitForFinish();

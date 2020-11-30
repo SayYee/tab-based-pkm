@@ -139,4 +139,13 @@ public interface Processor {
      */
     @BindType(RequestType.LIST_TAGS)
     boolean listTags(Request request, Response response);
+
+    /**
+     * 获取tagMap
+     * @param request
+     * @param response
+     * @return
+     */
+    @BindType(RequestType.TAG_MAP)
+    boolean tagMap(Request request, Response response);
 }

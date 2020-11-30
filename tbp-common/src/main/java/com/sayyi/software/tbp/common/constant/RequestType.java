@@ -37,5 +37,8 @@ public class RequestType {
     /** 查询标签列表 */
     public static final int LIST_TAGS = 12;
 
+    /** 获取tagMap */
+    public static final int TAG_MAP = 15;
+
     private RequestType() {}
 }

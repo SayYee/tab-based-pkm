@@ -26,7 +26,7 @@
     <dependencies>
         <dependency>
             <groupId>com.sayyi.software</groupId>
-            <artifactId>tbp-core</artifactId>
+            <artifactId>tbp-nio</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>

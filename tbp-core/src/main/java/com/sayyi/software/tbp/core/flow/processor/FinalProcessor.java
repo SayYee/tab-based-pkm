@@ -202,4 +202,11 @@ public class FinalProcessor implements Processor {
         }
         return false;
     }
+
+    @Override
+    public boolean tagMap(Request request, Response response) {
+        byte[] bytes = metadataFunction.tagMap();
+        response.setResult(bytes);
+        return false;
+    }
 }

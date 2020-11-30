@@ -10,5 +10,4 @@ server:
   port: 8080
 
 tbp:
-  store-dir: C:\Users\SayYi\Desktop\temp\tbpStore
-  snap-dir: C:\Users\SayYi\Desktop\temp\tbpSnap
+  port: 9000

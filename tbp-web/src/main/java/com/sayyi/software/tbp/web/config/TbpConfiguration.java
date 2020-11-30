@@ -1,9 +1,13 @@
 package com.sayyi.software.tbp.web.config;
 
-import com.sayyi.software.tbp.common.TbpConfig;
-import com.sayyi.software.tbp.core.*;
+import com.sayyi.software.tbp.nio.client.PkmFunction;
+import com.sayyi.software.tbp.nio.client.PkmMain;
+import com.sayyi.software.tbp.nio.client.TbpClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.io.IOException;
 
 /**
  * @author SayYi
@@ -12,54 +16,18 @@ import org.springframework.context.annotation.Configuration;
 public class TbpConfiguration {
 
     @Bean
-    public PkmFunction pkmFunction(MetadataFunction metadataFunction, PkmService pkmService) {
-        return new PkmMain(metadataFunction, pkmService);
+    public PkmFunction pkmFunction(TbpClient tbpClient) {
+        return new PkmMain(tbpClient);
     }
+
+    @Value("${tbp.port}")
+    private int port;
 
     @Bean
-    public PkmService pkmService(FileManager fileManager, MetadataFunction metadataManager, DbFunction dbFunction) {
-        return new PkmServiceImpl(fileManager, metadataManager, dbFunction);
+    public TbpClient tbpClient() throws IOException {
+        TbpClient tbpClient = new TbpClient(port);
+        tbpClient.start();
+        return tbpClient;
     }
 
-    /**
-     * 这个，也可以根据需要，替换成基于数据库或者其他持久化组件实现
-     * @param tbpProperties
-     * @return
-     */
-    @Bean
-    public DbFunction dbFunction(TbpProperties tbpProperties) {
-        return new FileBasedDbManager(tbpProperties.getSnapDir());
-    }
-
-    @Bean
-    public MetadataFunction metadataFunction() {
-        return new MetadataManager();
-    }
-
-    @Bean
-    public FileManager fileManager(TbpProperties tbpProperties) {
-        return new FileManager(tbpProperties.getStoreDir());
-    }
-
-    @Bean
-    public TbpConfig tbpConfig(TbpProperties tbpProperties) {
-        return new TbpConfigImpl(tbpProperties);
-    }
-
-    private static class TbpConfigImpl implements TbpConfig {
-        TbpProperties tbpProperties;
-        TbpConfigImpl(TbpProperties tbpProperties) {
-            this.tbpProperties = tbpProperties;
-        }
-
-        @Override
-        public String getStoreDir() {
-            return tbpProperties.getStoreDir();
-        }
-
-        @Override
-        public String getSnapDir() {
-            return tbpProperties.getSnapDir();
-        }
-    }
 }

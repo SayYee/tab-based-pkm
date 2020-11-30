@@ -1,10 +1,9 @@
-package com.sayyi.software.tbp.core;
+package com.sayyi.software.tbp.nio.client;
 
 import com.sayyi.software.tbp.common.FileMetadata;
+import com.sayyi.software.tbp.common.TagInfo;
 import com.sayyi.software.tbp.common.TbpException;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Set;
@@ -34,12 +33,38 @@ public interface PkmFunction {
     FileMetadata copy(String filepath, Set<String> tags) throws Exception;
 
     /**
+     * 将url纳入管理
+     * @param name
+     * @param url
+     * @param tags
+     * @return
+     * @throws Exception
+     */
+    FileMetadata url(String name, String url, Set<String> tags) throws Exception;
+
+    /**
      * 文件重命名
      * @param fileId    文件id
      * @param newName   文件名称。不能与已有文件名重复
      * @throws TbpException
      */
     void rename(long fileId, String newName) throws Exception;
+
+    /**
+     * 添加文件标签
+     * @param fileId
+     * @param newTags
+     * @throws Exception
+     */
+    void addFileTag(long fileId, Set<String> newTags) throws Exception;
+
+    /**
+     * 删除文件标签
+     * @param fileId
+     * @param newTags
+     * @throws Exception
+     */
+    void deleteFileTag(long fileId, Set<String> newTags) throws Exception;
 
     /**
      * 修改文件标签
@@ -101,9 +126,17 @@ public interface PkmFunction {
     void renameTag(String tagName, String newName) throws Exception;
 
     /**
-     * 获取标签图信息
-     * @param out   输出流。图信息会被写入流中
-     * @throws TbpException
+     * 查询标签
+     * @param tags
+     * @return
+     * @throws Exception
      */
-    void tagMap(OutputStream out) throws Exception;
+    List<TagInfo> listTags(Set<String> tags) throws Exception;
+
+    /**
+     * 获取标签图信息
+     * @return
+     * @throws Exception
+     */
+    byte[] tagMap() throws Exception;
 }

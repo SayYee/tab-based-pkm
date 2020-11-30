@@ -124,4 +124,10 @@ public interface MetadataFunction {
      * @throws IOException
      */
     void tagMap(OutputStream out) throws IOException;
+
+    /**
+     * 生成tagMap
+     * @return
+     */
+    byte[] tagMap();
 }

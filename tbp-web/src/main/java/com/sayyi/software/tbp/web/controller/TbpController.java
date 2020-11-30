@@ -2,7 +2,7 @@ package com.sayyi.software.tbp.web.controller;
 
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.TbpException;
-import com.sayyi.software.tbp.core.PkmFunction;
+import com.sayyi.software.tbp.nio.client.PkmFunction;
 import com.sayyi.software.tbp.web.common.ResultBean;
 import com.sayyi.software.tbp.web.model.FileUpdateInfo;
 import com.sayyi.software.tbp.web.model.TagRenameInfo;
@@ -146,7 +146,9 @@ public class TbpController {
     @CrossOrigin
     public void tagMap(HttpServletResponse response) throws Exception {
         ServletOutputStream outputStream = response.getOutputStream();
-        pkmFunction.tagMap(outputStream);
+        byte[] bytes = pkmFunction.tagMap();
+        outputStream.write(bytes);
+        outputStream.flush();
     }
 
     private Set<String> tagStrToSet(String tagStr) {
