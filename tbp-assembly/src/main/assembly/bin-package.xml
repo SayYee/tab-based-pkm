@@ -1,0 +1,55 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.1.0 http://maven.apache.org/xsd/assembly-2.1.0.xsd">
+
+    <id>bin-package</id>
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+    <includeBaseDirectory>true</includeBaseDirectory>
+
+    <fileSets>
+        <fileSet>
+            <directory>${project.basedir}/../conf</directory>
+            <outputDirectory>conf</outputDirectory>
+            <fileMode>${rw.file.permission}</fileMode>
+            <directoryMode>${rwx.file.permission}</directoryMode>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}/../bin</directory>
+            <outputDirectory>bin</outputDirectory>
+            <fileMode>${rwx.file.permission}</fileMode>
+            <directoryMode>${rwx.file.permission}</directoryMode>
+        </fileSet>
+    </fileSets>
+
+    <dependencySets>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useTransitiveDependencies>true</useTransitiveDependencies>
+            <outputDirectory>lib</outputDirectory>
+            <fileMode>${rw.file.permission}</fileMode>
+            <directoryMode>${rwx.file.permission}</directoryMode>
+            <useStrictFiltering>true</useStrictFiltering>
+        </dependencySet>
+    </dependencySets>
+
+    <moduleSets>
+        <moduleSet>
+            <!-- Enable access to all projects in the current multimodule build! -->
+            <useAllReactorProjects>true</useAllReactorProjects>
+            <!-- Now, select which projects to include in this module-set. -->
+            <includes>
+                <include>com.sayyi.software:tbp-web</include>
+            </includes>
+            <binaries>
+                <!-- 这个设置为false，这样就只有项目自身的构建文件了 -->
+                <includeDependencies>false</includeDependencies>
+                <outputDirectory>web</outputDirectory>
+                <unpack>false</unpack>
+                <!-- 这个重设输出文件名 -->
+                <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
+            </binaries>
+        </moduleSet>
+    </moduleSets>
+
+</assembly>

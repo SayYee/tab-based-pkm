@@ -1,5 +1,7 @@
 package com.sayyi.software.tbp.common.store;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -10,6 +12,7 @@ import java.util.List;
  * 从 zookeeper的jute中拿过来的模块
  * @author SayYi
  */
+@Slf4j
 public class BinaryInputArchive implements InputArchive {
 
     private final DataInput in;
@@ -47,6 +50,7 @@ public class BinaryInputArchive implements InputArchive {
             archive.readRecord(record);
             collection.add(record);
         }
+        log.debug("集合反序列化结果：{}", collection);
     }
 
     /**

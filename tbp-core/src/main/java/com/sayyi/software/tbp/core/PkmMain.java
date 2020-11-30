@@ -146,7 +146,19 @@ public class PkmMain implements PkmFunction {
     }
 
     private Response process(int requestType, byte[] data) {
-        Response response = pkmService.deal(requestType, data);
+        Request request = new Request();
+        request.setOpType(requestType);
+        request.setData(data);
+        Response response = new Response();
+        pkmService.deal(request, response);
+
+        try {
+            response.waitForFinish();
+        } catch (InterruptedException e) {
+            log.warn("等待处理结果异常");
+            throw new TbpException(e);
+        }
+
         if(response.isError()) {
             throw new TbpException(response.getErrorMsg());
         }

@@ -1,0 +1,1 @@
+java -jar ../web/tbp-web.jar --spring.config.location=file:../conf/application.yml

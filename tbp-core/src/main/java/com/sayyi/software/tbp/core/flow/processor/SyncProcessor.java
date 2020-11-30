@@ -50,6 +50,18 @@ public class SyncProcessor implements Processor {
     }
 
     @Override
+    public boolean addResourceTag(Request request, Response response) {
+        store(request);
+        return true;
+    }
+
+    @Override
+    public boolean deleteResourceTag(Request request, Response response) {
+        store(request);
+        return true;
+    }
+
+    @Override
     public boolean open(Request request, Response response) {
         store(request);
         return true;

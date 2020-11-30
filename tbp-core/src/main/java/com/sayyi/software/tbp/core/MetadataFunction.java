@@ -45,6 +45,20 @@ public interface MetadataFunction {
     void modifyTag(long fileId, Set<String> newTags);
 
     /**
+     * 添加文件标签
+     * @param fileId
+     * @param addTags
+     */
+    void addFileTag(long fileId, Set<String> addTags);
+
+    /**
+     * 删除文件标签
+     * @param fileId
+     * @param deleteTags
+     */
+    void deleteFileTag(long fileId, Set<String> deleteTags);
+
+    /**
      * 打开文件
      * @param fileId
      * @param openTime

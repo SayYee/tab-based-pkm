@@ -3,7 +3,9 @@ package com.sayyi.software.tbp.common.flow;
 import com.sayyi.software.tbp.common.store.InputArchive;
 import com.sayyi.software.tbp.common.store.OutputArchive;
 import com.sayyi.software.tbp.common.store.Record;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Setter;
 
 import java.io.IOException;
 
@@ -25,6 +27,10 @@ public class Response implements Record {
      */
     private byte[] result;
 
+    /** 用来异步通知响应已经获取的。不需要进行序列哈 */
+    @Setter(AccessLevel.NONE)
+    private boolean isFinished;
+
     @Override
     public void serialize(OutputArchive archive) throws IOException {
         archive.writeBool(isError);
@@ -37,5 +43,16 @@ public class Response implements Record {
         isError = archive.readBool();
         errorMsg = archive.readString();
         result = archive.readBuffer();
+    }
+
+    public synchronized void markFinished() {
+        isFinished = true;
+        notifyAll();
+    }
+
+    public synchronized void waitForFinish() throws InterruptedException {
+        while (!isFinished) {
+            wait();
+        }
     }
 }

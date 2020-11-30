@@ -60,6 +60,24 @@ public interface Processor {
     boolean modifyResourceTag(Request request, Response response);
 
     /**
+     * 添加资源标签
+     * @param request
+     * @param response
+     * @return
+     */
+    @BindType(RequestType.ADD_RESOURCE_TAG)
+    boolean addResourceTag(Request request, Response response);
+
+    /**
+     * 删除资源标签
+     * @param request
+     * @param response
+     * @return
+     */
+    @BindType(RequestType.DELETE_RESOURCE_TAG)
+    boolean deleteResourceTag(Request request, Response response);
+
+    /**
      * 打开文件
      * @param request
      * @param response

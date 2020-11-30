@@ -148,6 +148,26 @@ public class MetadataManager implements MetadataFunction {
     }
 
     @Override
+    public void addFileTag(long fileId, Set<String> addTags) {
+        isModified = true;
+        FileMetadata fileMetadata = getFileById(fileId);
+        checkTag(addTags);
+        for (String toAddTag : addTags) {
+            addFileTag(toAddTag, fileMetadata);
+        }
+    }
+
+    @Override
+    public void deleteFileTag(long fileId, Set<String> deleteTags) {
+        isModified = true;
+        FileMetadata fileMetadata = getFileById(fileId);
+        checkTag(deleteTags);
+        for (String toRemoveTag : deleteTags) {
+            removeFileTag(toRemoveTag, fileMetadata, true);
+        }
+    }
+
+    @Override
     public void open(long fileId, long openTime) {
         isModified = true;
         FileMetadata fileMetadata = getFileById(fileId);

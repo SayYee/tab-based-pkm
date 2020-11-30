@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author SayYi
@@ -44,6 +45,9 @@ public class PkmServiceImpl implements PkmService {
         recovery();
         processorPipeline.addFirst(syncProcessor);
         processorPipeline.addFirst(prepProcessor);
+
+        ProcessorThread processorThread = new ProcessorThread();
+        processorThread.start();
     }
 
     public void recovery() {
@@ -91,13 +95,40 @@ public class PkmServiceImpl implements PkmService {
     }
 
     @Override
-    public Response deal(int requestType, byte[] data) {
-        Request request = new Request();
+    public void deal(Request request, Response response) {
         request.setOpId(nextOpId++);
-        request.setOpType(requestType);
-        request.setData(data);
-        Response response = new Response();
-        processorPipeline.deal(request, response);
-        return response;
+        requestPair.offer(new Object[]{request, response});
     }
+
+    private final LinkedBlockingQueue<Object[]> requestPair = new LinkedBlockingQueue<>();
+
+    /**
+     * 从队列中获取请求进行处理。稍微支持下并发场景好了，
+     * 毕竟设想的是可以支持多种客户端同时工作的模式，做下并发以防万一。
+     */
+    private class ProcessorThread extends Thread {
+
+        @Override
+        public void run() {
+            while (true) {
+                Response response = null;
+                try {
+                    Object[] take = requestPair.take();
+                    Request request = (Request) take[0];
+                    response = (Response) take[1];
+                    processorPipeline.deal(request, response);
+
+                    response.markFinished();
+                } catch (Exception e) {
+                    log.warn("忽略处理数据时的异常", e);
+                    if (response != null) {
+                        response.setError(true);
+                        response.setErrorMsg(e.getMessage());
+                        response.markFinished();
+                    }
+                }
+            }
+        }
+    }
+
 }

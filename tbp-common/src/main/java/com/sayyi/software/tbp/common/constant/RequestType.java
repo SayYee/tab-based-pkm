@@ -16,6 +16,10 @@ public class RequestType {
     public static final int RENAME= 4;
     /** 调整资源tag */
     public static final int MODIFY_RESOURCE_TAG = 5;
+    /** 添加资源tag */
+    public static final int ADD_RESOURCE_TAG = 13;
+    /** 删除资源tag */
+    public static final int DELETE_RESOURCE_TAG = 14;
     /** 打开资源 */
     public static final int OPEN = 6;
     /** 删除资源 */

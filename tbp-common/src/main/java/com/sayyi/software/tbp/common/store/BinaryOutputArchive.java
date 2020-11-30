@@ -18,6 +18,8 @@
 
 package com.sayyi.software.tbp.common.store;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.Collection;
@@ -27,6 +29,7 @@ import java.util.List;
  * zookeeper的jute中拿过来的模块
  * @author SayYi
  */
+@Slf4j
 public class BinaryOutputArchive implements OutputArchive {
     private ByteBuffer bb = ByteBuffer.allocate(1024);
 
@@ -54,6 +57,7 @@ public class BinaryOutputArchive implements OutputArchive {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final BinaryOutputArchive archive = getArchive(outputStream);
         archive.writeRecord(record);
+        log.debug("集合序列化结果：", outputStream.toByteArray());
         return outputStream.toByteArray();
     }
 

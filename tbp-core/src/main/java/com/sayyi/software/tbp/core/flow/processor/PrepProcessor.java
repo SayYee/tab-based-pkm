@@ -117,6 +117,16 @@ public class PrepProcessor implements Processor {
     }
 
     @Override
+    public boolean addResourceTag(Request request, Response response) {
+        return true;
+    }
+
+    @Override
+    public boolean deleteResourceTag(Request request, Response response) {
+        return true;
+    }
+
+    @Override
     public boolean open(Request request, Response response) {
         OpenRequest openRequest = new OpenRequest();
         try {

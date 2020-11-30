@@ -8,6 +8,7 @@ import com.sayyi.software.tbp.common.flow.*;
 import com.sayyi.software.tbp.common.store.BinaryInputArchive;
 import com.sayyi.software.tbp.common.store.BinaryOutputArchive;
 import com.sayyi.software.tbp.core.MetadataFunction;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
  * 操作元数据，并组装响应的处理器
  * @author SayYi
  */
+@Slf4j
 public class FinalProcessor implements Processor {
 
     private final MetadataFunction metadataFunction;
@@ -83,6 +85,30 @@ public class FinalProcessor implements Processor {
         try {
             BinaryInputArchive.deserialize(modifyTagRequest, request.getData());
             metadataFunction.modifyTag(modifyTagRequest.getId(), modifyTagRequest.getNewTags());
+        } catch (IOException e) {
+            throw new TbpException(e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean addResourceTag(Request request, Response response) {
+        ModifyTagRequest modifyTagRequest = new ModifyTagRequest();
+        try {
+            BinaryInputArchive.deserialize(modifyTagRequest, request.getData());
+            metadataFunction.addFileTag(modifyTagRequest.getId(), modifyTagRequest.getNewTags());
+        } catch (IOException e) {
+            throw new TbpException(e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean deleteResourceTag(Request request, Response response) {
+        ModifyTagRequest modifyTagRequest = new ModifyTagRequest();
+        try {
+            BinaryInputArchive.deserialize(modifyTagRequest, request.getData());
+            metadataFunction.deleteFileTag(modifyTagRequest.getId(), modifyTagRequest.getNewTags());
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -169,6 +195,7 @@ public class FinalProcessor implements Processor {
         try {
             BinaryInputArchive.deserialize(queryTagRequest, request.getData());
             List<TagInfo> tagInfos = metadataFunction.listTags(queryTagRequest.getTags());
+            log.debug("标签查询结果：{}", tagInfos);
             response.setResult(BinaryOutputArchive.serialize(tagInfos));
         } catch (IOException e) {
             throw new TbpException(e);
