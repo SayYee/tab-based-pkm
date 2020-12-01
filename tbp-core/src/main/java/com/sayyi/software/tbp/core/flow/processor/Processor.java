@@ -33,6 +33,15 @@ public interface Processor {
     boolean copy(Request request, Response response);
 
     /**
+     * 创建文件
+     * @param request
+     * @param response
+     * @return
+     */
+    @BindType(RequestType.CREATE)
+    boolean create(Request request, Response response);
+
+    /**
      * 将网络资源入库
      * @param request
      * @param response

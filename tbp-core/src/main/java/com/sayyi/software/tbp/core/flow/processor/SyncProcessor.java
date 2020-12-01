@@ -32,6 +32,12 @@ public class SyncProcessor implements Processor {
     }
 
     @Override
+    public boolean create(Request request, Response response) {
+        store(request);
+        return true;
+    }
+
+    @Override
     public boolean addUrl(Request request, Response response) {
         store(request);
         return true;

@@ -53,6 +53,20 @@ public class PkmMain implements PkmFunction {
     }
 
     @Override
+    public FileMetadata create(String filename, Set<String> tags) throws Exception {
+        FileWithPath fileWithPath = new FileWithPath();
+        fileWithPath.setFilename(filename);
+        fileWithPath.setTags(tags == null ? new HashSet<>() : tags);
+        byte[] serialize = BinaryOutputArchive.serialize(fileWithPath);
+
+        Response response = process(RequestType.CREATE, serialize);
+
+        FileMetadata fileMetadata = new FileMetadata();
+        BinaryInputArchive.deserialize(fileMetadata, response.getResult());
+        return fileMetadata;
+    }
+
+    @Override
     public FileMetadata url(String name, String url, Set<String> tags) throws Exception {
         FileBaseInfo fileBaseInfo = new FileBaseInfo();
         fileBaseInfo.setFilename(name);

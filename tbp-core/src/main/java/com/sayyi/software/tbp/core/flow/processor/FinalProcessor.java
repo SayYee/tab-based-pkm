@@ -51,6 +51,18 @@ public class FinalProcessor implements Processor {
     }
 
     @Override
+    public boolean create(Request request, Response response) {
+        try {
+            FileBaseInfo fileBaseInfo = parseFileBaseInfo(request);
+            FileMetadata fileMetadata = metadataFunction.create(ResourceType.LOCAL, fileBaseInfo);
+            response.setResult(BinaryOutputArchive.serialize(fileMetadata));
+        } catch (IOException e) {
+            throw new TbpException(e);
+        }
+        return false;
+    }
+
+    @Override
     public boolean addUrl(Request request, Response response) {
         try {
             FileBaseInfo fileBaseInfo = parseFileBaseInfo(request);

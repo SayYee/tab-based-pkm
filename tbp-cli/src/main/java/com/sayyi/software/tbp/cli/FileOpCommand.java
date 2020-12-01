@@ -22,6 +22,17 @@ public class FileOpCommand {
         PrintUtil.printFileList(cmd.out, fileMetadata);
     }
 
+    @Command(mixinStandardHelpOptions = true, name = "create", description = "创建文件加入PKM")
+    public void create(@Parameters(index = "0", description = "文件名称，需要带后缀", paramLabel = "<name>") String name,
+                       @Parameters(index = "1..*", description = "文件关联tag", paramLabel = "<tag>") Set<String> tags,
+                       @Option(names = {"--open"}, description = "是否需要打开文件") boolean needOpen) throws Exception {
+        FileMetadata fileMetadata = cmd.pkm.create(name, tags);
+        PrintUtil.printFileList(cmd.out, fileMetadata);
+        if (needOpen) {
+            cmd.pkm.open(fileMetadata.getId());
+        }
+    }
+
     @Command(mixinStandardHelpOptions = true, name = "url", description = "将url加入PKM")
     public void url(@Parameters(index = "0", description = "url名称", paramLabel = "<name>") String name,
                     @Parameters(index = "1", description = "url", paramLabel = "<url>") String url,

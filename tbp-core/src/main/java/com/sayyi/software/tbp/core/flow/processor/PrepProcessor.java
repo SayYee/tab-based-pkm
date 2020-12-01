@@ -63,6 +63,23 @@ public class PrepProcessor implements Processor {
     }
 
     @Override
+    public boolean create(Request request, Response response) {
+        FileWithPath fileWithPath = new FileWithPath();
+        try {
+            BinaryInputArchive.deserialize(fileWithPath, request.getData());
+            // 这名字……凑活着来吧
+            FileBaseInfo create = fileManager.create(fileWithPath.getFilename());
+            create.setTags(fileWithPath.getTags());
+
+            byte[] serialize = BinaryOutputArchive.serialize(create);
+            request.setData(serialize);
+            return true;
+        } catch (IOException e) {
+            throw new TbpException(e);
+        }
+    }
+
+    @Override
     public boolean addUrl(Request request, Response response) {
         FileBaseInfo fileBaseInfo = new FileBaseInfo();
         try {

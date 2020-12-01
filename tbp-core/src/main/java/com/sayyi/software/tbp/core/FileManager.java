@@ -60,6 +60,25 @@ public class FileManager {
      */
     public void delete(String filePath) throws IOException {
         File file = new File(fileStoreDir, filePath);
+        delete(file);
+    }
+
+    /**
+     * 如果file是文件夹，则递归删除文件夹下的所有文件；否则只删除文件自身
+     * @param file  目标文件
+     * @throws IOException
+     */
+    private void delete(File file) throws IOException {
+        if (!file.isDirectory()) {
+            Files.delete(file.toPath());
+            return;
+        }
+        File[] files = file.listFiles();
+        if (files != null) {
+            for (File subFile : files) {
+                delete(subFile);
+            }
+        }
         Files.delete(file.toPath());
     }
 
@@ -112,6 +131,22 @@ public class FileManager {
              FileChannel outputChannel = output.getChannel()) {
             outputChannel.write(ByteBuffer.wrap(data));
         }
+        return createFromFile(target);
+    }
+
+    /**
+     * 创建文件
+     * @param filename
+     * @return
+     * @throws IOException
+     */
+    public FileBaseInfo create(String filename) throws IOException {
+        File storePath = getStorePath();
+        File target = new File(storePath, filename);
+        if (target.exists()) {
+            throw new IOException("file already exists");
+        }
+        Files.createFile(target.toPath());
         return createFromFile(target);
     }
 

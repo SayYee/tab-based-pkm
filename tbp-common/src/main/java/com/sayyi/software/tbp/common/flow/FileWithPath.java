@@ -15,11 +15,13 @@ import java.util.Set;
 @Data
 public class FileWithPath implements Record {
 
+    private String filename;
     private String filepath;
     private Set<String> tags;
 
     @Override
     public void serialize(OutputArchive archive) throws IOException {
+        archive.writeString(filename);
         archive.writeString(filepath);
         archive.writeInt(tags.size());
         for (String tag : tags) {
@@ -29,6 +31,7 @@ public class FileWithPath implements Record {
 
     @Override
     public void deserialize(InputArchive archive) throws IOException {
+        filename = archive.readString();
         filepath = archive.readString();
         int size = archive.readInt();
         tags = new HashSet<>(size);

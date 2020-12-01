@@ -9,6 +9,8 @@ public class RequestType {
     public static final int UPLOAD = 1;
     /** 系统文件复制 */
     public static final int COPY = 2;
+    /** 创建文件 */
+    public static final int CREATE = 16;
     /** 添加网络资源 */
     public static final int ADD_URL = 3;
 

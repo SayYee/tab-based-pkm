@@ -4,7 +4,6 @@ import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.TagInfo;
 import com.sayyi.software.tbp.common.TbpException;
 
-import java.io.OutputStream;
 import java.util.List;
 import java.util.Set;
 
@@ -31,6 +30,15 @@ public interface PkmFunction {
      * @throws TbpException
      */
     FileMetadata copy(String filepath, Set<String> tags) throws Exception;
+
+    /**
+     * 创建文件
+     * @param filename  文件名称
+     * @param tags  标签
+     * @return
+     * @throws Exception
+     */
+    FileMetadata create(String filename, Set<String> tags) throws Exception;
 
     /**
      * 将url纳入管理
