@@ -1,4 +1,4 @@
-package com.sayyi.software.tbp.nio.client;
+package com.sayyi.software.tbp.core.facade;
 
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.TagInfo;
@@ -16,13 +16,7 @@ import java.util.*;
  * @author SayYi
  */
 @Slf4j
-public class PkmMain implements PkmFunction {
-
-    private final TbpClient client;
-
-    public PkmMain(TbpClient tbpClient) {
-        this.client = tbpClient;
-    }
+public abstract class AbstractPkmFunction implements PkmFunction {
 
     @Override
     public FileMetadata upload(String filename, byte[] data) throws Exception {
@@ -198,11 +192,17 @@ public class PkmMain implements PkmFunction {
         return response.getResult();
     }
 
+    /**
+     * 阻塞等待响应返回
+     * @param requestType
+     * @param data
+     * @return
+     */
     private Response process(int requestType, byte[] data) {
         Request request = new Request();
         request.setOpType(requestType);
         request.setData(data);
-        Response response = client.postRequest(request);
+        Response response = process(request);
 
         try {
             response.waitForFinish();
@@ -216,4 +216,11 @@ public class PkmMain implements PkmFunction {
         }
         return response;
     }
+
+    /**
+     * 发送请求，异步获取响应对象
+     * @param request
+     * @return  响应对象
+     */
+    protected abstract Response process(Request request);
 }

@@ -2,8 +2,8 @@ package com.sayyi.software.tbp.cli;
 
 import com.sayyi.software.tbp.common.TbpConfig;
 import com.sayyi.software.tbp.common.TbpConfigParse;
-import com.sayyi.software.tbp.nio.client.PkmFunction;
-import com.sayyi.software.tbp.nio.client.PkmMain;
+import com.sayyi.software.tbp.core.facade.PkmFunction;
+import com.sayyi.software.tbp.nio.NioPkmFunction;
 import com.sayyi.software.tbp.nio.client.TbpClient;
 import org.fusesource.jansi.AnsiConsole;
 import org.jline.console.impl.SystemRegistryImpl;
@@ -77,7 +77,7 @@ public class CliCommand {
                         .build();
 
                 cliCommand.setReader(reader);
-                PkmFunction pkmFunction = new PkmMain(tbpClient);
+                PkmFunction pkmFunction = new NioPkmFunction(tbpClient);
                 cliCommand.setPkm(pkmFunction);
 
                 TailTipWidgets widgets = new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TailTipWidgets.TipType.COMPLETER);

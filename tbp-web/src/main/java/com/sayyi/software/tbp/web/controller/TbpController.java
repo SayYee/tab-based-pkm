@@ -2,7 +2,7 @@ package com.sayyi.software.tbp.web.controller;
 
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.TbpException;
-import com.sayyi.software.tbp.nio.client.PkmFunction;
+import com.sayyi.software.tbp.core.facade.PkmFunction;
 import com.sayyi.software.tbp.web.common.ResultBean;
 import com.sayyi.software.tbp.web.model.FileUpdateInfo;
 import com.sayyi.software.tbp.web.model.TagRenameInfo;

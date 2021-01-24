@@ -10,4 +10,8 @@ server:
   port: 8080
 
 tbp:
-  port: 9000
+  nio:
+    enable: false
+    port: 9000
+  snap-dir: C:\\Users\\SayYi\\Desktop\\temp\\tbpSnap
+  store-dir: C:\\Users\\SayYi\\Desktop\\temp\\tbpStore
