@@ -72,10 +72,10 @@ public class FileOpCommand {
         cmd.out.println("success");
     }
 
-    static class Exclusive {
+    public static class Exclusive {
         @Option(names = {"--add"}, description = "添加标签", required = true)
-        boolean add;
+        public boolean add;
         @Option(names = {"--delete"}, description = "删除标签", required = true)
-        boolean delete;
+        public boolean delete;
     }
 }

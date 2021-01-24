@@ -158,7 +158,10 @@ public class TbpClient extends Thread {
     }
 
     private void doRead() throws IOException {
-        channel.read(readBuffer);
+        int rc = channel.read(readBuffer);
+        if (rc < 0) {
+            throw new IOException("连接断开");
+        }
         if (readBuffer.hasRemaining()) {
             return;
         }

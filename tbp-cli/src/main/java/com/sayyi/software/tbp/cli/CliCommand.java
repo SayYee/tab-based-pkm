@@ -31,6 +31,7 @@ import java.nio.file.Paths;
         HelpCommand.class,
         FileOpCommand.class,
         LsCommand.class,
+        TagOpCommand.class,
         UtilComand.class
 })
 public class CliCommand {
