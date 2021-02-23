@@ -42,5 +42,14 @@ public class RequestType {
     /** 获取tagMap */
     public static final int TAG_MAP = 15;
 
+    /** 获取所有的tree id */
+    public static final int LIST_TREE_IDS = 17;
+    /** 获取最新的tree数据 */
+    public static final int GET_CURRENT_TREE = 18;
+    /** 获取指定tree */
+    public static final int GET_ASSIGN_TREE = 19;
+    /** 保存tree */
+    public static final int SAVE_TREE = 20;
+
     private RequestType() {}
 }

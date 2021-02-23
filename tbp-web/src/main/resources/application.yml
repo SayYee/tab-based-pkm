@@ -7,7 +7,7 @@ spring:
     static-path-pattern: /static/**
 
 server:
-  port: 8080
+  port: 9000
 
 tbp:
   nio:
@@ -15,3 +15,4 @@ tbp:
     port: 9000
   snap-dir: C:\\Users\\SayYi\\Desktop\\temp\\tbpSnap
   store-dir: C:\\Users\\SayYi\\Desktop\\temp\\tbpStore
+  tree-retain-num: 10

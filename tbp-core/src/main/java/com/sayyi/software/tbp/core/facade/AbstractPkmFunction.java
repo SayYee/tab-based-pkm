@@ -192,6 +192,37 @@ public abstract class AbstractPkmFunction implements PkmFunction {
         return response.getResult();
     }
 
+    @Override
+    public List<Long> listTreeIds() throws Exception {
+        Response response = process(RequestType.LIST_TREE_IDS, new byte[0]);
+        TreeIdList treeIdList = new TreeIdList();
+        BinaryInputArchive.deserialize(treeIdList, response.getResult());
+        return treeIdList.getIds();
+    }
+
+    @Override
+    public String getCurrentTree() throws Exception {
+        Response response = process(RequestType.GET_CURRENT_TREE, new byte[0]);
+        final BinaryInputArchive archive = BinaryInputArchive.getArchive(response.getResult());
+        return archive.readString();
+    }
+
+    @Override
+    public String getAssignTree(long id) throws Exception {
+        final byte[] bytes = BinaryOutputArchive.serialize(id);
+        final Response response = process(RequestType.GET_ASSIGN_TREE, bytes);
+        final BinaryInputArchive archive = BinaryInputArchive.getArchive(response.getResult());
+        return archive.readString();
+    }
+
+    @Override
+    public long setTree(String treeStr) throws Exception {
+        final byte[] bytes = BinaryOutputArchive.serialize(treeStr);
+        final Response response = process(RequestType.SAVE_TREE, bytes);
+        final BinaryInputArchive archive = BinaryInputArchive.getArchive(response.getResult());
+        return archive.readLong();
+    }
+
     /**
      * 阻塞等待响应返回
      * @param requestType

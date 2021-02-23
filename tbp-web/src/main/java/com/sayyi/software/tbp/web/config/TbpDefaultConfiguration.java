@@ -22,12 +22,16 @@ public class TbpDefaultConfiguration {
     @Value("${tbp.store-dir}")
     private String storeDir;
 
+    @Value("${tbp.tree-retain-num}")
+    private int treeRetainNum;
+
     @Bean
     public PkmFunction pkmFunction() {
         FileManager fileManager = new FileManager(storeDir);
         MetadataFunction metadataFunction = new MetadataManager();
+        TagTreeManager tagTreeManager = new TagTreeManager(snapDir, treeRetainNum);
         DbFunction dbFunction = new FileBasedDbManager(snapDir);
-        PkmService pkmService = new PkmServiceImpl(fileManager, metadataFunction, dbFunction);
+        PkmService pkmService = new PkmServiceImpl(fileManager, metadataFunction, tagTreeManager, dbFunction);
         return new DefaultPkmFunction(pkmService);
     }
 }

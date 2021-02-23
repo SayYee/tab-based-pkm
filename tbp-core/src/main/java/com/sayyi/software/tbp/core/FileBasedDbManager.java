@@ -210,6 +210,7 @@ public class FileBasedDbManager implements DbFunction {
             LinkedList<File> fileList = new LinkedList<>();
             while (reversedIterator.hasNext()) {
                 final File next = reversedIterator.next();
+                // TODO opId溢出问题
                 if (getFileOpId(next) > lastOpId) {
                     fileList.push(next);
                 } else {

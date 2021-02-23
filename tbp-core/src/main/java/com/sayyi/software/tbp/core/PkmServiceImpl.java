@@ -31,14 +31,17 @@ public class PkmServiceImpl implements PkmService {
 
     private long nextOpId = 1;
 
-    public PkmServiceImpl(FileManager fileManager, MetadataFunction metadataManager, DbFunction dbFunction) {
+    public PkmServiceImpl(FileManager fileManager,
+                          MetadataFunction metadataManager,
+                          TagTreeManager tagTreeManager,
+                          DbFunction dbFunction) {
         this.fileManager = fileManager;
         this.metadataManager = metadataManager;
         this.dbFunction = dbFunction;
 
         prepProcessor = new PrepProcessor(fileManager, metadataManager);
         syncProcessor = new SyncProcessor(dbFunction);
-        finalProcessor = new FinalProcessor(metadataManager);
+        finalProcessor = new FinalProcessor(metadataManager, tagTreeManager);
         processorPipeline = new ProcessorPipeline();
 
         processorPipeline.addFirst(finalProcessor);

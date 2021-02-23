@@ -13,6 +13,7 @@ public class TbpConfigParse implements TbpConfig {
     private final int port;
     private final String snapDir;
     private final String storeDir;
+    private final int treeRetainNum;
 
     public TbpConfigParse(String configPath) throws IOException {
         File file = new File(configPath);
@@ -22,6 +23,7 @@ public class TbpConfigParse implements TbpConfig {
         port = Integer.parseInt(properties.getProperty("port"));
         storeDir = properties.getProperty("storeDir");
         snapDir = properties.getProperty("snapDir");
+        treeRetainNum = Integer.parseInt(properties.getProperty("treeRetainNum"));
     }
 
     @Override
@@ -37,5 +39,10 @@ public class TbpConfigParse implements TbpConfig {
     @Override
     public String getSnapDir() {
         return snapDir;
+    }
+
+    @Override
+    public int treeRetainNum() {
+        return treeRetainNum;
     }
 }

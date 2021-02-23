@@ -27,6 +27,10 @@ public class TbpController {
     @Autowired
     private PkmFunction pkmFunction;
 
+    @PostMapping("/copy")
+    public ResultBean<Long> copyFile(String path, String tagStr) throws Exception {
+        return copy(path, tagStr);
+    }
     /**
      * 通过输入的文件路径，将文件纳入管理。
      * 这里的path，可以是文件夹
@@ -35,11 +39,12 @@ public class TbpController {
      */
     // 用get吧，别给自己找麻烦了
     @GetMapping("/copy")
-    public ResultBean<Long> copy(String path) throws Exception {
+    public ResultBean<Long> copy(String path, String tagStr) throws Exception {
         if (null == path || "".equals(path.trim())) {
             return ResultBean.error("文件路径为空");
         }
-        FileMetadata fileMetadata = pkmFunction.copy(path, new HashSet<>());
+        Set<String> tagSet = tagStrToSet(tagStr);
+        FileMetadata fileMetadata = pkmFunction.copy(path, tagSet);
         return ResultBean.ok(fileMetadata.getId());
     }
 
@@ -52,9 +57,24 @@ public class TbpController {
      */
     @PostMapping("/upload")
     public ResultBean<Long> upload(@RequestParam("file") MultipartFile file) throws Exception {
-        file.getBytes();
         FileMetadata fileMetadata = pkmFunction.upload(file.getOriginalFilename(), file.getBytes());
         return ResultBean.ok(fileMetadata.getId());
+    }
+
+    @PostMapping("/create")
+    public ResultBean<FileMetadata> create(String filename, String tagStr) throws Exception {
+        Set<String> tagSet = tagStrToSet(tagStr);
+        FileMetadata fileMetadata = pkmFunction.create(filename, tagSet);
+        pkmFunction.open(fileMetadata.getId());
+        return ResultBean.ok(fileMetadata);
+    }
+
+    @PostMapping("/url")
+    public ResultBean<FileMetadata> url(String name, String url, String tagStr) throws Exception {
+        Set<String> tagSet = tagStrToSet(tagStr);
+        FileMetadata fileMetadata = pkmFunction.url(name, url, tagSet);
+//        pkmFunction.open(fileMetadata.getId());
+        return ResultBean.ok(fileMetadata);
     }
 
     /**
@@ -112,6 +132,12 @@ public class TbpController {
         return ResultBean.ok(true);
     }
 
+    @PutMapping("/modifyTag")
+    public ResultBean<Boolean> modifyTag(String tag, String newTag) throws Exception {
+        pkmFunction.renameTag(tag, newTag);
+        return ResultBean.ok(true);
+    }
+
     /**
      * 标签重命名。允许重命名为已经存在的标签
      * @param tagRenameInfo
@@ -143,12 +169,31 @@ public class TbpController {
      * @throws TbpException
      */
     @GetMapping("/tagMap")
-    @CrossOrigin
     public void tagMap(HttpServletResponse response) throws Exception {
         ServletOutputStream outputStream = response.getOutputStream();
         byte[] bytes = pkmFunction.tagMap();
         outputStream.write(bytes);
         outputStream.flush();
+    }
+
+    @GetMapping("/listTreeIds")
+    public ResultBean<List<Long>> listTreeIds() throws Exception {
+        return ResultBean.ok(pkmFunction.listTreeIds());
+    }
+
+    /** jstree 不支持数据的二次加工 */
+    @GetMapping("/getCurrentTree")
+    public ResultBean<String> getCurrentTree() throws Exception {
+        return ResultBean.ok(pkmFunction.getCurrentTree());
+    }
+    @GetMapping("/getAssignTree")
+    public ResultBean<String> getAssignTree(long id) throws Exception {
+        return ResultBean.ok(pkmFunction.getAssignTree(id));
+    }
+
+    @PutMapping("/setTree")
+    public ResultBean<Long> setTree(String treeStr) throws Exception {
+        return ResultBean.ok(pkmFunction.setTree(treeStr));
     }
 
     private Set<String> tagStrToSet(String tagStr) {

@@ -23,4 +23,10 @@ public interface TbpConfig {
      * @return  快照存储路径
      */
     String getSnapDir();
+
+    /**
+     * 树历史数据保留数量
+     * @return
+     */
+    int treeRetainNum();
 }

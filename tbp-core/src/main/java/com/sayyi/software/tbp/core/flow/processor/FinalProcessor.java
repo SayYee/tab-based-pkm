@@ -8,6 +8,7 @@ import com.sayyi.software.tbp.common.flow.*;
 import com.sayyi.software.tbp.common.store.BinaryInputArchive;
 import com.sayyi.software.tbp.common.store.BinaryOutputArchive;
 import com.sayyi.software.tbp.core.MetadataFunction;
+import com.sayyi.software.tbp.core.TagTreeManager;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -22,8 +23,11 @@ public class FinalProcessor implements Processor {
 
     private final MetadataFunction metadataFunction;
 
-    public FinalProcessor(MetadataFunction metadataFunction) {
+    private final TagTreeManager tagTreeManager;
+
+    public FinalProcessor(MetadataFunction metadataFunction, TagTreeManager tagTreeManager) {
         this.metadataFunction = metadataFunction;
+        this.tagTreeManager = tagTreeManager;
     }
 
     @Override
@@ -219,6 +223,56 @@ public class FinalProcessor implements Processor {
     public boolean tagMap(Request request, Response response) {
         byte[] bytes = metadataFunction.tagMap();
         response.setResult(bytes);
+        return false;
+    }
+
+    @Override
+    public boolean listTreeIds(Request request, Response response) {
+        try {
+            List<Long> ids = tagTreeManager.listIds();
+            TreeIdList treeIdList = new TreeIdList();
+            treeIdList.setIds(ids);
+            response.setResult(BinaryOutputArchive.serialize(treeIdList));
+        } catch (IOException e) {
+            throw new TbpException(e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean getCurrentTree(Request request, Response response) {
+        try {
+            final String currentTree = tagTreeManager.getCurrentTree();
+            response.setResult(BinaryOutputArchive.serialize(currentTree));
+        } catch (IOException e) {
+            throw new TbpException(e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean getAssignTree(Request request, Response response) {
+        try {
+            final BinaryInputArchive archive = BinaryInputArchive.getArchive(request.getData());
+            int id = archive.readInt();
+            final String tree = tagTreeManager.getTree(id);
+            response.setResult(BinaryOutputArchive.serialize(tree));
+        } catch (IOException e) {
+            throw new TbpException(e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean saveTree(Request request, Response response) {
+        try {
+            final BinaryInputArchive archive = BinaryInputArchive.getArchive(request.getData());
+            String treeStr = archive.readString();
+            long maxId = tagTreeManager.setTree(treeStr);
+            response.setResult(BinaryOutputArchive.serialize(maxId));
+        } catch (IOException e) {
+            throw new TbpException(e);
+        }
         return false;
     }
 }

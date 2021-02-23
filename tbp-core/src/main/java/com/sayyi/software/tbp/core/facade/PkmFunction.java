@@ -147,4 +147,32 @@ public interface PkmFunction {
      * @throws Exception
      */
     byte[] tagMap() throws Exception;
+
+    /**
+     * 获取所有tree id
+     * @return
+     * @throws Exception
+     */
+    List<Long> listTreeIds() throws Exception;
+
+    /**
+     * 获取当前tree数据
+     * @return
+     * @throws Exception
+     */
+    String getCurrentTree() throws Exception;
+
+    /**
+     * 获取指定tree数据
+     * @param id
+     * @return
+     * @throws Exception
+     */
+    String getAssignTree(long id) throws Exception;
+
+    /**
+     * 设置tree
+     * @throws Exception
+     */
+    long setTree(String treeStr) throws Exception;
 }

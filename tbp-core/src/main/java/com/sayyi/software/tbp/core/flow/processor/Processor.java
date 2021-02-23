@@ -157,4 +157,25 @@ public interface Processor {
      */
     @BindType(RequestType.TAG_MAP)
     boolean tagMap(Request request, Response response);
+
+    /** 获取tree id列表 */
+    @BindType(RequestType.LIST_TREE_IDS)
+    default boolean listTreeIds(Request request, Response response) {
+        return true;
+    }
+    /** 获取最新tree数据 */
+    @BindType(RequestType.GET_CURRENT_TREE)
+    default boolean getCurrentTree(Request request, Response response) {
+        return true;
+    }
+    /** 获取指定tree数据 */
+    @BindType(RequestType.GET_ASSIGN_TREE)
+    default boolean getAssignTree(Request request, Response response) {
+        return true;
+    }
+    /** 保存tree */
+    @BindType(RequestType.SAVE_TREE)
+    default boolean saveTree(Request request, Response response) {
+        return true;
+    }
 }
