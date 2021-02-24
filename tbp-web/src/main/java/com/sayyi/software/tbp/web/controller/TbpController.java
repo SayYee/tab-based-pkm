@@ -188,7 +188,11 @@ public class TbpController {
     }
     @GetMapping("/getAssignTree")
     public ResultBean<String> getAssignTree(long id) throws Exception {
-        return ResultBean.ok(pkmFunction.getAssignTree(id));
+        if (id == -1) {
+            return ResultBean.ok(pkmFunction.getCurrentTree());
+        } else {
+            return ResultBean.ok(pkmFunction.getAssignTree(id));
+        }
     }
 
     @PutMapping("/setTree")
