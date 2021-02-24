@@ -1,7 +1,8 @@
 layui.define(['jquery','layer'], function(exports){
     var $ = layui.jquery,layer = layui.layer
 
-    var basePath = "http://localhost:9000";
+//    var basePath = "http://localhost:9000";
+    var basePath = "";
 
     var pkm = {
         assignTree: function(id, fn) {
