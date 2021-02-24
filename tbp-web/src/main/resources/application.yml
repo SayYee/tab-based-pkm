@@ -9,6 +9,14 @@ spring:
 server:
   port: 9000
 
+logging:
+  level:
+    root: info
+    com:
+      sayyi:
+        software:
+          tbp: debug
+
 tbp:
   nio:
     enable: false

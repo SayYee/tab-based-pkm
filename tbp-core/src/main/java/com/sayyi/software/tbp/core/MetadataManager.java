@@ -251,6 +251,10 @@ public class MetadataManager implements MetadataFunction {
         if (!noTags) {
             for (String tag : tags) {
                 Map<Long, FileMetadata> map = tagFileMap.get(tag);
+                // bugfix 如果不存在该标签，直接跳过
+                if (map == null) {
+                    continue;
+                }
                 if (fileMap == null) {
                     fileMap = map;
                     continue;

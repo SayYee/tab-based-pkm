@@ -21,14 +21,13 @@ layui.config({
     var tableIns = table.render({
         elem: '#demo'
         , height: 'full-120'
-    //    , url: 'http://localhost:9000/query' //数据接口
+//        , url: 'http://localhost:9000/query' //数据接口
         , url: '/query' //数据接口
         , parseData: function (res) {
             return {
                 "code": res.code === 1 ? 0 : 1,
                 "msg": res.message,
-                "data": res.result,
-                "count": res.result.length
+                "data": res.result
             }
         }
         , page: false //开启分页
