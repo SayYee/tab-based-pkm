@@ -21,8 +21,8 @@ layui.config({
     var tableIns = table.render({
         elem: '#demo'
         , height: 'full-120'
-//        , url: 'http://localhost:9000/query' //数据接口
-        , url: '/query' //数据接口
+//         , url: 'http://localhost:9000/query' //数据接口
+       , url: '/query' //数据接口
         , parseData: function (res) {
             return {
                 "code": res.code === 1 ? 0 : 1,
@@ -94,7 +94,7 @@ layui.config({
     form.on('submit(search)', function (data) {
         var params = data.field.search.split(" ");
         var tags = params[0];
-        var filename = params[1];
+        var filename = params[1] ? params[1] : "";
         tableIns.reload({
             where: {
                 tags: tags,

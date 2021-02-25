@@ -21,7 +21,6 @@ public class FileBaseInfo implements Record {
         this.resourcePath = resourcePath;
         this.filename = filename;
         this.modifyTime = modifyTime;
-        this.tags = new HashSet<>();
     }
 
     /** 重命名操作，也用这个对象。所以把id也放进来了 */
@@ -30,7 +29,7 @@ public class FileBaseInfo implements Record {
     private String filename;
     /** 回放创建文件请求的时候，需要有时间信息 */
     private long modifyTime;
-    private Set<String> tags;
+    private Set<String> tags = new HashSet<>();
 
     @Override
     public void serialize(OutputArchive archive) throws IOException {

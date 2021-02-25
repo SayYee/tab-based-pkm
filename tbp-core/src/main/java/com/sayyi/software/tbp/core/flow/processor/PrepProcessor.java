@@ -1,6 +1,5 @@
 package com.sayyi.software.tbp.core.flow.processor;
 
-import com.sayyi.software.tbp.common.flow.FileBaseInfo;
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.TbpException;
 import com.sayyi.software.tbp.common.constant.ResourceType;
@@ -116,8 +115,7 @@ public class PrepProcessor implements Processor {
                 fileBaseInfo = new FileBaseInfo();
                 fileBaseInfo.setFilename(newName);
                 fileBaseInfo.setResourcePath(fileMetadata.getResourcePath());
-                // 重命名不更新时间
-//                fileBaseInfo.setModifyTime(System.currentTimeMillis());
+                fileBaseInfo.setModifyTime(System.currentTimeMillis());
             }
             fileBaseInfo.setFileId(id);
             byte[] serialize = BinaryOutputArchive.serialize(fileBaseInfo);
