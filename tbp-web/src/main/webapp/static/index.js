@@ -21,8 +21,12 @@ layui.config({
     var tableIns = table.render({
         elem: '#demo'
         , height: 'full-120'
-//         , url: 'http://localhost:9000/query' //数据接口
-       , url: '/query' //数据接口
+        // , url: 'http://localhost:9000/query' //数据接口
+        , url: '/query' //数据接口
+        , initSort: {
+            field: 'filename' //排序字段，对应 cols 设定的各字段名
+            , type: 'asc' //排序方式  asc: 升序、desc: 降序、null: 默认排序
+        }
         , parseData: function (res) {
             return {
                 "code": res.code === 1 ? 0 : 1,
@@ -33,10 +37,12 @@ layui.config({
         , page: false //开启分页
         , cols: [[ //表头
             { field: 'id', title: 'ID', width: 80 }
-            , { field: 'filename', title: '文件名称', sort: true}
-            , { field: 'resourceType', title: '类型', align: 'center', width: 80, sort: true, templet: function(d){
-                return d.resourceType === 1 ? '<i class="layui-icon">&#xe621;</i>' : '<i class="layui-icon">&#xe64c;</i>'
-            }}
+            , { field: 'filename', title: '文件名称', sort: true }
+            , {
+                field: 'resourceType', title: '类型', align: 'center', width: 80, sort: true, templet: function (d) {
+                    return d.resourceType === 1 ? '<i class="layui-icon">&#xe621;</i>' : '<i class="layui-icon">&#xe64c;</i>'
+                }
+            }
             , { field: 'resourcePath', title: '资源定位' }
             , { field: 'tags', title: '标签', align: 'center', templet: '#tagList' }
             , { field: 'createTime', title: '创建时间', width: 180, sort: true, templet: '<div>{{layui.util.toDateString(d.createTime, "yyyy-MM-dd HH:mm:ss")}}</div>' }
@@ -181,11 +187,11 @@ layui.config({
 
     //	// ajax demo
     $('#jstree_demo_div')
-    // 点击节点进行搜索
+        // 点击节点进行搜索
         .on("activate_node.jstree", function (e, data) {
             var array = [];
             array.unshift(data.node.text);
-            data.node.parents.forEach(function(item, index){
+            data.node.parents.forEach(function (item, index) {
                 var text = data.instance.get_node(item).text;
                 if (text) {
                     array.unshift(text);
@@ -198,12 +204,12 @@ layui.config({
             $('#search').click();
         })
         // 进行修改时，展示小黄点 对应的事件说明：https://www.jstree.com.cn/api.html#/?q=.jstree%20Event&f=create_node.jstree
-        .on("create_node.jstree rename_node.jstree delete_node.jstree move_node.jstree copy_node.jstree cut.jstree copy.jstree paste.jstree", function(e, data){
+        .on("create_node.jstree rename_node.jstree delete_node.jstree move_node.jstree copy_node.jstree cut.jstree copy.jstree paste.jstree", function (e, data) {
             $("#saveTree").children("span").css("display", "inherit");
             $("#saveTree").attr('disabled', false);
         })
         // 数据加载完成后，展开所有节点
-        .on("ready.jstree", function(e, data){
+        .on("ready.jstree", function (e, data) {
             $('#jstree_demo_div').jstree(true).open_all()
         })
         .jstree({
@@ -216,10 +222,10 @@ layui.config({
             },
             'core': {
                 'check_callback': true,
-                'data': function(obj, callback) {
+                'data': function (obj, callback) {
                     var value;
                     // 这个方法，改成同步的。
-                    pkm.currentTree(function(res){
+                    pkm.currentTree(function (res) {
                         value = res;
                     });
                     callback.call(this, JSON.parse(value.result));
@@ -237,23 +243,23 @@ layui.config({
     });
 
     // 树操作功能按钮
-    $("#saveTree").attr('disabled',true);
-    $('#saveTree').click(function() {
+    $("#saveTree").attr('disabled', true);
+    $('#saveTree').click(function () {
         $('#jstree_demo_div').jstree(true).open_all()
-        var content = $('#jstree_demo_div').jstree(true).get_json('#',{
+        var content = $('#jstree_demo_div').jstree(true).get_json('#', {
             no_state: true,
             no_data: true,
             no_li_attr: true,
             no_a_attr: true,
             flat: false
         });
-        pkm.saveTree(JSON.stringify(content), function(res) {
+        pkm.saveTree(JSON.stringify(content), function (res) {
             $("#saveTree").children("span").css("display", "none");
             $("#saveTree").attr('disabled', true);
             $('#jstree_demo_div').jstree(true).refresh();
         });
     });
-    $("#refreshTree").click(function() {
+    $("#refreshTree").click(function () {
         $("#saveTree").children("span").css("display", "none");
         $("#saveTree").attr('disabled', true);
         $('#jstree_demo_div').jstree(true).refresh();
@@ -262,10 +268,10 @@ layui.config({
     // TODO 后续实现根据滑块调整tree版本的功能
     var sliderIns = slider.render({
         elem: '#slideTest'
-        ,min: 1 //最小值
-        ,max: 10 //最大值
-        ,showstep: true
-        ,change: function(value) {
+        , min: 1 //最小值
+        , max: 10 //最大值
+        , showstep: true
+        , change: function (value) {
             console.log(value);
         }
     });

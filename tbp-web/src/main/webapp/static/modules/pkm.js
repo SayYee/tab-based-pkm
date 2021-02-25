@@ -1,11 +1,11 @@
-layui.define(['jquery','layer'], function(exports){
-    var $ = layui.jquery,layer = layui.layer
+layui.define(['jquery', 'layer'], function (exports) {
+    var $ = layui.jquery, layer = layui.layer
 
-//     var basePath = "http://localhost:9000";
-   var basePath = "";
+    // var basePath = "http://localhost:9000";
+    var basePath = "";
 
     var pkm = {
-        assignTree: function(id, fn) {
+        assignTree: function (id, fn) {
             var self = this;
             self.sendRequest({
                 url: basePath + "/getAssignTree",
@@ -16,7 +16,7 @@ layui.define(['jquery','layer'], function(exports){
                 callback: fn
             })
         },
-        currentTree: function(fn) {
+        currentTree: function (fn) {
             var self = this;
             self.sendRequest({
                 url: basePath + "/getCurrentTree",
@@ -25,7 +25,7 @@ layui.define(['jquery','layer'], function(exports){
                 callback: fn
             })
         },
-        saveTree: function(treeStr, fn) {
+        saveTree: function (treeStr, fn) {
             var self = this;
             self.sendRequest({
                 url: basePath + "/setTree",
@@ -37,7 +37,7 @@ layui.define(['jquery','layer'], function(exports){
             })
         },
         // 将本地文件纳入pkm
-        copy: function(path, tagStr, fn) {
+        copy: function (path, tagStr, fn) {
             var self = this;
             self.sendRequest({
                 url: basePath + "/copy",
@@ -50,7 +50,7 @@ layui.define(['jquery','layer'], function(exports){
             })
         },
         // 创建并打开文件
-        create: function(filename, tagStr, fn) {
+        create: function (filename, tagStr, fn) {
             var self = this;
             self.sendRequest({
                 url: basePath + "/create",
@@ -63,7 +63,7 @@ layui.define(['jquery','layer'], function(exports){
             })
         },
         // url加入pkm
-        url: function(name, url, tagStr, fn) {
+        url: function (name, url, tagStr, fn) {
             var self = this;
             self.sendRequest({
                 url: basePath + "/url",
@@ -77,7 +77,7 @@ layui.define(['jquery','layer'], function(exports){
             })
         },
         // 打开文件
-        open: function(id, fn) {
+        open: function (id, fn) {
             var self = this;
             self.sendRequest({
                 url: basePath + "/open/" + id,
@@ -86,7 +86,7 @@ layui.define(['jquery','layer'], function(exports){
             })
         },
         // 更新元数据
-        update: function(id, newName, tags, fn) {
+        update: function (id, newName, tags, fn) {
             var self = this;
             self.sendRequest({
                 url: basePath + "/update",
@@ -101,7 +101,7 @@ layui.define(['jquery','layer'], function(exports){
             })
         },
         // 删除数据
-        delete: function(id, fn) {
+        delete: function (id, fn) {
             var self = this;
             self.sendRequest({
                 url: basePath + "/delete/" + id,
@@ -110,7 +110,7 @@ layui.define(['jquery','layer'], function(exports){
             })
         },
         // 重命名标签
-        modifyTag: function(tag, newTag, fn) {
+        modifyTag: function (tag, newTag, fn) {
             var self = this;
             self.sendRequest({
                 url: basePath + "/modifyTag",
@@ -123,7 +123,7 @@ layui.define(['jquery','layer'], function(exports){
             })
         },
         // 删除标签
-        deleteTag: function(tag, fn) {
+        deleteTag: function (tag, fn) {
             var self = this;
             self.sendRequest({
                 url: basePath + "/deleteTag/" + tag,
@@ -132,7 +132,7 @@ layui.define(['jquery','layer'], function(exports){
             });
         },
         // ajax发送方法
-        sendRequest: function(options, fn) {
+        sendRequest: function (options, fn) {
             var self = this;
             $.ajax({
                 url: options.url,
@@ -140,29 +140,29 @@ layui.define(['jquery','layer'], function(exports){
                 data: options.data,
                 contentType: options.contentType,
                 async: options.async,
-                beforeSend: function() {
-                    layer.msg('加载中', {icon: 16,shade: 0.01});
+                beforeSend: function () {
+                    layer.msg('加载中', { icon: 16, shade: 0.01 });
                     return true;
                 },
-                complete: function() {
+                complete: function () {
                     // layer.closeAll('loading');
                     layer.closeAll();
                 },
-                success: function(res) {
+                success: function (res) {
                     self.successResDeal(res, options.callback);
                 },
-                error: function(res) {
-                    layer.msg("操作异常", {icon: 5});
+                error: function (res) {
+                    layer.msg("操作异常", { icon: 5 });
                 }
             });
         },
         // 处理ajax成功回调事件
-        successResDeal: function(res, fn) {
-            fn = fn || function(res){layer.msg('操作成功', {icon: 1})};
+        successResDeal: function (res, fn) {
+            fn = fn || function (res) { layer.msg('操作成功', { icon: 1 }) };
             if (res.code === 1) {
                 fn(res);
             } else {
-                layer.msg("操作异常：" + res.message, {icon: 5});
+                layer.msg("操作异常：" + res.message, { icon: 5 });
             }
         }
     }
