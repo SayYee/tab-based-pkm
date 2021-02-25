@@ -131,6 +131,7 @@ layui.define(['jquery','layer'], function(exports){
                 callback: fn
             });
         },
+        // ajax发送方法
         sendRequest: function(options, fn) {
             var self = this;
             $.ajax({
@@ -161,7 +162,7 @@ layui.define(['jquery','layer'], function(exports){
             if (res.code === 1) {
                 fn(res);
             } else {
-                layer.msg("操作异常：" + msg.message, {icon: 5});
+                layer.msg("操作异常：" + res.message, {icon: 5});
             }
         }
     }

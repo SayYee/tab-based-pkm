@@ -33,8 +33,10 @@ layui.config({
         , page: false //开启分页
         , cols: [[ //表头
             { field: 'id', title: 'ID', width: 80 }
-            , { field: 'filename', title: '文件名称' }
-            , { field: 'resourceType', title: '类型', width: 80, sort: true }
+            , { field: 'filename', title: '文件名称', sort: true}
+            , { field: 'resourceType', title: '类型', align: 'center', width: 80, sort: true, templet: function(d){
+                return d.resourceType === 1 ? '<i class="layui-icon">&#xe621;</i>' : '<i class="layui-icon">&#xe64c;</i>'
+            }}
             , { field: 'resourcePath', title: '资源定位' }
             , { field: 'tags', title: '标签', align: 'center', templet: '#tagList' }
             , { field: 'createTime', title: '创建时间', width: 180, sort: true, templet: '<div>{{layui.util.toDateString(d.createTime, "yyyy-MM-dd HH:mm:ss")}}</div>' }
@@ -90,9 +92,13 @@ layui.config({
 
     // 查询表单
     form.on('submit(search)', function (data) {
+        var params = data.field.search.split(" ");
+        var tags = params[0];
+        var filename = params[1];
         tableIns.reload({
             where: {
-                tags: data.field.search
+                tags: tags,
+                filename: filename
             }
         });
         return false;
@@ -160,6 +166,8 @@ layui.config({
     // 复制文件
     form.on('submit(copyFile)', function (data) {
         var path = data.field.path;
+        // 通过 shift+右键 复制的路径带有引号，需要去掉
+        path = path.replaceAll("\"", "");
         var tagStr = tag.data('copyFileTags').join('.');
 
         pkm.copy(path, tagStr, function (res) {
