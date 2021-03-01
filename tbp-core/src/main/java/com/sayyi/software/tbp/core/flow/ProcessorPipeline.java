@@ -70,9 +70,7 @@ public class ProcessorPipeline {
             response.setError(true);
             response.setErrorMsg("方法调用异常");
         } catch (InvocationTargetException e) {
-            final Throwable sourceCause = ((UndeclaredThrowableException) e.getCause())
-                    .getUndeclaredThrowable()
-                    .getCause();
+            final Throwable sourceCause = e.getCause();
             log.error("方法处理失败", sourceCause);
             response.setError(true);
             response.setErrorMsg(sourceCause.getMessage());
@@ -112,19 +110,23 @@ public class ProcessorPipeline {
                     return toString();
                 default:
             }
-
-            long startTime = System.currentTimeMillis();
-            final Iterator<Processor> iterator = processors.iterator();
-            boolean processResult = true;
-            while (iterator.hasNext()) {
-                final Processor next = iterator.next();
-                processResult = (boolean) method.invoke(next, args);
-                if (!processResult) {
-                    break;
+            try {
+                long startTime = System.currentTimeMillis();
+                final Iterator<Processor> iterator = processors.iterator();
+                boolean processResult = true;
+                while (iterator.hasNext()) {
+                    final Processor next = iterator.next();
+                    // 为了外侧能够正常捕获异常，需要在这里调用是，捕获这个invoke抛出的异常
+                    processResult = (boolean) method.invoke(next, args);
+                    if (!processResult) {
+                        break;
+                    }
                 }
+                log.debug("{} method use time {}ms", method.getName(), System.currentTimeMillis() - startTime);
+                return processResult;
+            } catch (InvocationTargetException e) {
+                throw e.getCause();
             }
-            log.debug("{} method use time {}ms", method.getName(), System.currentTimeMillis() - startTime);
-            return processResult;
         }
 
         @Override
