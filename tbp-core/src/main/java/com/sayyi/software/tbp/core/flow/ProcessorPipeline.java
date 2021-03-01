@@ -5,10 +5,7 @@ import com.sayyi.software.tbp.common.flow.Response;
 import com.sayyi.software.tbp.core.flow.processor.Processor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.util.*;
 
 /**
@@ -68,10 +65,17 @@ public class ProcessorPipeline {
         }
         try {
             method.invoke(proxyProcessor, request, response);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            log.error("deal error", e);
+        } catch (IllegalAccessException e) {
+            log.error("方法调用异常", e);
             response.setError(true);
-            response.setErrorMsg(e.getMessage());
+            response.setErrorMsg("方法调用异常");
+        } catch (InvocationTargetException e) {
+            final Throwable sourceCause = ((UndeclaredThrowableException) e.getCause())
+                    .getUndeclaredThrowable()
+                    .getCause();
+            log.error("方法处理失败", sourceCause);
+            response.setError(true);
+            response.setErrorMsg(sourceCause.getMessage());
         }
     }
 

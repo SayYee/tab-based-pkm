@@ -34,6 +34,12 @@ public class MetadataManager implements MetadataFunction {
      * 最近被打开 标签
      */
     public static final String RECENT_OPENED_TAG = "RECENT_MODIFIED";
+    private static final Set<String> SPECIAL_TAG_SET;
+    static {
+        SPECIAL_TAG_SET = new HashSet<>();
+        SPECIAL_TAG_SET.add(EMPTY_TAG);
+        SPECIAL_TAG_SET.add(RECENT_OPENED_TAG);
+    }
     /** 最近打开 标签允许关联的文件上限 */
     private static final int OPENED_TAG_LIMIT = 20;
 
@@ -85,12 +91,13 @@ public class MetadataManager implements MetadataFunction {
         fileMetadataList.add(fileMetadata);
 
         Set<String> tags = fileBaseInfo.getTags();
+        removeSpecialTag(tags);
         for (String tag : tags) {
-            addFileTag(tag, fileMetadata);
+            addTag(tag, fileMetadata);
         }
         // 通过流上传文件时，初始没有标签，所以把这个打上，就可以快速在列表中展示这个文件了
         // 逻辑上来说，感觉也没问题来着。
-        addFileTag(RECENT_OPENED_TAG, fileMetadata);
+        addTag(RECENT_OPENED_TAG, fileMetadata);
 
         log.debug("添加文件【{}】", fileMetadata);
         return fileMetadata;
@@ -135,16 +142,15 @@ public class MetadataManager implements MetadataFunction {
             }
             toAddTags.add(newTag);
         }
-        // 也许应该改成忽略，而不是报错来着。
+        removeSpecialTag(toRemoveTags);
+        removeSpecialTag(toAddTags);
         log.debug("to remove tags【{}】", toRemoveTags);
         log.debug("to add tags【{}】", toAddTags);
-        checkTag(toRemoveTags);
-        checkTag(toAddTags);
         for (String toAddTag : toAddTags) {
-            addFileTag(toAddTag, fileMetadata);
+            addTag(toAddTag, fileMetadata);
         }
         for (String toRemoveTag : toRemoveTags) {
-            removeFileTag(toRemoveTag, fileMetadata, true);
+            removeTag(toRemoveTag, fileMetadata, true);
         }
     }
 
@@ -152,9 +158,9 @@ public class MetadataManager implements MetadataFunction {
     public void addFileTag(long fileId, Set<String> addTags) {
         isModified = true;
         FileMetadata fileMetadata = getFileById(fileId);
-        checkTag(addTags);
+        removeSpecialTag(addTags);
         for (String toAddTag : addTags) {
-            addFileTag(toAddTag, fileMetadata);
+            addTag(toAddTag, fileMetadata);
         }
     }
 
@@ -162,9 +168,9 @@ public class MetadataManager implements MetadataFunction {
     public void deleteFileTag(long fileId, Set<String> deleteTags) {
         isModified = true;
         FileMetadata fileMetadata = getFileById(fileId);
-        checkTag(deleteTags);
+        removeSpecialTag(deleteTags);
         for (String toRemoveTag : deleteTags) {
-            removeFileTag(toRemoveTag, fileMetadata, true);
+            removeTag(toRemoveTag, fileMetadata, true);
         }
     }
 
@@ -173,7 +179,7 @@ public class MetadataManager implements MetadataFunction {
         isModified = true;
         FileMetadata fileMetadata = getFileById(fileId);
         fileMetadata.setLastOpenTime(openTime);
-        addFileTag(RECENT_OPENED_TAG, fileMetadata);
+        addTag(RECENT_OPENED_TAG, fileMetadata);
     }
 
     @Override
@@ -185,20 +191,23 @@ public class MetadataManager implements MetadataFunction {
 
         Set<String> tags = new HashSet<>(fileMetadata.getTags());
         for (String tag : tags) {
-            removeFileTag(tag, fileMetadata, false);
+            removeTag(tag, fileMetadata, false);
         }
     }
 
     @Override
     public void deleteTag(String tag) {
         isModified = true;
-        checkTag(tag);
+        if (isSpecialTag(tag)) {
+            log.warn("特殊标签不能被修改【{}】", tag);
+            return;
+        }
         Map<Long, FileMetadata> metadataMap = tagFileMap.get(tag);
         // 遍历同时修改集合，只能通过迭代器来处理来着。
         // 怎么办呢？只能重新组装一个集合出来才行了。
         Set<FileMetadata> toModify = new HashSet<>(metadataMap.size());
         toModify.addAll(metadataMap.values());
-        toModify.forEach(file -> removeFileTag(tag, file, true));
+        toModify.forEach(file -> removeTag(tag, file, true));
     }
 
     @Override
@@ -208,15 +217,17 @@ public class MetadataManager implements MetadataFunction {
             log.info("标签没有发生变化");
             return;
         }
-        checkTag(tag);
-        checkTag(newTag);
+        if (isSpecialTag(tag) || isSpecialTag(newTag)) {
+            log.warn("特殊标签不能被修改【{}，{}】", tag, newTag);
+            return;
+        }
 
         Map<Long, FileMetadata> metadataMap = tagFileMap.get(tag);
         Set<FileMetadata> toModify = new HashSet<>(metadataMap.size());
         toModify.addAll(metadataMap.values());
         toModify.forEach(file -> {
-            removeFileTag(tag, file, false);
-            addFileTag(newTag, file);
+            removeTag(tag, file, false);
+            addTag(newTag, file);
         });
     }
 
@@ -307,16 +318,16 @@ public class MetadataManager implements MetadataFunction {
                 .collect(Collectors.toList());
     }
 
-    private void checkTag(Set<String> tags) throws TbpException {
-        if (tags.contains(EMPTY_TAG) || tags.contains(RECENT_OPENED_TAG)) {
-            throw new TbpException("特殊标签不能进行操作");
+    private void removeSpecialTag(Set<String> tags) throws TbpException {
+        if (tags.removeAll(SPECIAL_TAG_SET)) {
+            log.warn("特殊标签不能被更改：{}", SPECIAL_TAG_SET);
         }
     }
-    private void checkTag(String tagName) throws TbpException {
-        if (EMPTY_TAG.equals(tagName) || RECENT_OPENED_TAG.equals(tagName)) {
-            throw new TbpException("特殊标签不能进行操作");
-        }
+
+    private boolean isSpecialTag(String tagName) {
+        return SPECIAL_TAG_SET.contains(tagName);
     }
+
     /**
      * 和下边的方法，一起进行特殊标签的处理
      * 删除文件的某个标签
@@ -324,7 +335,7 @@ public class MetadataManager implements MetadataFunction {
      * @param fileMetadata
      * @param checkEmpty 是否要进行无标签校验。主要是为了删除文件时，清理标签的场景。一般就是true就可以
      */
-    private void removeFileTag(String tagName, FileMetadata fileMetadata, boolean checkEmpty) {
+    private void removeTag(String tagName, FileMetadata fileMetadata, boolean checkEmpty) {
         final Map<Long, FileMetadata> metadataMap = tagFileMap.get(tagName);
         metadataMap.remove(fileMetadata.getId());
         fileMetadata.getTags().remove(tagName);
@@ -336,7 +347,7 @@ public class MetadataManager implements MetadataFunction {
         
         // 如果空了，就添加 空 标签
         if (checkEmpty && fileMetadata.getTags().isEmpty()) {
-            addFileTag(EMPTY_TAG, fileMetadata);
+            addTag(EMPTY_TAG, fileMetadata);
             log.info("文件【{}-{}】添加空标签", fileMetadata.getId(), fileMetadata.getFilename());
         }
     }
@@ -346,7 +357,7 @@ public class MetadataManager implements MetadataFunction {
      * @param tagName
      * @param fileMetadata
      */
-    private void addFileTag(String tagName, FileMetadata fileMetadata) {
+    private void addTag(String tagName, FileMetadata fileMetadata) {
         final Map<Long, FileMetadata> metadataMap = tagFileMap.computeIfAbsent(tagName, o -> new HashMap<>());
         metadataMap.put(fileMetadata.getId(), fileMetadata);
         if (fileMetadata.getTags() == null) {
@@ -358,7 +369,7 @@ public class MetadataManager implements MetadataFunction {
         boolean needDropEmptyTag = fileMetadata.getTags().contains(EMPTY_TAG) && fileMetadata.getTags().size() > 1;
         if (needDropEmptyTag) {
             // 这里 true或者false没什么区别
-            removeFileTag(EMPTY_TAG, fileMetadata, true);
+            removeTag(EMPTY_TAG, fileMetadata, true);
             log.info("移除文件【{}-{}】空标签", fileMetadata.getId(), fileMetadata.getFilename());
         }
 
@@ -369,7 +380,7 @@ public class MetadataManager implements MetadataFunction {
                 // 获取打开时间最小的文件
                 Optional<FileMetadata> first = metadataMap.values().stream()
                         .min(Comparator.comparingLong(FileMetadata::getLastOpenTime));
-                removeFileTag(RECENT_OPENED_TAG, first.get(), true);
+                removeTag(RECENT_OPENED_TAG, first.get(), true);
                 log.info("移除文件【{}-{}】的最近打开标签", first.get().getId(), first.get().getFilename());
             }
         }
