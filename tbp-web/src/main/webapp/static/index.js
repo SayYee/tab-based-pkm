@@ -20,7 +20,7 @@ layui.config({
     //列表实例
     var tableIns = table.render({
         elem: '#demo'
-        , height: 'full-120'
+        , height: 'full-160'
         // , url: 'http://localhost:9000/query' //数据接口
         , url: '/query' //数据接口
         , initSort: {
@@ -275,4 +275,54 @@ layui.config({
             console.log(value);
         }
     });
+
+    // cmd命令输入窗口
+    $("#cmdBtn").click(function() {
+        layer.open({
+            type: 1,
+            title: 'cmd',
+            area: '100%',
+            offset: 'b', //锁定下侧
+            anim: 2,   // 2：从下滑入 -1：关闭弹出动画
+            isOutAnim: false,   // 关闭 退出动画
+            shadeClose: true,   // 点击遮罩层关闭
+            move: false,    // 禁止移动
+            content: $('#cmdwin') //这里content是一个DOM，注意：最好该元素要存放在body最外层，否则可能被其它的相对元素所影响
+            , success : function() {
+                $('#cmdInput').focus();
+            }
+        });
+    });
+    var cmdExec = function() {
+        var cmdStr = $("#cmdInput").val();
+        pkm.cmd(cmdStr, function (res) {
+            $("#cmdResult").val(cmdStr + "\n>" + JSON.stringify(res));
+        });
+    };
+    $("#cmdInput").keypress(function(event){
+        if (event.keyCode === 13) {
+            cmdExec();
+        }
+    });
+
+
+    // cmd命令下拉框的初始化
+    var cmdSelectInit = function(selectId) {
+        pkm.cmdInfo(function(res) {
+            $(selectId).empty();
+            $(selectId).append("<option value='' title=''>选择一个命令</option>");
+            var result = res.result;
+            for(var key in result) {
+                $(selectId).append("<option value='"+ key +"' title='" + result[key] + "'>" + key + "</option>");
+            }
+            form.render();
+        })
+    }
+    cmdSelectInit('#cmdInfoSelect');
+    form.on('select(cmdSelect)', function(data){
+        var title = $("#cmdInfoSelect").find("option[value='"+data.value+"']").attr('title');
+        $("#cmdResult").val(title);
+        $("#cmdInput").val(data.value + " ");
+        $('#cmdInput').focus();
+      }); 
 });

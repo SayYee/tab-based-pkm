@@ -127,31 +127,11 @@ public class MetadataManager implements MetadataFunction {
     public void modifyTag(long fileId, Set<String> newTags) {
         isModified = true;
         FileMetadata fileMetadata = getFileById(fileId);
-
-        Set<String> toAddTags = new HashSet<>();
-        Set<String> toRemoveTags = new HashSet<>();
-        for (String tag : fileMetadata.getTags()) {
-            if (newTags.contains(tag)) {
-                continue;
-            }
-            toRemoveTags.add(tag);
-        }
-        for (String newTag : newTags) {
-            if (fileMetadata.getTags().contains(newTag)) {
-                continue;
-            }
-            toAddTags.add(newTag);
-        }
-        removeSpecialTag(toRemoveTags);
-        removeSpecialTag(toAddTags);
-        log.debug("to remove tags【{}】", toRemoveTags);
-        log.debug("to add tags【{}】", toAddTags);
-        for (String toAddTag : toAddTags) {
-            addTag(toAddTag, fileMetadata);
-        }
-        for (String toRemoveTag : toRemoveTags) {
-            removeTag(toRemoveTag, fileMetadata, true);
-        }
+        Set<String> tags = fileMetadata.getTags();
+        Set<String> toAddTags = newTags.stream().filter(s -> !tags.contains(s)).collect(Collectors.toSet());
+        Set<String> toRemoveTags = tags.stream().filter(s -> !newTags.contains(s)).collect(Collectors.toSet());
+        addFileTag(fileId, toAddTags);
+        deleteFileTag(fileId, toRemoveTags);
     }
 
     @Override
@@ -159,6 +139,7 @@ public class MetadataManager implements MetadataFunction {
         isModified = true;
         FileMetadata fileMetadata = getFileById(fileId);
         removeSpecialTag(addTags);
+        log.debug("to add tags【{}】", addTags);
         for (String toAddTag : addTags) {
             addTag(toAddTag, fileMetadata);
         }
@@ -169,6 +150,7 @@ public class MetadataManager implements MetadataFunction {
         isModified = true;
         FileMetadata fileMetadata = getFileById(fileId);
         removeSpecialTag(deleteTags);
+        log.debug("to remove tags【{}】", deleteTags);
         for (String toRemoveTag : deleteTags) {
             removeTag(toRemoveTag, fileMetadata, true);
         }
@@ -203,6 +185,10 @@ public class MetadataManager implements MetadataFunction {
             return;
         }
         Map<Long, FileMetadata> metadataMap = tagFileMap.get(tag);
+        if (metadataMap == null || metadataMap.isEmpty()) {
+            log.warn("指定标签【{}】不存在", tag);
+            return;
+        }
         // 遍历同时修改集合，只能通过迭代器来处理来着。
         // 怎么办呢？只能重新组装一个集合出来才行了。
         Set<FileMetadata> toModify = new HashSet<>(metadataMap.size());
@@ -229,6 +215,18 @@ public class MetadataManager implements MetadataFunction {
             removeTag(tag, file, false);
             addTag(newTag, file);
         });
+    }
+
+    @Override
+    public void batchModifyTags(Set<String> tags, Set<String> newTags) {
+        isModified = true;
+        Set<String> toAddTags = newTags.stream().filter(s -> !tags.contains(s)).collect(Collectors.toSet());
+        Set<String> toRemoveTags = tags.stream().filter(s -> !newTags.contains(s)).collect(Collectors.toSet());
+        List<FileMetadata> fileMetadatas = listResources(null, tags);
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            addFileTag(fileMetadata.getId(), toAddTags);
+            deleteFileTag(fileMetadata.getId(), toRemoveTags);
+        }
     }
 
     @Override

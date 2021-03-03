@@ -194,6 +194,11 @@ public class PrepProcessor implements Processor {
     }
 
     @Override
+    public boolean batchModifyTags(Request request, Response response) {
+        return true;
+    }
+
+    @Override
     public boolean renameTag(Request request, Response response) {
         return true;
     }

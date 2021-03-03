@@ -1,5 +1,6 @@
 package com.sayyi.software.tbp.web.controller;
 
+import com.sayyi.software.tbp.cli.CmdExecutor;
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.TbpException;
 import com.sayyi.software.tbp.core.facade.PkmFunction;
@@ -13,10 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author SayYi
@@ -198,6 +196,25 @@ public class TbpController {
     @PutMapping("/setTree")
     public ResultBean<Long> setTree(String treeStr) throws Exception {
         return ResultBean.ok(pkmFunction.setTree(treeStr));
+    }
+
+    @Autowired
+    private CmdExecutor cmdExecutor;
+
+    @GetMapping("/cmd")
+    public ResultBean<Object> cmd(String cmdStr) throws Exception {
+        if (cmdStr == null || "".equals(cmdStr)) {
+            return ResultBean.ok("请输入命令");
+        }
+        String[] split = cmdStr.split(" ");
+        // 去除空字符串
+        split = Arrays.stream(split).filter(s -> s.length() != 0).toArray(String[]::new);
+        return ResultBean.ok(cmdExecutor.execute(split));
+    }
+
+    @GetMapping("/cmdInfo")
+    public ResultBean<Map<String, String>> cmdInfo() throws Exception {
+        return ResultBean.ok(cmdExecutor.commandUsageInfo());
     }
 
     private Set<String> tagStrToSet(String tagStr) {

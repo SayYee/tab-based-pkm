@@ -141,6 +141,15 @@ public interface Processor {
     boolean renameTag(Request request, Response response);
 
     /**
+     * 批量修改tag
+     * @param request
+     * @param response
+     * @return
+     */
+    @BindType(RequestType.BATCH_MODIFY_TAGS)
+    boolean batchModifyTags(Request request, Response response);
+
+    /**
      * 查询tag
      * @param request
      * @param response

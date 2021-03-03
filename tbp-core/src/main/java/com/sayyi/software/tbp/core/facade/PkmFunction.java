@@ -134,6 +134,14 @@ public interface PkmFunction {
     void renameTag(String tagName, String newName) throws Exception;
 
     /**
+     * 批量修改标签
+     * @param tags 原标签集合
+     * @param newTags   新标签集合
+     * @throws Exception
+     */
+    void batchModifyTags(Set<String> tags, Set<String> newTags) throws Exception;
+
+    /**
      * 查询标签
      * @param tags
      * @return

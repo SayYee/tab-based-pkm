@@ -175,6 +175,15 @@ public abstract class AbstractPkmFunction implements PkmFunction {
     }
 
     @Override
+    public void batchModifyTags(Set<String> tags, Set<String> newTags) throws Exception {
+        BatchModifyTagsRequest request = new BatchModifyTagsRequest();
+        request.setTags(tags);
+        request.setNewTags(newTags);
+        final byte[] serialize = BinaryOutputArchive.serialize(request);
+        process(RequestType.BATCH_MODIFY_TAGS, serialize);
+    }
+
+    @Override
     public List<TagInfo> listTags(Set<String> tags) throws Exception {
         QueryTagRequest queryTagRequest = new QueryTagRequest();
         queryTagRequest.setTags(tags == null ? new HashSet<>() : tags);

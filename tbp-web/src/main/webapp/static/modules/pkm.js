@@ -5,6 +5,25 @@ layui.define(['jquery', 'layer'], function (exports) {
     var basePath = "";
 
     var pkm = {
+        cmd: function(cmd, fn) {
+            var self = this;
+            self.sendRequest({
+                url: basePath + "/cmd",
+                type: "get",
+                data: {
+                    cmdStr: cmd
+                },
+                callback: fn
+            })
+        },
+        cmdInfo: function(fn) {
+            var self = this;
+            self.sendRequest({
+                url: basePath + "/cmdInfo",
+                type: "get",
+                callback: fn
+            })
+        },
         assignTree: function (id, fn) {
             var self = this;
             self.sendRequest({
@@ -141,12 +160,11 @@ layui.define(['jquery', 'layer'], function (exports) {
                 contentType: options.contentType,
                 async: options.async,
                 beforeSend: function () {
-                    layer.msg('加载中', { icon: 16, shade: 0.01 });
+                    layer.load(2);
                     return true;
                 },
                 complete: function () {
-                    // layer.closeAll('loading');
-                    layer.closeAll();
+                    layer.closeAll('loading');
                 },
                 success: function (res) {
                     self.successResDeal(res, options.callback);

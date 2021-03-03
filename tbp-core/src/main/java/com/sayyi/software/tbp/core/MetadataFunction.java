@@ -84,6 +84,13 @@ public interface MetadataFunction {
      * @param newTag
      */
     void renameTag(String tag, String newTag);
+
+    /**
+     * 批量修改文件标签
+     * @param tags  文件标签
+     * @param newTags   新的文件标签
+     */
+    void batchModifyTags(Set<String> tags, Set<String> newTags);
     /**
      * 通过id，获取文件的元数据信息
      * @param fileId    文件id

@@ -102,6 +102,12 @@ public class SyncProcessor implements Processor {
     }
 
     @Override
+    public boolean batchModifyTags(Request request, Response response) {
+        store(request);
+        return true;
+    }
+
+    @Override
     public boolean listTags(Request request, Response response) {
         return true;
     }

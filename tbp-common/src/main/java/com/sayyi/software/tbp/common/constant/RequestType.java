@@ -35,6 +35,8 @@ public class RequestType {
     public static final int DELETE_TAG = 10;
     /** 重命名tag */
     public static final int RENAME_TAG = 11;
+    /** 批量修改标签 */
+    public static final int BATCH_MODIFY_TAGS = 21;
 
     /** 查询标签列表 */
     public static final int LIST_TAGS = 12;

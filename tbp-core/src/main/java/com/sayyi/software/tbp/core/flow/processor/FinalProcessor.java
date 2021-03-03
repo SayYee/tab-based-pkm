@@ -206,6 +206,18 @@ public class FinalProcessor implements Processor {
     }
 
     @Override
+    public boolean batchModifyTags(Request request, Response response) {
+        BatchModifyTagsRequest tagsRequest = new BatchModifyTagsRequest();
+        try {
+            BinaryInputArchive.deserialize(tagsRequest, request.getData());
+            metadataFunction.batchModifyTags(tagsRequest.getTags(), tagsRequest.getNewTags());
+        } catch (IOException e) {
+            throw new TbpException(e);
+        }
+        return false;
+    }
+
+    @Override
     public boolean listTags(Request request, Response response) {
         QueryTagRequest queryTagRequest = new QueryTagRequest();
         try {

@@ -41,7 +41,7 @@
 <div class="layui-fluid" style="padding-top: 10px;">
   <div class="layui-row layui-col-space10">
     <div class="layui-col-md3">
-      <div class="layui-card" style="height: calc(100vh - 27px)">
+      <div class="layui-card" style="height: calc(100vh - 67px)">
         <div class="layui-card-body">
           <div class="layui-row">
             <div class="layui-col-md12 layui-form-item">
@@ -64,7 +64,7 @@
             <div class="layui-col-md12 layui-form-item">
               <input id="tree-search" type="text" name="search" placeholder="请输入标签" autocomplete="off" class="layui-input">
             </div>
-            <div class="layui-col-md12 layui-form-item" style="height: calc(100vh - 170px);overflow: scroll;">
+            <div class="layui-col-md12 layui-form-item" style="height: calc(100vh - 210px);overflow: scroll;">
               <div id="jstree_demo_div"></div>
             </div>
           </div>
@@ -97,6 +97,9 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="layui-col-md12">
+      <button id="cmdBtn" type="button" class="layui-btn layui-btn-primary layui-btn-fluid">cmd</button>
     </div>
   </div>
 </div>
@@ -244,6 +247,29 @@
     </div>
   </div>
 </div>
+
+<div id="cmdwin" style="display: none;">
+  <div class="layui-fluid layui-form layui-form-pane" style="padding-top: 10px;">
+    <div class="layui-form-item">
+      <div class="layui-row">
+        <div class="layui-col-md2">
+          <select id="cmdInfoSelect" lay-verify="required" lay-filter="cmdSelect" lay-search>
+          </select>
+        </div>
+        <div class="layui-col-md10">
+          <input id="cmdInput" type="text" name="cmdStr" placeholder="cmd参数" class="layui-input">
+        </div>
+      </div>
+    </div>
+    <div class="layui-form-item layui-form-text">
+      <label class="layui-form-label">输出</label>
+      <div class="layui-input-block">
+        <textarea id="cmdResult" class="layui-textarea" disabled></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 悬浮球div -->
 <div id="neko">
 </div>
