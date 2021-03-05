@@ -48,8 +48,8 @@ public class TerminalPkmFunction implements PkmFunction {
     }
 
     @Override
-    public void rename(long fileId, String newName) throws Exception {
-        pkmFunction.rename(fileId, newName);
+    public void rename(long fileId, String newName, String newLocation) throws Exception {
+        pkmFunction.rename(fileId, newName, newLocation);
     }
 
     @Override

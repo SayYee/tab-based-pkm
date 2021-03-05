@@ -54,9 +54,10 @@ public interface PkmFunction {
      * 文件重命名
      * @param fileId    文件id
      * @param newName   文件名称。不能与已有文件名重复
+     * @param newLocation 文件定位。仅远程资源允许手动修改
      * @throws TbpException
      */
-    void rename(long fileId, String newName) throws Exception;
+    void rename(long fileId, String newName, String newLocation) throws Exception;
 
     /**
      * 添加文件标签

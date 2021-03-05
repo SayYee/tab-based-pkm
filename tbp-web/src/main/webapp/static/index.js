@@ -71,7 +71,14 @@ layui.config({
             form.val("edit", {
                 "id": data.id
                 , "filename": data.filename // "name": "value"
+                , "fileLocation": data.resourcePath
             });
+            if (data.resourceType === 2) {
+                // 网络资源，启用
+                $('#fileLocation').prop('disabled', false);
+            } else {
+                $('#fileLocation').prop('disabled', true);
+            }
             // 初始化标签：动态渲染内容，然后渲染标签
             var getTpl = editTagList.innerHTML
                 , view = document.getElementById('tagContainer');
@@ -113,9 +120,10 @@ layui.config({
     form.on('submit(edit)', function (data) {
         var id = data.field.id;
         var filename = data.field.filename;
+        var fileLocation = data.field.fileLocation;
         var tags = tag.data('tags');
 
-        pkm.update(id, filename, tags, function (res) {
+        pkm.update(id, filename, fileLocation, tags, function (res) {
             layer.closeAll();
             layer.msg('操作成功', { icon: 1 });
             $("#search").click();

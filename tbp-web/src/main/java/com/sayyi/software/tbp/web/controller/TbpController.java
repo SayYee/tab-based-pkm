@@ -110,9 +110,10 @@ public class TbpController {
     public ResultBean<Boolean> update(@RequestBody FileUpdateInfo fileUpdateInfo) throws Exception {
         long fileId = fileUpdateInfo.getId();
         String newName = fileUpdateInfo.getNewName();
+        String newLocation = fileUpdateInfo.getNewLocation();
         Set<String> tagSet = fileUpdateInfo.getTags();
 
-        pkmFunction.rename(fileId, newName);
+        pkmFunction.rename(fileId, newName, newLocation);
         pkmFunction.modifyTag(fileId, tagSet);
         return ResultBean.ok(true);
     }

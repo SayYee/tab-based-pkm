@@ -100,21 +100,27 @@ public class PrepProcessor implements Processor {
 
             long id = renameRequest.getId();
             String newName = renameRequest.getNewName();
+            String newLocation = renameRequest.getNewLocation();
             FileMetadata fileMetadata = metadataFunction.getFileById(id);
 
             log.debug("rename from {} to {}", fileMetadata.getFilename(), newName);
-            if (fileMetadata.getFilename().equals(newName)) {
-                log.info("文件名没有发生变化，不做修改");
-                return false;
-            }
             FileBaseInfo fileBaseInfo;
             if (ResourceType.LOCAL == fileMetadata.getResourceType()) {
+                if (fileMetadata.getFilename().equals(newName)) {
+                    log.info("本地文件，文件名没有发生变化，不做修改");
+                    return false;
+                }
                 fileBaseInfo = fileManager.rename(fileMetadata.getResourcePath(), newName);
             } else {
+                if (fileMetadata.getFilename().equals(newName)
+                        && fileMetadata.getResourcePath().equals(newLocation)) {
+                    log.info("网络资源，文件名、地址没有发生变化，不做修改");
+                    return false;
+                }
                 // 网络资源，只修改名称，不会修改地址
                 fileBaseInfo = new FileBaseInfo();
                 fileBaseInfo.setFilename(newName);
-                fileBaseInfo.setResourcePath(fileMetadata.getResourcePath());
+                fileBaseInfo.setResourcePath(newLocation);
                 fileBaseInfo.setModifyTime(System.currentTimeMillis());
             }
             fileBaseInfo.setFileId(id);

@@ -77,10 +77,11 @@ public abstract class AbstractPkmFunction implements PkmFunction {
     }
 
     @Override
-    public void rename(long fileId, String newName) throws Exception {
+    public void rename(long fileId, String newName, String newLocation) throws Exception {
         RenameRequest renameRequest = new RenameRequest();
         renameRequest.setId(fileId);
         renameRequest.setNewName(newName);
+        renameRequest.setNewLocation(newLocation);
         byte[] serialize = BinaryOutputArchive.serialize(renameRequest);
 
         process(RequestType.RENAME, serialize);

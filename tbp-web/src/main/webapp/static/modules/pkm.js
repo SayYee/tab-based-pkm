@@ -105,7 +105,7 @@ layui.define(['jquery', 'layer'], function (exports) {
             })
         },
         // 更新元数据
-        update: function (id, newName, tags, fn) {
+        update: function (id, newName, newLocation, tags, fn) {
             var self = this;
             self.sendRequest({
                 url: basePath + "/update",
@@ -114,6 +114,7 @@ layui.define(['jquery', 'layer'], function (exports) {
                 data: JSON.stringify({
                     id: id,
                     newName: newName,
+                    newLocation: newLocation,
                     tags: tags
                 }),
                 callback: fn

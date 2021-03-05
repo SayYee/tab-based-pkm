@@ -43,8 +43,9 @@ public class FileOpCommand {
 
     @Command(mixinStandardHelpOptions = true, name = "rename", description = "重命名")
     public void rename(@Parameters(index = "0", description = "id", paramLabel = "<id>") long id,
-                       @Parameters(index = "1", description = "新名称", paramLabel = "<new-name>") String newName) throws Exception {
-        cmd.pkm.rename(id, newName);
+                       @Parameters(index = "1", description = "新名称", paramLabel = "<new-name>") String newName,
+                       @Parameters(index = "2", description = "新地址", paramLabel = "<new-location>") String newLocation) throws Exception {
+        cmd.pkm.rename(id, newName, newLocation);
         cmd.out.println("success");
     }
 
