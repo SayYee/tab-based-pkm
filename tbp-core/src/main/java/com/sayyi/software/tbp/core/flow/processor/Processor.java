@@ -96,6 +96,15 @@ public interface Processor {
     boolean open(Request request, Response response);
 
     /**
+     * 打开文件所在文件夹并选中文件
+     * @param request
+     * @param response
+     * @return
+     */
+    @BindType(RequestType.SELECT)
+    boolean select(Request request, Response response);
+
+    /**
      * 删除资源
      * @param request
      * @param response

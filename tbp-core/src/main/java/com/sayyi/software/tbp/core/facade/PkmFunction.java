@@ -54,10 +54,9 @@ public interface PkmFunction {
      * 文件重命名
      * @param fileId    文件id
      * @param newName   文件名称。不能与已有文件名重复
-     * @param newLocation 文件定位。仅远程资源允许手动修改
      * @throws TbpException
      */
-    void rename(long fileId, String newName, String newLocation) throws Exception;
+    void rename(long fileId, String newName) throws Exception;
 
     /**
      * 添加文件标签
@@ -89,6 +88,13 @@ public interface PkmFunction {
      * @throws TbpException
      */
     void open(long fileId) throws Exception;
+
+    /**
+     * 打开文件所在文件夹，并选中文件
+     * @param fileId    文件id
+     * @throws Exception
+     */
+    void select(long fileId) throws Exception;
 
     /**
      * 删除文件。文件会被直接删除，不会出现在回收站。后续也许可以维护回收站的功能

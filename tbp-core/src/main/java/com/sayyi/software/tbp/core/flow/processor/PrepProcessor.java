@@ -2,7 +2,6 @@ package com.sayyi.software.tbp.core.flow.processor;
 
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.TbpException;
-import com.sayyi.software.tbp.common.constant.ResourceType;
 import com.sayyi.software.tbp.common.flow.*;
 import com.sayyi.software.tbp.common.store.BinaryInputArchive;
 import com.sayyi.software.tbp.common.store.BinaryOutputArchive;
@@ -83,9 +82,10 @@ public class PrepProcessor implements Processor {
         FileBaseInfo fileBaseInfo = new FileBaseInfo();
         try {
             BinaryInputArchive.deserialize(fileBaseInfo, request.getData());
-            // 需要记录一下时间信息
-            fileBaseInfo.setModifyTime(System.currentTimeMillis());
-            request.setData(BinaryOutputArchive.serialize(fileBaseInfo));
+            FileBaseInfo urlFileInfo = fileManager.createUrlFile(fileBaseInfo.getFilename(), fileBaseInfo.getResourcePath());
+            urlFileInfo.setTags(fileBaseInfo.getTags());
+
+            request.setData(BinaryOutputArchive.serialize(urlFileInfo));
             return true;
         } catch (IOException e) {
             throw new TbpException(e);
@@ -100,29 +100,15 @@ public class PrepProcessor implements Processor {
 
             long id = renameRequest.getId();
             String newName = renameRequest.getNewName();
-            String newLocation = renameRequest.getNewLocation();
             FileMetadata fileMetadata = metadataFunction.getFileById(id);
 
             log.debug("rename from {} to {}", fileMetadata.getFilename(), newName);
             FileBaseInfo fileBaseInfo;
-            if (ResourceType.LOCAL == fileMetadata.getResourceType()) {
-                if (fileMetadata.getFilename().equals(newName)) {
-                    log.info("本地文件，文件名没有发生变化，不做修改");
-                    return false;
-                }
-                fileBaseInfo = fileManager.rename(fileMetadata.getResourcePath(), newName);
-            } else {
-                if (fileMetadata.getFilename().equals(newName)
-                        && fileMetadata.getResourcePath().equals(newLocation)) {
-                    log.info("网络资源，文件名、地址没有发生变化，不做修改");
-                    return false;
-                }
-                // 网络资源，只修改名称，不会修改地址
-                fileBaseInfo = new FileBaseInfo();
-                fileBaseInfo.setFilename(newName);
-                fileBaseInfo.setResourcePath(newLocation);
-                fileBaseInfo.setModifyTime(System.currentTimeMillis());
+            if (fileMetadata.getFilename().equals(newName)) {
+                log.info("文件名没有发生变化，不做修改");
+                return false;
             }
+            fileBaseInfo = fileManager.rename(fileMetadata.getResourcePath(), newName);
             fileBaseInfo.setFileId(id);
             byte[] serialize = BinaryOutputArchive.serialize(fileBaseInfo);
             request.setData(serialize);
@@ -155,11 +141,25 @@ public class PrepProcessor implements Processor {
 
             long id = openRequest.getId();
             FileMetadata fileMetadata = metadataFunction.getFileById(id);
-            if (ResourceType.LOCAL == fileMetadata.getResourceType()) {
-                fileManager.open(fileMetadata.getResourcePath());
-            } else {
-                fileManager.browse(fileMetadata.getResourcePath());
-            }
+            fileManager.open(fileMetadata.getResourcePath());
+
+            openRequest.setOpenTime(System.currentTimeMillis());
+            request.setData(BinaryOutputArchive.serialize(openRequest));
+            return true;
+        } catch (IOException e) {
+            throw new TbpException(e);
+        }
+    }
+
+    @Override
+    public boolean select(Request request, Response response) {
+        OpenRequest openRequest = new OpenRequest();
+        try {
+            BinaryInputArchive.deserialize(openRequest, request.getData());
+
+            long id = openRequest.getId();
+            FileMetadata fileMetadata = metadataFunction.getFileById(id);
+            fileManager.select(fileMetadata.getResourcePath());
 
             openRequest.setOpenTime(System.currentTimeMillis());
             request.setData(BinaryOutputArchive.serialize(openRequest));
@@ -175,9 +175,7 @@ public class PrepProcessor implements Processor {
         try {
             long id = archive.readLong();
             FileMetadata fileMetadata = metadataFunction.getFileById(id);
-            if (ResourceType.LOCAL == fileMetadata.getResourceType()) {
-                fileManager.delete(fileMetadata.getResourcePath());
-            }
+            fileManager.delete(fileMetadata.getResourcePath());
             return true;
         } catch (IOException e) {
             throw new TbpException(e);

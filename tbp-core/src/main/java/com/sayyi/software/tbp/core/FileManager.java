@@ -12,6 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.YearMonth;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * 存储文件管理器
  * @author SayYi
@@ -24,6 +26,8 @@ public class FileManager {
      */
     private final String fileStoreDir;
     private final String absolutePathStoreDir;
+
+    private final static String OS = System.getProperty("os.name").toLowerCase();
 
     public FileManager(String fileStoreDir) {
         this.fileStoreDir = fileStoreDir;
@@ -52,6 +56,30 @@ public class FileManager {
      */
     public void browse(String url) throws IOException {
         Desktop.getDesktop().browse(URI.create(url));
+    }
+
+    /**
+     * 打开文件所在文件夹，并选中文件
+     * @param filePath
+     * @throws IOException
+     */
+    public void select(String filePath) throws IOException {
+        String realPath = new File(fileStoreDir, filePath).getPath();
+        if (isWin()) {
+            Runtime.getRuntime().exec("explorer /select, " + realPath);
+        } else if (isMacOS()) {
+            Runtime.getRuntime().exec("open -R " + realPath);
+        } else {
+            throw new IOException("未支持的平台");
+        }
+    }
+
+    private boolean isWin() {
+        return OS.startsWith("win");
+    }
+
+    private boolean isMacOS() {
+        return OS.startsWith("mac");
     }
 
     /**
@@ -148,6 +176,47 @@ public class FileManager {
         }
         Files.createFile(target.toPath());
         return createFromFile(target);
+    }
+
+    /**
+     * 创建url跳转文件
+     * @param filename  初始文件名（不带文件类型后缀）
+     * @param url   目标url
+     * @return
+     * @throws IOException
+     */
+    public FileBaseInfo createUrlFile(String filename, String url) throws IOException {
+        File storePath = getStorePath();
+        File target = new File(storePath, filename + ".html");
+        if (target.exists()) {
+            throw new IOException("file already exists");
+        }
+        Files.createFile(target.toPath());
+        Files.write(target.toPath(), generateHtml(url).getBytes(UTF_8));
+        return createFromFile(target);
+    }
+
+    /**
+     * 生成url跳转的html文件内容
+     * @param url   目标地址
+     * @return
+     */
+    private String generateHtml(String url) {
+        return "<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "<meta charset=\"utf-8\">\n" +
+                "<title>url中转页面</title>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "    <h1>页面跳转中</h1>\n" +
+                "</body>\n" +
+                "<script>\n" +
+                "    var targetUrl = \"" + url + "\";\n" +
+                "    document.write(\"<a href='\" + targetUrl + \"'>\" + targetUrl + \"</a>\");\n" +
+                "    window.location.href = targetUrl;\n" +
+                "</script>\n" +
+                "</html>";
     }
 
     /**

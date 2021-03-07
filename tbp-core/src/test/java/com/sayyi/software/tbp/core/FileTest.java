@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * @author SayYi
  */
@@ -21,4 +23,37 @@ public class FileTest {
         }
         Desktop.getDesktop().open(file);
     }
+
+    @Test
+    public void test_location() throws Exception {
+        String filename = "C:\\Users\\SayYi\\Desktop\\temp\\测试文件.html";
+//        File file = new File(filename);
+//        Desktop.getDesktop().open(file.getParentFile());
+
+//        Runtime.getRuntime().exec("explorer /select, " + filename);
+//        System.out.println(System.getProperty("os.name"));
+        File file = new File(filename);
+        Files.createFile(file.toPath());
+        Files.write(file.toPath(), generateHtml("https://github.com/dendronhq/dendron").getBytes(UTF_8));
+    }
+
+    private String generateHtml(String url) {
+        return "<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "<meta charset=\"utf-8\">\n" +
+                "<title>url中转页面</title>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "    <h1>页面跳转中</h1>\n" +
+                "</body>\n" +
+                "<script>\n" +
+                "    var targetUrl = \"" + url + "\";\n" +
+                "    document.write(\"<a href='\" + targetUrl + \"'>\" + targetUrl + \"</a>\");\n" +
+                "    window.location.href = targetUrl;\n" +
+                "</script>\n" +
+                "</html>";
+    }
+
+
 }

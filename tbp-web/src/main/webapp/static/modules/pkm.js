@@ -104,8 +104,17 @@ layui.define(['jquery', 'layer'], function (exports) {
                 callback: fn
             })
         },
+        // 打开文件所在文件夹，并选中文件
+        select: function (id, fn) {
+            var self = this;
+            self.sendRequest({
+                url: basePath + "/select/" + id,
+                type: "get",
+                callback: fn
+            })
+        },
         // 更新元数据
-        update: function (id, newName, newLocation, tags, fn) {
+        update: function (id, newName, tags, fn) {
             var self = this;
             self.sendRequest({
                 url: basePath + "/update",
@@ -114,7 +123,6 @@ layui.define(['jquery', 'layer'], function (exports) {
                 data: JSON.stringify({
                     id: id,
                     newName: newName,
-                    newLocation: newLocation,
                     tags: tags
                 }),
                 callback: fn

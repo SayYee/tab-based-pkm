@@ -24,6 +24,8 @@ public class RequestType {
     public static final int DELETE_RESOURCE_TAG = 14;
     /** 打开资源 */
     public static final int OPEN = 6;
+    /** 打开资源 */
+    public static final int SELECT = 22;
     /** 删除资源 */
     public static final int DELETE = 7;
     /** 通过id获取资源信息 */

@@ -74,6 +74,12 @@ public class SyncProcessor implements Processor {
     }
 
     @Override
+    public boolean select(Request request, Response response) {
+        store(request);
+        return true;
+    }
+
+    @Override
     public boolean delete(Request request, Response response) {
         store(request);
         return true;

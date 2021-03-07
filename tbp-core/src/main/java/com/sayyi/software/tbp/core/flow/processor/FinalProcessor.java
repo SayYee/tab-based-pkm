@@ -144,6 +144,11 @@ public class FinalProcessor implements Processor {
     }
 
     @Override
+    public boolean select(Request request, Response response) {
+        return open(request, response);
+    }
+
+    @Override
     public boolean delete(Request request, Response response) {
         try {
             final BinaryInputArchive archive = BinaryInputArchive.getArchive(request.getData());

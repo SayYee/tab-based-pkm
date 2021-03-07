@@ -101,6 +101,18 @@ public class TbpController {
     }
 
     /**
+     * 打开文件所在文件夹，并选中文件
+     * @param id
+     * @return
+     * @throws Exception
+     */
+    @GetMapping("/select/{id}")
+    public ResultBean<Boolean> select(@PathVariable("id") long id) throws Exception {
+        pkmFunction.select(id);
+        return ResultBean.ok(true);
+    }
+
+    /**
      * 更新文件元数据（名称、标签）
      * @param fileUpdateInfo
      * @return
@@ -110,10 +122,9 @@ public class TbpController {
     public ResultBean<Boolean> update(@RequestBody FileUpdateInfo fileUpdateInfo) throws Exception {
         long fileId = fileUpdateInfo.getId();
         String newName = fileUpdateInfo.getNewName();
-        String newLocation = fileUpdateInfo.getNewLocation();
         Set<String> tagSet = fileUpdateInfo.getTags();
 
-        pkmFunction.rename(fileId, newName, newLocation);
+        pkmFunction.rename(fileId, newName);
         pkmFunction.modifyTag(fileId, tagSet);
         return ResultBean.ok(true);
     }
