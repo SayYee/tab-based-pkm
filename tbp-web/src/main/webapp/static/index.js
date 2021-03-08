@@ -37,18 +37,44 @@ layui.config({
         , page: false //开启分页
         , cols: [[ //表头
             { field: 'id', title: 'ID', width: 80 }
-            , { field: 'filename', title: '文件名称', sort: true }
+            , { field: 'filename', title: '文件名称', width: 230, sort: true }
             , {
                 field: 'resourceType', title: '类型', align: 'center', width: 80, sort: true, templet: function (d) {
                     return d.resourceType === 1 ? '<i class="layui-icon">&#xe621;</i>' : '<i class="layui-icon">&#xe64c;</i>'
                 }
             }
-            , { field: 'resourcePath', title: '资源定位' }
-            , { field: 'tags', title: '标签', align: 'center', templet: '#tagList' }
+            , { field: 'resourcePath', width: 220, title: '资源定位' }
+            , { field: 'tags', title: '标签', align: 'center', width: 210, templet: '#tagList' }
             , { field: 'createTime', title: '创建时间', width: 180, sort: true, templet: '<div>{{layui.util.toDateString(d.createTime, "yyyy-MM-dd HH:mm:ss")}}</div>' }
             , { field: 'lastOpenTime', title: '最后打开时间', width: 180, sort: true, templet: '<div>{{layui.util.toDateString(d.createTime, "yyyy-MM-dd HH:mm:ss")}}</div>' }
-            , { field: 'right', title: '操作', width: 180, align: 'center', toolbar: '#colTool' }
+            , { fixed: 'right', field: 'right', title: '操作', align: 'center', width: 180, toolbar: '#colTool' }
         ]]
+        , done: function (res, curr, count) {
+            var id = 'demo';
+             //动态监听表头高度变化，冻结行跟着改变高度
+             $("div [lay-id='" + id + "'] .layui-table-header tr").resize(function () {
+                $("div [lay-id='" + id + "'] .layui-table-header tr").each(function (index, val) {
+                    $($("div [lay-id='" + id + "'] .layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                });
+            });
+            //初始化高度，使得冻结行表头高度一致
+            $("div [lay-id='" + id + "'] .layui-table-header  tr").each(function (index, val) {
+                $($("div [lay-id='" + id + "'] .layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+            });
+            //动态监听表体高度变化，冻结行跟着改变高度
+            $("div [lay-id='" + id + "'] .layui-table-main tr").resize(function () {
+                $("div [lay-id='" + id + "'] .layui-table-body tr").each(function (index, val) {
+                    $($("div [lay-id='" + id + "'] .layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                });
+            });
+            //初始化高度，使得冻结行表体高度一致
+            $("div [lay-id='" + id + "'] .layui-table-main tr").each(function (index, val) {
+                $($("div [lay-id='" + id + "'] .layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+            });
+
+            //初始化滚动条
+            $("div [lay-id='" + id + "'] .layui-table-fixed .layui-table-body").animate({ scrollTop: $("div [lay-id='" + id + "'] .layui-table-main").scrollTop() }, 0);
+        }
     });
     //监听工具条 
     table.on('tool(test)', function (obj) { //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
@@ -277,7 +303,7 @@ layui.config({
     });
 
     // cmd命令输入窗口
-    $("#cmdBtn").click(function() {
+    $("#cmdBtn").click(function () {
         layer.open({
             type: 1,
             title: 'cmd',
@@ -288,18 +314,18 @@ layui.config({
             shadeClose: true,   // 点击遮罩层关闭
             move: false,    // 禁止移动
             content: $('#cmdwin') //这里content是一个DOM，注意：最好该元素要存放在body最外层，否则可能被其它的相对元素所影响
-            , success : function() {
+            , success: function () {
                 $('#cmdInput').focus();
             }
         });
     });
-    var cmdExec = function() {
+    var cmdExec = function () {
         var cmdStr = $("#cmdInput").val();
         pkm.cmd(cmdStr, function (res) {
             $("#cmdResult").val(cmdStr + "\n>" + JSON.stringify(res));
         });
     };
-    $("#cmdInput").keypress(function(event){
+    $("#cmdInput").keypress(function (event) {
         if (event.keyCode === 13) {
             cmdExec();
         }
@@ -307,22 +333,22 @@ layui.config({
 
 
     // cmd命令下拉框的初始化
-    var cmdSelectInit = function(selectId) {
-        pkm.cmdInfo(function(res) {
+    var cmdSelectInit = function (selectId) {
+        pkm.cmdInfo(function (res) {
             $(selectId).empty();
             $(selectId).append("<option value='' title=''>选择一个命令</option>");
             var result = res.result;
-            for(var key in result) {
-                $(selectId).append("<option value='"+ key +"' title='" + result[key] + "'>" + key + "</option>");
+            for (var key in result) {
+                $(selectId).append("<option value='" + key + "' title='" + result[key] + "'>" + key + "</option>");
             }
             form.render();
         })
     }
     cmdSelectInit('#cmdInfoSelect');
-    form.on('select(cmdSelect)', function(data){
-        var title = $("#cmdInfoSelect").find("option[value='"+data.value+"']").attr('title');
+    form.on('select(cmdSelect)', function (data) {
+        var title = $("#cmdInfoSelect").find("option[value='" + data.value + "']").attr('title');
         $("#cmdResult").val(title);
         $("#cmdInput").val(data.value + " ");
         $('#cmdInput').focus();
-      }); 
+    });
 });
