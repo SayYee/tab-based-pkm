@@ -17,7 +17,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * 具备存储功能。可以设置保留的历史版本数量。默认会加载最新的数据。
  * @author SayYi
  */
-public class TagTreeManager {
+public class TagTreeManager implements TagTreeFunction {
 
     /**
      * tree文件前缀
@@ -80,14 +80,17 @@ public class TagTreeManager {
      * 获取所有的树文件id
      * @return
      */
+    @Override
     public List<Long> listIds() {
         return idContainer.listAll();
     }
 
+    @Override
     public String getCurrentTree() {
         return currentTreeStr;
     }
 
+    @Override
     public String getTree(long id) {
         if (!listIds().contains(id)) {
             throw new TbpException("对应tree文件不存在【" + id + "】");
@@ -95,6 +98,7 @@ public class TagTreeManager {
         return read(id);
     }
 
+    @Override
     public long setTree(String treeStr) {
         write(nextId, treeStr);
         idContainer.offer(nextId);

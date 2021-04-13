@@ -18,7 +18,7 @@ public class TbpServer {
 
         FileManager fileManager = new FileManager(tbpConfig.getStoreDir());
         MetadataFunction metadataFunction = new MetadataManager();
-        TagTreeManager tagTreeManager = new TagTreeManager(tbpConfig.getSnapDir(), tbpConfig.treeRetainNum());
+        TagTreeFunction tagTreeManager = new TagTreeManager(tbpConfig.getSnapDir(), tbpConfig.treeRetainNum());
         DbFunction dbFunction = new FileBasedDbManager(tbpConfig.getSnapDir());
         PkmService pkmService = new PkmServiceImpl(fileManager, metadataFunction, tagTreeManager, dbFunction);
 

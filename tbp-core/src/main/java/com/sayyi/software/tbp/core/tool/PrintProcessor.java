@@ -1,42 +1,26 @@
-package com.sayyi.software.tbp.core.flow.processor;
+package com.sayyi.software.tbp.core.tool;
 
-import com.sayyi.software.tbp.common.FileMetadata;
-import com.sayyi.software.tbp.common.TagInfo;
 import com.sayyi.software.tbp.common.TbpException;
-import com.sayyi.software.tbp.common.constant.ResourceType;
 import com.sayyi.software.tbp.common.flow.*;
 import com.sayyi.software.tbp.common.store.BinaryInputArchive;
-import com.sayyi.software.tbp.common.store.BinaryOutputArchive;
-import com.sayyi.software.tbp.core.MetadataFunction;
-import com.sayyi.software.tbp.core.TagTreeFunction;
-import com.sayyi.software.tbp.core.TagTreeManager;
-import lombok.extern.slf4j.Slf4j;
+import com.sayyi.software.tbp.core.flow.processor.Processor;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
- * 操作元数据，并组装响应的处理器
- * @author SayYi
+ * 请求内容打印处理器
  */
-@Slf4j
-public class FinalProcessor implements Processor {
+public class PrintProcessor implements Processor {
 
-    private final MetadataFunction metadataFunction;
-
-    private final TagTreeFunction tagTreeFunction;
-
-    public FinalProcessor(MetadataFunction metadataFunction, TagTreeFunction tagTreeFunction) {
-        this.metadataFunction = metadataFunction;
-        this.tagTreeFunction = tagTreeFunction;
+    private String getMethodName() {
+        return Thread.currentThread().getStackTrace()[2].getMethodName();
     }
 
     @Override
     public boolean upload(Request request, Response response) {
         try {
             FileBaseInfo fileBaseInfo = parseFileBaseInfo(request);
-            FileMetadata fileMetadata = metadataFunction.create(ResourceType.LOCAL, fileBaseInfo);
-            response.setResult(BinaryOutputArchive.serialize(fileMetadata));
+            System.out.println(getMethodName() + ":" + fileBaseInfo);
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -47,8 +31,7 @@ public class FinalProcessor implements Processor {
     public boolean copy(Request request, Response response) {
         try {
             FileBaseInfo fileBaseInfo = parseFileBaseInfo(request);
-            FileMetadata fileMetadata = metadataFunction.create(ResourceType.LOCAL, fileBaseInfo);
-            response.setResult(BinaryOutputArchive.serialize(fileMetadata));
+            System.out.println(getMethodName() + ":" + fileBaseInfo);
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -59,8 +42,7 @@ public class FinalProcessor implements Processor {
     public boolean create(Request request, Response response) {
         try {
             FileBaseInfo fileBaseInfo = parseFileBaseInfo(request);
-            FileMetadata fileMetadata = metadataFunction.create(ResourceType.LOCAL, fileBaseInfo);
-            response.setResult(BinaryOutputArchive.serialize(fileMetadata));
+            System.out.println(getMethodName() + ":" + fileBaseInfo);
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -71,8 +53,7 @@ public class FinalProcessor implements Processor {
     public boolean addUrl(Request request, Response response) {
         try {
             FileBaseInfo fileBaseInfo = parseFileBaseInfo(request);
-            FileMetadata fileMetadata = metadataFunction.create(ResourceType.NET, fileBaseInfo);
-            response.setResult(BinaryOutputArchive.serialize(fileMetadata));
+            System.out.println(getMethodName() + ":" + fileBaseInfo);
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -83,7 +64,7 @@ public class FinalProcessor implements Processor {
     public boolean rename(Request request, Response response) {
         try {
             FileBaseInfo fileBaseInfo = parseFileBaseInfo(request);
-            metadataFunction.rename(fileBaseInfo);
+            System.out.println(getMethodName() + ":" + fileBaseInfo);
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -101,7 +82,7 @@ public class FinalProcessor implements Processor {
         ModifyTagRequest modifyTagRequest = new ModifyTagRequest();
         try {
             BinaryInputArchive.deserialize(modifyTagRequest, request.getData());
-            metadataFunction.modifyTag(modifyTagRequest.getId(), modifyTagRequest.getNewTags());
+            System.out.println(getMethodName() + ":" + modifyTagRequest);
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -113,7 +94,7 @@ public class FinalProcessor implements Processor {
         ModifyTagRequest modifyTagRequest = new ModifyTagRequest();
         try {
             BinaryInputArchive.deserialize(modifyTagRequest, request.getData());
-            metadataFunction.addFileTag(modifyTagRequest.getId(), modifyTagRequest.getNewTags());
+            System.out.println(getMethodName() + ":" + modifyTagRequest);
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -125,7 +106,7 @@ public class FinalProcessor implements Processor {
         ModifyTagRequest modifyTagRequest = new ModifyTagRequest();
         try {
             BinaryInputArchive.deserialize(modifyTagRequest, request.getData());
-            metadataFunction.deleteFileTag(modifyTagRequest.getId(), modifyTagRequest.getNewTags());
+            System.out.println(getMethodName() + ":" + modifyTagRequest);
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -137,7 +118,7 @@ public class FinalProcessor implements Processor {
         OpenRequest openRequest = new OpenRequest();
         try {
             BinaryInputArchive.deserialize(openRequest, request.getData());
-            metadataFunction.open(openRequest.getId(), openRequest.getOpenTime());
+            System.out.println(getMethodName() + ":" + openRequest);
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -154,7 +135,7 @@ public class FinalProcessor implements Processor {
         try {
             final BinaryInputArchive archive = BinaryInputArchive.getArchive(request.getData());
             long id = archive.readLong();
-            metadataFunction.delete(id);
+            System.out.println(getMethodName() + ":" + id);
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -166,8 +147,7 @@ public class FinalProcessor implements Processor {
         try {
             final BinaryInputArchive archive = BinaryInputArchive.getArchive(request.getData());
             long id = archive.readLong();
-            FileMetadata fileMetadata = metadataFunction.getFileById(id);
-            response.setResult(BinaryOutputArchive.serialize(fileMetadata));
+            System.out.println(getMethodName() + ":" + id);
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -179,8 +159,7 @@ public class FinalProcessor implements Processor {
         QueryFileRequest queryFileRequest = new QueryFileRequest();
         try {
             BinaryInputArchive.deserialize(queryFileRequest, request.getData());
-            List<FileMetadata> fileMetadata = metadataFunction.listResources(queryFileRequest.getFilenameReg(), queryFileRequest.getTags());
-            response.setResult(BinaryOutputArchive.serialize(fileMetadata));
+            System.out.println(getMethodName() + ":" + queryFileRequest);
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -192,7 +171,7 @@ public class FinalProcessor implements Processor {
         try {
             final BinaryInputArchive archive = BinaryInputArchive.getArchive(request.getData());
             String tag = archive.readString();
-            metadataFunction.deleteTag(tag);
+            System.out.println(getMethodName() + ":" + tag);
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -204,7 +183,7 @@ public class FinalProcessor implements Processor {
         RenameTagRequest renameTagRequest = new RenameTagRequest();
         try {
             BinaryInputArchive.deserialize(renameTagRequest, request.getData());
-            metadataFunction.renameTag(renameTagRequest.getTag(), renameTagRequest.getNewTag());
+            System.out.println(getMethodName() + ":" + renameTagRequest);
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -216,7 +195,7 @@ public class FinalProcessor implements Processor {
         BatchModifyTagsRequest tagsRequest = new BatchModifyTagsRequest();
         try {
             BinaryInputArchive.deserialize(tagsRequest, request.getData());
-            metadataFunction.batchModifyTags(tagsRequest.getTags(), tagsRequest.getNewTags());
+            System.out.println(getMethodName() + ":" + tagsRequest);
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -228,9 +207,7 @@ public class FinalProcessor implements Processor {
         QueryTagRequest queryTagRequest = new QueryTagRequest();
         try {
             BinaryInputArchive.deserialize(queryTagRequest, request.getData());
-            List<TagInfo> tagInfos = metadataFunction.listTags(queryTagRequest.getTags());
-            log.debug("标签查询结果：{}", tagInfos);
-            response.setResult(BinaryOutputArchive.serialize(tagInfos));
+            System.out.println(getMethodName() + ":" + queryTagRequest);
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -239,58 +216,31 @@ public class FinalProcessor implements Processor {
 
     @Override
     public boolean tagMap(Request request, Response response) {
-        byte[] bytes = metadataFunction.tagMap();
-        response.setResult(bytes);
+        System.out.println(getMethodName());
         return false;
     }
 
     @Override
     public boolean listTreeIds(Request request, Response response) {
-        try {
-            List<Long> ids = tagTreeFunction.listIds();
-            TreeIdList treeIdList = new TreeIdList();
-            treeIdList.setIds(ids);
-            response.setResult(BinaryOutputArchive.serialize(treeIdList));
-        } catch (IOException e) {
-            throw new TbpException(e);
-        }
+        System.out.println(getMethodName());
         return false;
     }
 
     @Override
     public boolean getCurrentTree(Request request, Response response) {
-        try {
-            final String currentTree = tagTreeFunction.getCurrentTree();
-            response.setResult(BinaryOutputArchive.serialize(currentTree));
-        } catch (IOException e) {
-            throw new TbpException(e);
-        }
+        System.out.println(getMethodName());
         return false;
     }
 
     @Override
     public boolean getAssignTree(Request request, Response response) {
-        try {
-            final BinaryInputArchive archive = BinaryInputArchive.getArchive(request.getData());
-            int id = archive.readInt();
-            final String tree = tagTreeFunction.getTree(id);
-            response.setResult(BinaryOutputArchive.serialize(tree));
-        } catch (IOException e) {
-            throw new TbpException(e);
-        }
+        System.out.println(getMethodName());
         return false;
     }
 
     @Override
     public boolean saveTree(Request request, Response response) {
-        try {
-            final BinaryInputArchive archive = BinaryInputArchive.getArchive(request.getData());
-            String treeStr = archive.readString();
-            long maxId = tagTreeFunction.setTree(treeStr);
-            response.setResult(BinaryOutputArchive.serialize(maxId));
-        } catch (IOException e) {
-            throw new TbpException(e);
-        }
+        System.out.println(getMethodName());
         return false;
     }
 }

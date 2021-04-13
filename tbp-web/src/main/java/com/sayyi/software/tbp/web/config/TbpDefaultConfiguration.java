@@ -29,7 +29,7 @@ public class TbpDefaultConfiguration {
     public PkmFunction pkmFunction() {
         FileManager fileManager = new FileManager(storeDir);
         MetadataFunction metadataFunction = new MetadataManager();
-        TagTreeManager tagTreeManager = new TagTreeManager(snapDir, treeRetainNum);
+        TagTreeFunction tagTreeManager = new TagTreeManager(snapDir, treeRetainNum);
         DbFunction dbFunction = new FileBasedDbManager(snapDir);
         PkmService pkmService = new PkmServiceImpl(fileManager, metadataFunction, tagTreeManager, dbFunction);
         return new DefaultPkmFunction(pkmService);

@@ -33,7 +33,7 @@ public class PkmServiceImpl implements PkmService {
 
     public PkmServiceImpl(FileManager fileManager,
                           MetadataFunction metadataManager,
-                          TagTreeManager tagTreeManager,
+                          TagTreeFunction tagTreeFunction,
                           DbFunction dbFunction) {
         this.fileManager = fileManager;
         this.metadataManager = metadataManager;
@@ -41,7 +41,7 @@ public class PkmServiceImpl implements PkmService {
 
         prepProcessor = new PrepProcessor(fileManager, metadataManager);
         syncProcessor = new SyncProcessor(dbFunction);
-        finalProcessor = new FinalProcessor(metadataManager, tagTreeManager);
+        finalProcessor = new FinalProcessor(metadataManager, tagTreeFunction);
         processorPipeline = new ProcessorPipeline();
 
         processorPipeline.addFirst(finalProcessor);
