@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author SayYi
@@ -29,7 +30,7 @@ public class PkmServiceImpl implements PkmService {
     private final FinalProcessor finalProcessor;
     private final ProcessorPipeline processorPipeline;
 
-    private long nextOpId = 1;
+    private AtomicLong nextOpId = new AtomicLong(1);
 
     public PkmServiceImpl(FileManager fileManager,
                           MetadataFunction metadataManager,
@@ -53,20 +54,23 @@ public class PkmServiceImpl implements PkmService {
         processorThread.start();
     }
 
-    public void recovery() {
+    /**
+     * 这个方法，从本地的持久化文件中恢复数据，在类创建时调用，没有并发问题
+     */
+    private void recovery() {
         log.info("从本地恢复数据");
         long currentTime = System.currentTimeMillis();
         try {
             Snapshot snapshot = dbFunction.loadSnap();
             if (snapshot.getLastOpId() != -1) {
-                nextOpId = snapshot.getLastOpId();
+                nextOpId.set(snapshot.getLastOpId());
                 metadataManager.recovery(snapshot);
             }
-            Iterator<Request> requestIterator = dbFunction.requestIterator(nextOpId);
+            Iterator<Request> requestIterator = dbFunction.requestIterator(nextOpId.get());
             Response response = new Response();
             while (requestIterator.hasNext()) {
                 Request request = requestIterator.next();
-                if (request.getOpId() < nextOpId) {
+                if (request.getOpId() < nextOpId.get()) {
                     continue;
                 }
                 try {
@@ -79,18 +83,18 @@ public class PkmServiceImpl implements PkmService {
             }
             // 更新opId
             if (processorPipeline.getLastProcessedOpId() != -1) {
-                nextOpId = processorPipeline.getLastProcessedOpId() + 1;
+                nextOpId.set(processorPipeline.getLastProcessedOpId() + 1);
             }
 
             // 存储新的快照
             Snapshot currentSnap = new Snapshot();
-            currentSnap.setLastOpId(nextOpId);
+            currentSnap.setLastOpId(nextOpId.get());
             currentSnap.setLastFileId(metadataManager.getNextFileId());
             currentSnap.setFileMetadataList(metadataManager.listAllFile());
             dbFunction.storeSnap(currentSnap);
 
             // 清理过期的数据
-            dbFunction.cleanOutOfDateFile(nextOpId);
+            dbFunction.cleanOutOfDateFile(nextOpId.get());
         } catch (IOException e) {
             throw new TbpException(e.getMessage());
         }
@@ -99,7 +103,7 @@ public class PkmServiceImpl implements PkmService {
 
     @Override
     public void deal(Request request, Response response) {
-        request.setOpId(nextOpId++);
+        request.setOpId(nextOpId.getAndIncrement());
         requestPair.offer(new Object[]{request, response});
     }
 
