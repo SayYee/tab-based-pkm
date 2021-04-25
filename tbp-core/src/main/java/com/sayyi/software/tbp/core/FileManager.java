@@ -46,6 +46,7 @@ public class FileManager {
      * @throws IOException
      */
     public void open(String filePath) throws IOException {
+        filePath = filePath.replaceAll("\\\\", "/");
         Desktop.getDesktop().open(new File(fileStoreDir, filePath));
     }
 
@@ -64,6 +65,7 @@ public class FileManager {
      * @throws IOException
      */
     public void select(String filePath) throws IOException {
+        filePath = filePath.replaceAll("\\\\", "/");
         String realPath = new File(fileStoreDir, filePath).getPath();
         if (isWin()) {
             Runtime.getRuntime().exec("explorer /select, " + realPath);
@@ -87,6 +89,7 @@ public class FileManager {
      * @param filePath  目标文件相对地址
      */
     public void delete(String filePath) throws IOException {
+        filePath = filePath.replaceAll("\\\\", "/");
         File file = new File(fileStoreDir, filePath);
         delete(file);
     }
@@ -117,6 +120,7 @@ public class FileManager {
      * @return  新的文件信息
      */
     public FileBaseInfo rename(String filePath, String newName) throws IOException {
+        filePath = filePath.replaceAll("\\\\", "/");
         File file = new File(fileStoreDir, filePath);
         Path source = file.toPath();
         Files.move(source, source.resolveSibling(newName));
@@ -296,7 +300,9 @@ public class FileManager {
     }
 
     private FileBaseInfo createFromFile(File file) {
-        return new FileBaseInfo(file.getAbsolutePath().substring(absolutePathStoreDir.length()), file.getName(), System.currentTimeMillis());
+        return new FileBaseInfo(file.getAbsolutePath().substring(absolutePathStoreDir.length()),
+                file.getName(),
+                System.currentTimeMillis());
     }
 
 }

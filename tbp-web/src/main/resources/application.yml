@@ -18,6 +18,6 @@ tbp:
   nio:
     enable: false
     port: 9000
-  snap-dir: C:\\Users\\SayYi\\Desktop\\temp\\tbpSnap
-  store-dir: C:\\Users\\SayYi\\Desktop\\temp\\tbpStore
+  snap-dir: C:\\Users\\71734\\Desktop\\temp\\pkm-test\\snap
+  store-dir: C:\\Users\\71734\\Desktop\\temp\\pkm-test\\store
   tree-retain-num: 10

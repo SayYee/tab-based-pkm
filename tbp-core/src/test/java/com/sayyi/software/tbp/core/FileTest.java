@@ -25,6 +25,14 @@ public class FileTest {
     }
 
     @Test
+    public void test_convert_file_path() throws Exception {
+        String filepath = "/user/local/bin";
+        String filename = "\\2021-03\\hello.md";
+        File file = new File(filepath, filename);
+        System.out.println(file.getAbsoluteFile());
+    }
+
+    @Test
     public void test_location() throws Exception {
         String filename = "C:\\Users\\SayYi\\Desktop\\temp\\测试文件.html";
 //        File file = new File(filename);
