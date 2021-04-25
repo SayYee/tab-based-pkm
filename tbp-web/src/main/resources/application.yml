@@ -12,10 +12,7 @@ server:
 logging:
   level:
     root: info
-    com:
-      sayyi:
-        software:
-          tbp: debug
+    com.sayyi.software.tbp: debug
 
 tbp:
   nio:
