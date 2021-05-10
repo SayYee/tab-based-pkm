@@ -6,6 +6,7 @@ spring:
   mvc:
     static-path-pattern: /static/**
 
+# web端口
 server:
   port: 9000
 
@@ -15,9 +16,16 @@ logging:
     com.sayyi.software.tbp: debug
 
 tbp:
+  # tbo nio配置
   nio:
+    # 是否启用
     enable: false
+    # tbp server监听端口
     port: 9000
+  # 启用nio的情况下，下边的配置不会生效。文件的存储将由nio server处理
+  # 元数据存储路径
   snap-dir: C:\\Users\\71734\\Desktop\\temp\\pkm-test\\snap
+  # 文件存储路径
   store-dir: C:\\Users\\71734\\Desktop\\temp\\pkm-test\\store
+  # 标签树历史版本数据
   tree-retain-num: 10
