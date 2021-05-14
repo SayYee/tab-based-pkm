@@ -4,11 +4,9 @@ import com.sayyi.software.tbp.common.TbpException;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -18,6 +16,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author SayYi
  */
 public class TagTreeManager implements TagTreeFunction {
+
+    /** 默认tree文件路径 */
+    private static final String DEFAULT_TREE = "default.tree";
 
     /**
      * tree文件前缀
@@ -56,10 +57,12 @@ public class TagTreeManager implements TagTreeFunction {
         File file = new File(snapDir);
         if (file.exists()) {
             String[] filenames = file.list((dir, name) -> name.startsWith(TREE_FILE_PREFIX));
+            // 如果用户第一次启动，还没有tree信息，需要加载默认的tree数据出来
             if (filenames == null || filenames.length == 0) {
                 maxId = 0;
                 nextId = maxId + 1;
-                currentTreeStr = "";
+                // 加载默认的tree信息
+                currentTreeStr = loadDefaultTree();
                 return;
             }
             long[] ids = Arrays.stream(filenames)
@@ -136,6 +139,20 @@ public class TagTreeManager implements TagTreeFunction {
             Files.write(file.toPath(), treeStr.getBytes(UTF_8));
         } catch (IOException e) {
             throw new TbpException("写入文件失败【" + id + "】");
+        }
+    }
+
+    /**
+     * 加载默认tree文件内容
+     * @return
+     */
+    private String loadDefaultTree() {
+        try {
+            File file = new File(Objects.requireNonNull(this.getClass().getResource("/" + DEFAULT_TREE)).toURI());
+            byte[] content = Files.readAllBytes(file.toPath());
+            return new String(content, UTF_8);
+        } catch (IOException | URISyntaxException e) {
+            throw new TbpException("加载默认tree文件失败");
         }
     }
 

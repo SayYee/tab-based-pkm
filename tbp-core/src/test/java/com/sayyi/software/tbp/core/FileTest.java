@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -43,6 +44,13 @@ public class FileTest {
         File file = new File(filename);
         Files.createFile(file.toPath());
         Files.write(file.toPath(), generateHtml("https://github.com/dendronhq/dendron").getBytes(UTF_8));
+    }
+
+    @Test
+    public void test_load_default_tree() throws Exception {
+        File file = new File(this.getClass().getResource("/default.tree").toURI());
+        byte[] content = Files.readAllBytes(file.toPath());
+        System.out.println(new String(content, UTF_8));
     }
 
     private String generateHtml(String url) {
