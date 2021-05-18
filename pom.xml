@@ -15,6 +15,7 @@
         <module>tbp-nio</module>
         <module>tbp-assembly</module>
         <module>tbp-cli</module>
+        <module>tbp-generator</module>
     </modules>
 <!--    <parent>-->
 <!--        <groupId>org.springframework.boot</groupId>-->

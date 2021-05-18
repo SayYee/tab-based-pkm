@@ -1,0 +1,56 @@
+// 使用模版生成，请不要手动修改
+package ${package};
+
+import com.sayyi.software.tbp.common.store.InputArchive;
+import com.sayyi.software.tbp.common.store.OutputArchive;
+import com.sayyi.software.tbp.common.store.Record;
+import lombok.Data;
+
+import java.io.IOException;
+<%
+/** import 不为空才输出。避免头部太多空行 */
+for(field in fields){
+    var fieldName = field.key;
+    var jType = field.value;
+    var str = @jType.importStr();
+    if (isNotEmpty(str)) {
+        println(str);
+    }
+}
+%>
+
+@Data
+public class ${class} implements Record  {
+<%
+/** 字段声明 */
+for(field in fields){
+    var fieldName = field.key;
+    var jType = field.value;
+%>
+    ${@jType.declareStr(fieldName)}
+<%}%>
+
+    @Override
+    public void serialize(OutputArchive archive) throws IOException {
+    <%
+    /** 序列化 */
+    for(field in fields){
+        var fieldName = field.key;
+        var jType = field.value;
+    %>
+        ${@jType.serialize(fieldName)}
+    <%}%>
+    }
+
+    @Override
+    public void deserialize(InputArchive archive) throws IOException {
+    <%
+    /** 反序列化 */
+    for(field in fields){
+        var fieldName = field.key;
+        var jType = field.value;
+    %>
+        ${@jType.deserialize(fieldName)}
+    <%}%>
+    }
+}
