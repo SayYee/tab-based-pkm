@@ -1,15 +1,15 @@
 package com.sayyi.software.tbp.core.flow.processor;
 
 import com.sayyi.software.tbp.common.FileMetadata;
-import com.sayyi.software.tbp.common.TagInfo;
 import com.sayyi.software.tbp.common.TbpException;
 import com.sayyi.software.tbp.common.constant.ResourceType;
-import com.sayyi.software.tbp.common.flow.*;
+import com.sayyi.software.tbp.common.flow.Request;
+import com.sayyi.software.tbp.common.flow.Response;
+import com.sayyi.software.tbp.common.model.*;
 import com.sayyi.software.tbp.common.store.BinaryInputArchive;
 import com.sayyi.software.tbp.common.store.BinaryOutputArchive;
 import com.sayyi.software.tbp.core.MetadataFunction;
 import com.sayyi.software.tbp.core.TagTreeFunction;
-import com.sayyi.software.tbp.core.TagTreeManager;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -34,7 +34,8 @@ public class FinalProcessor implements Processor {
     @Override
     public boolean upload(Request request, Response response) {
         try {
-            FileBaseInfo fileBaseInfo = parseFileBaseInfo(request);
+            FileMetadata fileBaseInfo = parseFileBaseInfo(request);
+            log.debug("上传文件【{}】", fileBaseInfo);
             FileMetadata fileMetadata = metadataFunction.create(ResourceType.LOCAL, fileBaseInfo);
             response.setResult(BinaryOutputArchive.serialize(fileMetadata));
         } catch (IOException e) {
@@ -46,7 +47,8 @@ public class FinalProcessor implements Processor {
     @Override
     public boolean copy(Request request, Response response) {
         try {
-            FileBaseInfo fileBaseInfo = parseFileBaseInfo(request);
+            FileMetadata fileBaseInfo = parseFileBaseInfo(request);
+            log.debug("复制文件【{}】", fileBaseInfo);
             FileMetadata fileMetadata = metadataFunction.create(ResourceType.LOCAL, fileBaseInfo);
             response.setResult(BinaryOutputArchive.serialize(fileMetadata));
         } catch (IOException e) {
@@ -58,7 +60,8 @@ public class FinalProcessor implements Processor {
     @Override
     public boolean create(Request request, Response response) {
         try {
-            FileBaseInfo fileBaseInfo = parseFileBaseInfo(request);
+            FileMetadata fileBaseInfo = parseFileBaseInfo(request);
+            log.debug("创建文件【{}】", fileBaseInfo);
             FileMetadata fileMetadata = metadataFunction.create(ResourceType.LOCAL, fileBaseInfo);
             response.setResult(BinaryOutputArchive.serialize(fileMetadata));
         } catch (IOException e) {
@@ -70,7 +73,8 @@ public class FinalProcessor implements Processor {
     @Override
     public boolean addUrl(Request request, Response response) {
         try {
-            FileBaseInfo fileBaseInfo = parseFileBaseInfo(request);
+            FileMetadata fileBaseInfo = parseFileBaseInfo(request);
+            log.debug("保存url【{}】", fileBaseInfo);
             FileMetadata fileMetadata = metadataFunction.create(ResourceType.NET, fileBaseInfo);
             response.setResult(BinaryOutputArchive.serialize(fileMetadata));
         } catch (IOException e) {
@@ -82,7 +86,8 @@ public class FinalProcessor implements Processor {
     @Override
     public boolean rename(Request request, Response response) {
         try {
-            FileBaseInfo fileBaseInfo = parseFileBaseInfo(request);
+            FileMetadata fileBaseInfo = parseFileBaseInfo(request);
+            log.debug("重命名文件【{}】", fileBaseInfo);
             metadataFunction.rename(fileBaseInfo);
         } catch (IOException e) {
             throw new TbpException(e);
@@ -90,18 +95,20 @@ public class FinalProcessor implements Processor {
         return false;
     }
 
-    private FileBaseInfo parseFileBaseInfo(Request request) throws IOException {
-        FileBaseInfo fileBaseInfo = new FileBaseInfo();
+    private FileMetadata parseFileBaseInfo(Request request) throws IOException {
+        FileMetadata fileBaseInfo = new FileMetadata();
         BinaryInputArchive.deserialize(fileBaseInfo, request.getData());
         return fileBaseInfo;
     }
 
     @Override
     public boolean modifyResourceTag(Request request, Response response) {
-        ModifyTagRequest modifyTagRequest = new ModifyTagRequest();
+        FileModifyTags fileModifyTags = new FileModifyTags();
         try {
-            BinaryInputArchive.deserialize(modifyTagRequest, request.getData());
-            metadataFunction.modifyTag(modifyTagRequest.getId(), modifyTagRequest.getNewTags());
+            BinaryInputArchive.deserialize(fileModifyTags, request.getData());
+            log.debug("调整文件标签【{}】", fileModifyTags);
+            metadataFunction.modifyTag(fileModifyTags.getFileId(),
+                    fileModifyTags.getTags());
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -110,10 +117,12 @@ public class FinalProcessor implements Processor {
 
     @Override
     public boolean addResourceTag(Request request, Response response) {
-        ModifyTagRequest modifyTagRequest = new ModifyTagRequest();
+        FileModifyTags fileModifyTags = new FileModifyTags();
         try {
-            BinaryInputArchive.deserialize(modifyTagRequest, request.getData());
-            metadataFunction.addFileTag(modifyTagRequest.getId(), modifyTagRequest.getNewTags());
+            BinaryInputArchive.deserialize(fileModifyTags, request.getData());
+            log.debug("添加文件标签【{}】", fileModifyTags);
+            metadataFunction.addFileTag(fileModifyTags.getFileId(),
+                    fileModifyTags.getTags());
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -122,10 +131,12 @@ public class FinalProcessor implements Processor {
 
     @Override
     public boolean deleteResourceTag(Request request, Response response) {
-        ModifyTagRequest modifyTagRequest = new ModifyTagRequest();
+        FileModifyTags fileModifyTags = new FileModifyTags();
         try {
-            BinaryInputArchive.deserialize(modifyTagRequest, request.getData());
-            metadataFunction.deleteFileTag(modifyTagRequest.getId(), modifyTagRequest.getNewTags());
+            BinaryInputArchive.deserialize(fileModifyTags, request.getData());
+            log.debug("删除文件标签【{}】", fileModifyTags);
+            metadataFunction.deleteFileTag(fileModifyTags.getFileId(),
+                    fileModifyTags.getTags());
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -134,10 +145,11 @@ public class FinalProcessor implements Processor {
 
     @Override
     public boolean open(Request request, Response response) {
-        OpenRequest openRequest = new OpenRequest();
+        FileOperate fileOperate = new FileOperate();
         try {
-            BinaryInputArchive.deserialize(openRequest, request.getData());
-            metadataFunction.open(openRequest.getId(), openRequest.getOpenTime());
+            BinaryInputArchive.deserialize(fileOperate, request.getData());
+            log.debug("打开文件【{}】", fileOperate);
+            metadataFunction.open(fileOperate.getFileId(), fileOperate.getTime());
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -146,6 +158,7 @@ public class FinalProcessor implements Processor {
 
     @Override
     public boolean select(Request request, Response response) {
+        log.debug("在目录中展示文件");
         return open(request, response);
     }
 
@@ -154,6 +167,7 @@ public class FinalProcessor implements Processor {
         try {
             final BinaryInputArchive archive = BinaryInputArchive.getArchive(request.getData());
             long id = archive.readLong();
+            log.debug("删除文件【{}】", id);
             metadataFunction.delete(id);
         } catch (IOException e) {
             throw new TbpException(e);
@@ -166,6 +180,7 @@ public class FinalProcessor implements Processor {
         try {
             final BinaryInputArchive archive = BinaryInputArchive.getArchive(request.getData());
             long id = archive.readLong();
+            log.debug("通过id获取文件【{}】", id);
             FileMetadata fileMetadata = metadataFunction.getFileById(id);
             response.setResult(BinaryOutputArchive.serialize(fileMetadata));
         } catch (IOException e) {
@@ -176,10 +191,12 @@ public class FinalProcessor implements Processor {
 
     @Override
     public boolean listResources(Request request, Response response) {
-        QueryFileRequest queryFileRequest = new QueryFileRequest();
+        QueryFile queryFile = new QueryFile();
         try {
-            BinaryInputArchive.deserialize(queryFileRequest, request.getData());
-            List<FileMetadata> fileMetadata = metadataFunction.listResources(queryFileRequest.getFilenameReg(), queryFileRequest.getTags());
+            BinaryInputArchive.deserialize(queryFile, request.getData());
+            log.debug("查询文件【{}】", queryFile);
+            List<FileMetadata> fileMetadata = metadataFunction.listResources(queryFile.getFilenameReg(),
+                    queryFile.getTags());
             response.setResult(BinaryOutputArchive.serialize(fileMetadata));
         } catch (IOException e) {
             throw new TbpException(e);
@@ -192,6 +209,7 @@ public class FinalProcessor implements Processor {
         try {
             final BinaryInputArchive archive = BinaryInputArchive.getArchive(request.getData());
             String tag = archive.readString();
+            log.debug("删除标签【{}】", tag);
             metadataFunction.deleteTag(tag);
         } catch (IOException e) {
             throw new TbpException(e);
@@ -201,10 +219,12 @@ public class FinalProcessor implements Processor {
 
     @Override
     public boolean renameTag(Request request, Response response) {
-        RenameTagRequest renameTagRequest = new RenameTagRequest();
+        TagRename tagRename = new TagRename();
         try {
-            BinaryInputArchive.deserialize(renameTagRequest, request.getData());
-            metadataFunction.renameTag(renameTagRequest.getTag(), renameTagRequest.getNewTag());
+            BinaryInputArchive.deserialize(tagRename, request.getData());
+            log.debug("重命名标签【{}】", tagRename);
+            metadataFunction.renameTag(tagRename.getTag(),
+                    tagRename.getNewTag());
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -213,10 +233,12 @@ public class FinalProcessor implements Processor {
 
     @Override
     public boolean batchModifyTags(Request request, Response response) {
-        BatchModifyTagsRequest tagsRequest = new BatchModifyTagsRequest();
+        TagBatchModify tagBatchModify = new TagBatchModify();
         try {
-            BinaryInputArchive.deserialize(tagsRequest, request.getData());
-            metadataFunction.batchModifyTags(tagsRequest.getTags(), tagsRequest.getNewTags());
+            BinaryInputArchive.deserialize(tagBatchModify, request.getData());
+            log.debug("批量修改标签【{}】", tagBatchModify);
+            metadataFunction.batchModifyTags(tagBatchModify.getTags(),
+                    tagBatchModify.getNewTags());
         } catch (IOException e) {
             throw new TbpException(e);
         }
@@ -225,11 +247,11 @@ public class FinalProcessor implements Processor {
 
     @Override
     public boolean listTags(Request request, Response response) {
-        QueryTagRequest queryTagRequest = new QueryTagRequest();
+        QueryTag queryTag = new QueryTag();
         try {
-            BinaryInputArchive.deserialize(queryTagRequest, request.getData());
-            List<TagInfo> tagInfos = metadataFunction.listTags(queryTagRequest.getTags());
-            log.debug("标签查询结果：{}", tagInfos);
+            BinaryInputArchive.deserialize(queryTag, request.getData());
+            log.debug("查询标签【{}】", queryTag);
+            List<TagInfo> tagInfos = metadataFunction.listTags(queryTag.getTags());
             response.setResult(BinaryOutputArchive.serialize(tagInfos));
         } catch (IOException e) {
             throw new TbpException(e);
@@ -239,6 +261,7 @@ public class FinalProcessor implements Processor {
 
     @Override
     public boolean tagMap(Request request, Response response) {
+        log.debug("查询tagmap");
         byte[] bytes = metadataFunction.tagMap();
         response.setResult(bytes);
         return false;
@@ -246,6 +269,7 @@ public class FinalProcessor implements Processor {
 
     @Override
     public boolean listTreeIds(Request request, Response response) {
+        log.debug("获取tree id 列表");
         try {
             List<Long> ids = tagTreeFunction.listIds();
             TreeIdList treeIdList = new TreeIdList();
@@ -259,6 +283,7 @@ public class FinalProcessor implements Processor {
 
     @Override
     public boolean getCurrentTree(Request request, Response response) {
+        log.debug("获取当前树数据");
         try {
             final String currentTree = tagTreeFunction.getCurrentTree();
             response.setResult(BinaryOutputArchive.serialize(currentTree));
@@ -273,6 +298,7 @@ public class FinalProcessor implements Processor {
         try {
             final BinaryInputArchive archive = BinaryInputArchive.getArchive(request.getData());
             int id = archive.readInt();
+            log.debug("获取指定树信息【{}】", id);
             final String tree = tagTreeFunction.getTree(id);
             response.setResult(BinaryOutputArchive.serialize(tree));
         } catch (IOException e) {
@@ -283,6 +309,7 @@ public class FinalProcessor implements Processor {
 
     @Override
     public boolean saveTree(Request request, Response response) {
+        log.debug("保存树信息");
         try {
             final BinaryInputArchive archive = BinaryInputArchive.getArchive(request.getData());
             String treeStr = archive.readString();

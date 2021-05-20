@@ -1,7 +1,7 @@
 package com.sayyi.software.tbp.cli.util;
 
 import com.sayyi.software.tbp.common.FileMetadata;
-import com.sayyi.software.tbp.common.TagInfo;
+import com.sayyi.software.tbp.common.model.TagInfo;
 
 import java.io.PrintWriter;
 import java.util.Date;

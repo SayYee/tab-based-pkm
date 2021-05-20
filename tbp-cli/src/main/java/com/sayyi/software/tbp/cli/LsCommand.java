@@ -2,7 +2,7 @@ package com.sayyi.software.tbp.cli;
 
 import com.sayyi.software.tbp.cli.util.PrintUtil;
 import com.sayyi.software.tbp.common.FileMetadata;
-import com.sayyi.software.tbp.common.TagInfo;
+import com.sayyi.software.tbp.common.model.TagInfo;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;

@@ -2,7 +2,9 @@ package com.sayyi.software.tbp.core.flow.processor;
 
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.TbpException;
-import com.sayyi.software.tbp.common.flow.*;
+import com.sayyi.software.tbp.common.flow.Request;
+import com.sayyi.software.tbp.common.flow.Response;
+import com.sayyi.software.tbp.common.model.*;
 import com.sayyi.software.tbp.common.store.BinaryInputArchive;
 import com.sayyi.software.tbp.common.store.BinaryOutputArchive;
 import com.sayyi.software.tbp.core.FileManager;
@@ -29,12 +31,13 @@ public class PrepProcessor implements Processor {
 
     @Override
     public boolean upload(Request request, Response response) {
-        FileWithData fileWithData = new FileWithData();
+        UploadFile uploadFile = new UploadFile();
         try {
             // 这么序列化、反序列化，我只能说，太快乐了……
-            BinaryInputArchive.deserialize(fileWithData, request.getData());
+            BinaryInputArchive.deserialize(uploadFile, request.getData());
 
-            FileBaseInfo upload = fileManager.upload(fileWithData.getFilename(), fileWithData.getData());
+            FileMetadata upload = fileManager.upload(uploadFile.getFilename(),
+                    uploadFile.getData());
 
             byte[] serialize = BinaryOutputArchive.serialize(upload);
             request.setData(serialize);
@@ -46,11 +49,11 @@ public class PrepProcessor implements Processor {
 
     @Override
     public boolean copy(Request request, Response response) {
-        FileWithPath fileWithPath = new FileWithPath();
+        CopyFile copyFile = new CopyFile();
         try {
-            BinaryInputArchive.deserialize(fileWithPath, request.getData());
-            FileBaseInfo copy = fileManager.copy(fileWithPath.getFilepath());
-            copy.setTags(fileWithPath.getTags());
+            BinaryInputArchive.deserialize(copyFile, request.getData());
+            FileMetadata copy = fileManager.copy(copyFile.getFilepath());
+            copy.setTags(copyFile.getTags());
 
             byte[] serialize = BinaryOutputArchive.serialize(copy);
             request.setData(serialize);
@@ -62,12 +65,12 @@ public class PrepProcessor implements Processor {
 
     @Override
     public boolean create(Request request, Response response) {
-        FileWithPath fileWithPath = new FileWithPath();
+        CreateFile createFile = new CreateFile();
         try {
-            BinaryInputArchive.deserialize(fileWithPath, request.getData());
+            BinaryInputArchive.deserialize(createFile, request.getData());
             // 这名字……凑活着来吧
-            FileBaseInfo create = fileManager.create(fileWithPath.getFilename());
-            create.setTags(fileWithPath.getTags());
+            FileMetadata create = fileManager.create(createFile.getFilename());
+            create.setTags(createFile.getTags());
 
             byte[] serialize = BinaryOutputArchive.serialize(create);
             request.setData(serialize);
@@ -79,11 +82,12 @@ public class PrepProcessor implements Processor {
 
     @Override
     public boolean addUrl(Request request, Response response) {
-        FileBaseInfo fileBaseInfo = new FileBaseInfo();
+        CreateUrl createUrl = new CreateUrl();
         try {
-            BinaryInputArchive.deserialize(fileBaseInfo, request.getData());
-            FileBaseInfo urlFileInfo = fileManager.createUrlFile(fileBaseInfo.getFilename(), fileBaseInfo.getResourcePath());
-            urlFileInfo.setTags(fileBaseInfo.getTags());
+            BinaryInputArchive.deserialize(createUrl, request.getData());
+            FileMetadata urlFileInfo = fileManager.createUrlFile(createUrl.getName(),
+                    createUrl.getUrl());
+            urlFileInfo.setTags(createUrl.getTags());
 
             request.setData(BinaryOutputArchive.serialize(urlFileInfo));
             return true;
@@ -94,22 +98,22 @@ public class PrepProcessor implements Processor {
 
     @Override
     public boolean rename(Request request, Response response) {
-        RenameRequest renameRequest = new RenameRequest();
+        FileRename fileRename = new FileRename();
         try {
-            BinaryInputArchive.deserialize(renameRequest, request.getData());
+            BinaryInputArchive.deserialize(fileRename, request.getData());
 
-            long id = renameRequest.getId();
-            String newName = renameRequest.getNewName();
+            long id = fileRename.getFileId();
+            String newName = fileRename.getNewName();
             FileMetadata fileMetadata = metadataFunction.getFileById(id);
 
             log.debug("rename from {} to {}", fileMetadata.getFilename(), newName);
-            FileBaseInfo fileBaseInfo;
+            FileMetadata fileBaseInfo;
             if (fileMetadata.getFilename().equals(newName)) {
                 log.info("文件名没有发生变化，不做修改");
                 return false;
             }
             fileBaseInfo = fileManager.rename(fileMetadata.getResourcePath(), newName);
-            fileBaseInfo.setFileId(id);
+            fileBaseInfo.setId(id);
             byte[] serialize = BinaryOutputArchive.serialize(fileBaseInfo);
             request.setData(serialize);
             return true;
@@ -135,16 +139,15 @@ public class PrepProcessor implements Processor {
 
     @Override
     public boolean open(Request request, Response response) {
-        OpenRequest openRequest = new OpenRequest();
+        FileOperate fileOperate = new FileOperate();
         try {
-            BinaryInputArchive.deserialize(openRequest, request.getData());
+            BinaryInputArchive.deserialize(fileOperate, request.getData());
 
-            long id = openRequest.getId();
+            long id = fileOperate.getFileId();
             FileMetadata fileMetadata = metadataFunction.getFileById(id);
             fileManager.open(fileMetadata.getResourcePath());
 
-            openRequest.setOpenTime(System.currentTimeMillis());
-            request.setData(BinaryOutputArchive.serialize(openRequest));
+            request.setData(BinaryOutputArchive.serialize(fileOperate));
             return true;
         } catch (IOException e) {
             throw new TbpException(e);
@@ -153,16 +156,15 @@ public class PrepProcessor implements Processor {
 
     @Override
     public boolean select(Request request, Response response) {
-        OpenRequest openRequest = new OpenRequest();
+        FileOperate fileOperate = new FileOperate();
         try {
-            BinaryInputArchive.deserialize(openRequest, request.getData());
+            BinaryInputArchive.deserialize(fileOperate, request.getData());
 
-            long id = openRequest.getId();
+            long id = fileOperate.getFileId();
             FileMetadata fileMetadata = metadataFunction.getFileById(id);
             fileManager.select(fileMetadata.getResourcePath());
 
-            openRequest.setOpenTime(System.currentTimeMillis());
-            request.setData(BinaryOutputArchive.serialize(openRequest));
+            request.setData(BinaryOutputArchive.serialize(fileOperate));
             return true;
         } catch (IOException e) {
             throw new TbpException(e);

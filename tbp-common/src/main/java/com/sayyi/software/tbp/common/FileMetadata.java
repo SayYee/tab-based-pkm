@@ -35,7 +35,7 @@ public class FileMetadata implements Comparable<FileMetadata>, Record {
     /**
      * 标签集合
      */
-    private Set<String> tags;
+    private Set<String> tags = new HashSet<>();
 
     /**
      * 创建时间戳

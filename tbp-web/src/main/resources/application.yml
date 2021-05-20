@@ -24,8 +24,8 @@ tbp:
     port: 9000
   # 启用nio的情况下，下边的配置不会生效。文件的存储将由nio server处理
   # 元数据存储路径
-  snap-dir: C:\\Users\\71734\\Desktop\\temp\\pkm-test\\snap
+  snap-dir: /Users/xuchuang/Desktop/Temp/pkm/snap
   # 文件存储路径
-  store-dir: C:\\Users\\71734\\Desktop\\temp\\pkm-test\\store
+  store-dir: /Users/xuchuang/Desktop/Temp/pkm/store
   # 标签树历史版本数据
   tree-retain-num: 10

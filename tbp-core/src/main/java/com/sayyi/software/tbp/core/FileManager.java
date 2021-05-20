@@ -1,6 +1,6 @@
 package com.sayyi.software.tbp.core;
 
-import com.sayyi.software.tbp.common.flow.FileBaseInfo;
+import com.sayyi.software.tbp.common.FileMetadata;
 import lombok.extern.slf4j.Slf4j;
 
 import java.awt.*;
@@ -119,7 +119,7 @@ public class FileManager {
      * @param newName   新的文件名
      * @return  新的文件信息
      */
-    public FileBaseInfo rename(String filePath, String newName) throws IOException {
+    public FileMetadata rename(String filePath, String newName) throws IOException {
         filePath = filePath.replaceAll("\\\\", "/");
         File file = new File(fileStoreDir, filePath);
         Path source = file.toPath();
@@ -135,7 +135,7 @@ public class FileManager {
      * @return
      * @throws IOException
      */
-    public FileBaseInfo upload(String filename, InputStream in) throws IOException {
+    public FileMetadata upload(String filename, InputStream in) throws IOException {
         File storePath = getStorePath();
         File target = new File(storePath, filename);
         // TODO-在这里处理文件名重复的问题，挺憨憨的。毕竟会分文件夹。
@@ -153,7 +153,7 @@ public class FileManager {
      * @return
      * @throws IOException
      */
-    public FileBaseInfo upload(String filename, byte[] data) throws IOException {
+    public FileMetadata upload(String filename, byte[] data) throws IOException {
         File storePath = getStorePath();
         File target = new File(storePath, filename);
         if (target.exists()) {
@@ -172,7 +172,7 @@ public class FileManager {
      * @return
      * @throws IOException
      */
-    public FileBaseInfo create(String filename) throws IOException {
+    public FileMetadata create(String filename) throws IOException {
         File storePath = getStorePath();
         File target = new File(storePath, filename);
         if (target.exists()) {
@@ -189,7 +189,7 @@ public class FileManager {
      * @return
      * @throws IOException
      */
-    public FileBaseInfo createUrlFile(String filename, String url) throws IOException {
+    public FileMetadata createUrlFile(String filename, String url) throws IOException {
         File storePath = getStorePath();
         File target = new File(storePath, filename + ".html");
         if (target.exists()) {
@@ -228,7 +228,7 @@ public class FileManager {
      * 支持文件夹复制
      * @param sourceFile    目标文件绝对地址
      */
-    public FileBaseInfo copy(String sourceFile) throws IOException {
+    public FileMetadata copy(String sourceFile) throws IOException {
         File source = new File(sourceFile);
 
         String filename = source.getName();
@@ -293,16 +293,18 @@ public class FileManager {
         File storePath = new File(fileStoreDir, now.toString());
         if (!storePath.exists()) {
             if (!storePath.mkdirs()) {
-                throw new IllegalArgumentException(storePath.toString() + " file is missing and create failed");
+                throw new IllegalArgumentException(storePath + " file is missing and create failed");
             }
         }
         return storePath;
     }
 
-    private FileBaseInfo createFromFile(File file) {
-        return new FileBaseInfo(file.getAbsolutePath().substring(absolutePathStoreDir.length()),
-                file.getName(),
-                System.currentTimeMillis());
+    private FileMetadata createFromFile(File file) {
+        FileMetadata fileMetadata = new FileMetadata();
+        fileMetadata.setResourcePath(file.getAbsolutePath().substring(absolutePathStoreDir.length()));
+        fileMetadata.setFilename(file.getName());
+        fileMetadata.setCreateTime(System.currentTimeMillis());
+        return fileMetadata;
     }
 
 }

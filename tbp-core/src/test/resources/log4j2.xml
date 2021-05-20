@@ -9,7 +9,7 @@
         <!-- 仅输出本项目的debug信息：匹配-过滤 -->
         <!-- 这个东西，如果不配置appender，貌似会直接从父级继承？
             这个东西，貌似也是有传递行为的（链式） -->
-        <Logger name="com.zhss.demo.dfs" level="trace" />
+        <Logger name="com.sayyi.software.tbp" level="trace" />
         <!-- 其他的日志等级依然是error -->
         <Root level="error">
             <AppenderRef ref="Console"/>

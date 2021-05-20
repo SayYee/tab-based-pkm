@@ -1,9 +1,9 @@
 package com.sayyi.software.tbp.generator.parser.impl;
 
+import cn.hutool.core.lang.Assert;
 import com.sayyi.software.tbp.generator.model.ModuleInfo;
 import com.sayyi.software.tbp.generator.parser.Parser;
 import com.sayyi.software.tbp.generator.parser.ParserBuilder;
-import com.sun.tools.javac.util.Assert;
 
 import java.nio.CharBuffer;
 import java.util.LinkedList;
@@ -36,7 +36,7 @@ public class DslParser implements Parser<List<ModuleInfo>> {
                 .add(enterParser)
                 .add(noteParser)
                 .add(moduleParser, moduleInfos::add)
-                .add(CharBuffer::hasRemaining, t -> Assert.check(!t, "还有别的无法识别的内容"));
+                .add(CharBuffer::hasRemaining, t -> Assert.isTrue(!t, "还有别的无法识别的内容"));
         parserBuilder.execute(charBuffer);
         return moduleInfos;
     }

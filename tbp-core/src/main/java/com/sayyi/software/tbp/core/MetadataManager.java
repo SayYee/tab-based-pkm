@@ -2,9 +2,8 @@ package com.sayyi.software.tbp.core;
 
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.Snapshot;
-import com.sayyi.software.tbp.common.TagInfo;
+import com.sayyi.software.tbp.common.model.TagInfo;
 import com.sayyi.software.tbp.common.TbpException;
-import com.sayyi.software.tbp.common.flow.FileBaseInfo;
 import it.uniroma1.dis.wsngroup.gexf4j.core.*;
 import it.uniroma1.dis.wsngroup.gexf4j.core.impl.GexfImpl;
 import it.uniroma1.dis.wsngroup.gexf4j.core.impl.StaxGraphWriter;
@@ -83,7 +82,7 @@ public class MetadataManager implements MetadataFunction {
     }
 
     @Override
-    public FileMetadata create(int resourceType, FileBaseInfo fileBaseInfo) {
+    public FileMetadata create(int resourceType, FileMetadata fileBaseInfo) {
         isModified = true;
 
         FileMetadata fileMetadata = createMetadata(resourceType, fileBaseInfo);
@@ -103,21 +102,21 @@ public class MetadataManager implements MetadataFunction {
         return fileMetadata;
     }
 
-    private FileMetadata createMetadata(int resourceType, FileBaseInfo fileBaseInfo) {
+    private FileMetadata createMetadata(int resourceType, FileMetadata fileBaseInfo) {
         FileMetadata fileMetadata = new FileMetadata();
         fileMetadata.setId(nextFileId++);
         fileMetadata.setFilename(fileBaseInfo.getFilename());
         fileMetadata.setResourceType(resourceType);
         fileMetadata.setResourcePath(fileBaseInfo.getResourcePath());
         fileMetadata.setTags(new HashSet<>());
-        fileMetadata.setCreateTime(fileBaseInfo.getModifyTime());
-        fileMetadata.setLastOpenTime(fileBaseInfo.getModifyTime());
+        fileMetadata.setCreateTime(fileBaseInfo.getCreateTime());
+        fileMetadata.setLastOpenTime(fileBaseInfo.getCreateTime());
         return fileMetadata;
     }
 
     @Override
-    public void rename(FileBaseInfo fileBaseInfo) {
-        long id = fileBaseInfo.getFileId();
+    public void rename(FileMetadata fileBaseInfo) {
+        long id = fileBaseInfo.getId();
         FileMetadata fileMetadata = getFileById(id);
         fileMetadata.setResourcePath(fileBaseInfo.getResourcePath());
         fileMetadata.setFilename(fileBaseInfo.getFilename());
@@ -294,7 +293,12 @@ public class MetadataManager implements MetadataFunction {
     public List<TagInfo> listTags(Set<String> tags) {
         if (tags == null || tags.isEmpty()) {
             return tagFileMap.entrySet().stream()
-                    .map(entry -> new TagInfo(entry.getKey(), entry.getValue().size()))
+                    .map(entry -> {
+                        TagInfo tagInfo = new TagInfo();
+                        tagInfo.setTag(entry.getKey());
+                        tagInfo.setFileNum(entry.getValue().size());
+                        return tagInfo;
+                    })
                     .sorted(tagComparator)
                     .collect(Collectors.toList());
         }
@@ -311,7 +315,12 @@ public class MetadataManager implements MetadataFunction {
             }
         }
         return tagInfoMap.entrySet().stream()
-                .map(entry -> new TagInfo(entry.getKey(), entry.getValue()))
+                .map(entry -> {
+                    TagInfo tagInfo = new TagInfo();
+                    tagInfo.setTag(entry.getKey());
+                    tagInfo.setFileNum(entry.getValue());
+                    return tagInfo;
+                })
                 .sorted(tagComparator)
                 .collect(Collectors.toList());
     }

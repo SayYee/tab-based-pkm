@@ -1,7 +1,7 @@
 package com.sayyi.software.tbp.core.facade;
 
 import com.sayyi.software.tbp.common.FileMetadata;
-import com.sayyi.software.tbp.common.TagInfo;
+import com.sayyi.software.tbp.common.model.TagInfo;
 import com.sayyi.software.tbp.common.TbpException;
 
 import java.util.List;
@@ -61,26 +61,26 @@ public interface PkmFunction {
     /**
      * 添加文件标签
      * @param fileId
-     * @param newTags
+     * @param tags
      * @throws Exception
      */
-    void addFileTag(long fileId, Set<String> newTags) throws Exception;
+    void addFileTag(long fileId, Set<String> tags) throws Exception;
 
     /**
      * 删除文件标签
      * @param fileId
-     * @param newTags
+     * @param tags
      * @throws Exception
      */
-    void deleteFileTag(long fileId, Set<String> newTags) throws Exception;
+    void deleteFileTag(long fileId, Set<String> tags) throws Exception;
 
     /**
-     * 修改文件标签
+     * 修改文件标签。基于添加、删除标签的方法的组合实现
      * @param fileId    文件id
-     * @param newTags   新的tag集合
+     * @param tags   新的tag集合
      * @throws TbpException
      */
-    void modifyTag(long fileId, Set<String> newTags) throws Exception;
+    void modifyTag(long fileId, Set<String> tags) throws Exception;
 
     /**
      * 调用本地关联软件，打开文件

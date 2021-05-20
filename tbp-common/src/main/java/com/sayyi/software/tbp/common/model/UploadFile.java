@@ -1,4 +1,5 @@
-package com.sayyi.software.tbp.common.flow;
+// 使用模版生成，请不要手动修改
+package com.sayyi.software.tbp.common.model;
 
 import com.sayyi.software.tbp.common.store.InputArchive;
 import com.sayyi.software.tbp.common.store.OutputArchive;
@@ -7,24 +8,20 @@ import lombok.Data;
 
 import java.io.IOException;
 
-/**
- * @author SayYi
- */
 @Data
-public class RenameTagRequest implements Record {
-    private String tag;
-    private String newTag;
-
+public class UploadFile implements Record  {
+    private String filename;
+    private byte[] data;
 
     @Override
     public void serialize(OutputArchive archive) throws IOException {
-        archive.writeString(tag);
-        archive.writeString(newTag);
+        archive.writeString(filename);
+        archive.writeBuffer(data);
     }
 
     @Override
     public void deserialize(InputArchive archive) throws IOException {
-        tag = archive.readString();
-        newTag = archive.readString();
+        filename = archive.readString();
+        data = archive.readBuffer();
     }
 }

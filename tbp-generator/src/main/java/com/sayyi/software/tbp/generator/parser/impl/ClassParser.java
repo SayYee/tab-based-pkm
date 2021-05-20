@@ -1,10 +1,10 @@
 package com.sayyi.software.tbp.generator.parser.impl;
 
+import cn.hutool.core.lang.Assert;
 import com.sayyi.software.tbp.generator.model.ClassInfo;
 import com.sayyi.software.tbp.generator.model.FieldInfo;
 import com.sayyi.software.tbp.generator.parser.Parser;
 import com.sayyi.software.tbp.generator.parser.ParserBuilder;
-import com.sun.tools.javac.util.Assert;
 
 import java.nio.CharBuffer;
 import java.util.*;
@@ -42,21 +42,21 @@ public class ClassParser implements Parser<ClassInfo> {
         // 4、空白、换行、花括号
         // 5、空白、换行、注释、field、花括号
         ParserBuilder parserBuilder = new ParserBuilder();
-        parserBuilder.add(stringParser, sign -> Assert.check("class".equals(sign), "必须以class开头"))
+        parserBuilder.add(stringParser, sign -> Assert.isTrue("class".equals(sign), "必须以class开头"))
                 .next()
-                .add(blankParser, i -> Assert.check(i > 0, "class标志后边必须有空白元素"))
+                .add(blankParser, i -> Assert.isTrue(i > 0, "class标志后边必须有空白元素"))
                 .next()
                 .add(stringParser, classInfo::setClassName)
                 .next()
                 .add(blankParser)
                 .add(enterParser)
-                .add(CharBuffer::get, c -> Assert.check(c == '{', "class块必须是花括号开启"))
+                .add(CharBuffer::get, c -> Assert.isTrue(c == '{', "class块必须是花括号开启"))
                 .next()
                 .add(blankParser)
                 .add(enterParser)
                 .add(noteParser)
                 .add(fieldParser, fieldInfos::add)
-                .add(CharBuffer::get, c -> Assert.check(c == '}', "class块必须是花括号结束"));
+                .add(CharBuffer::get, c -> Assert.isTrue(c == '}', "class块必须是花括号结束"));
         parserBuilder.execute(charBuffer);
         return classInfo;
     }

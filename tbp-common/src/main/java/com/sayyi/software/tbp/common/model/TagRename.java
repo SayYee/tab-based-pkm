@@ -1,34 +1,27 @@
-package com.sayyi.software.tbp.common;
+// 使用模版生成，请不要手动修改
+package com.sayyi.software.tbp.common.model;
 
 import com.sayyi.software.tbp.common.store.InputArchive;
 import com.sayyi.software.tbp.common.store.OutputArchive;
 import com.sayyi.software.tbp.common.store.Record;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 
-/**
- * @author SayYi
- */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class TagInfo implements Record {
-
+public class TagRename implements Record  {
     private String tag;
-    private int fileNum;
+    private String newTag;
 
     @Override
     public void serialize(OutputArchive archive) throws IOException {
         archive.writeString(tag);
-        archive.writeInt(fileNum);
+        archive.writeString(newTag);
     }
 
     @Override
     public void deserialize(InputArchive archive) throws IOException {
         tag = archive.readString();
-        fileNum = archive.readInt();
+        newTag = archive.readString();
     }
 }

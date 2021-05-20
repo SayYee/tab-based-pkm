@@ -2,9 +2,8 @@ package com.sayyi.software.tbp.core;
 
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.Snapshot;
-import com.sayyi.software.tbp.common.TagInfo;
+import com.sayyi.software.tbp.common.model.TagInfo;
 import com.sayyi.software.tbp.common.TbpException;
-import com.sayyi.software.tbp.common.flow.FileBaseInfo;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,16 +28,16 @@ public interface MetadataFunction {
      * @param fileBaseInfo
      * @return
      */
-    FileMetadata create(int resourceType, FileBaseInfo fileBaseInfo);
+    FileMetadata create(int resourceType, FileMetadata fileBaseInfo);
 
     /**
      * 重命名文件
      * @param fileBaseInfo
      */
-    void rename(FileBaseInfo fileBaseInfo);
+    void rename(FileMetadata fileBaseInfo);
 
     /**
-     * 修改文件标签
+     * 修改文件标签。基于添加、删除标签的方法的组合实现
      * @param fileId
      * @param newTags
      */

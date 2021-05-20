@@ -38,6 +38,10 @@ public class JTypeFactory {
      * @return
      */
     public static JType get(String sign) {
-        return jTypeObjCache.get(sign);
+        JType jtype = jTypeObjCache.get(sign);
+        if (jtype == null) {
+            throw new IllegalArgumentException("未知的字段类型[" + sign + "]");
+        }
+        return jtype;
     }
 }

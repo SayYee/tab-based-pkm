@@ -1,7 +1,7 @@
 package com.sayyi.software.tbp.cli.decorator;
 
 import com.sayyi.software.tbp.common.FileMetadata;
-import com.sayyi.software.tbp.common.TagInfo;
+import com.sayyi.software.tbp.common.model.TagInfo;
 import com.sayyi.software.tbp.core.facade.PkmFunction;
 
 import java.io.PrintWriter;

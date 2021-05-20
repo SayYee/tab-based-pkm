@@ -1,9 +1,9 @@
 package com.sayyi.software.tbp.generator.parser.impl;
 
+import cn.hutool.core.lang.Assert;
 import com.sayyi.software.tbp.generator.model.FieldInfo;
 import com.sayyi.software.tbp.generator.parser.Parser;
 import com.sayyi.software.tbp.generator.parser.ParserBuilder;
-import com.sun.tools.javac.util.Assert;
 
 import java.nio.CharBuffer;
 
@@ -33,7 +33,7 @@ public class FieldParser implements Parser<FieldInfo> {
                 .add(stringParser, fieldInfo::setFieldName)
                 .next()
                 .add(blankParser)
-                .add(CharBuffer::get, c -> Assert.check(c == ';', "必须以；结尾"));
+                .add(CharBuffer::get, c -> Assert.isTrue(c == ';', "必须以；结尾"));
         parserBuilder.execute(charBuffer);
         return fieldInfo;
     }

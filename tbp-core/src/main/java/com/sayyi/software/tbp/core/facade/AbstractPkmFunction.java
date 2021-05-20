@@ -1,10 +1,11 @@
 package com.sayyi.software.tbp.core.facade;
 
 import com.sayyi.software.tbp.common.FileMetadata;
-import com.sayyi.software.tbp.common.TagInfo;
 import com.sayyi.software.tbp.common.TbpException;
 import com.sayyi.software.tbp.common.constant.RequestType;
-import com.sayyi.software.tbp.common.flow.*;
+import com.sayyi.software.tbp.common.flow.Request;
+import com.sayyi.software.tbp.common.flow.Response;
+import com.sayyi.software.tbp.common.model.*;
 import com.sayyi.software.tbp.common.store.BinaryInputArchive;
 import com.sayyi.software.tbp.common.store.BinaryOutputArchive;
 import com.sayyi.software.tbp.core.MetadataManager;
@@ -20,10 +21,10 @@ public abstract class AbstractPkmFunction implements PkmFunction {
 
     @Override
     public FileMetadata upload(String filename, byte[] data) throws Exception {
-        FileWithData fileWithData = new FileWithData();
-        fileWithData.setFilename(filename);
-        fileWithData.setData(data);
-        byte[] serialize = BinaryOutputArchive.serialize(fileWithData);
+        UploadFile uploadFile = new UploadFile();
+        uploadFile.setFilename(filename);
+        uploadFile.setData(data);
+        byte[] serialize = BinaryOutputArchive.serialize(uploadFile);
 
         Response response = process(RequestType.UPLOAD, serialize);
 
@@ -34,10 +35,11 @@ public abstract class AbstractPkmFunction implements PkmFunction {
 
     @Override
     public FileMetadata copy(String filepath, Set<String> tags) throws Exception {
-        FileWithPath fileWithPath = new FileWithPath();
-        fileWithPath.setFilepath(filepath);
-        fileWithPath.setTags(tags == null ? new HashSet<>() : tags);
-        byte[] serialize = BinaryOutputArchive.serialize(fileWithPath);
+        tags = tags == null ? new HashSet<>() : tags;
+        CopyFile copyFile = new CopyFile();
+        copyFile.setFilepath(filepath);
+        copyFile.setTags(tags);
+        byte[] serialize = BinaryOutputArchive.serialize(copyFile);
 
         Response response = process(RequestType.COPY, serialize);
 
@@ -48,10 +50,11 @@ public abstract class AbstractPkmFunction implements PkmFunction {
 
     @Override
     public FileMetadata create(String filename, Set<String> tags) throws Exception {
-        FileWithPath fileWithPath = new FileWithPath();
-        fileWithPath.setFilename(filename);
-        fileWithPath.setTags(tags == null ? new HashSet<>() : tags);
-        byte[] serialize = BinaryOutputArchive.serialize(fileWithPath);
+        tags = tags == null ? new HashSet<>() : tags;
+        CreateFile createFile = new CreateFile();
+        createFile.setFilename(filename);
+        createFile.setTags(tags);
+        byte[] serialize = BinaryOutputArchive.serialize(createFile);
 
         Response response = process(RequestType.CREATE, serialize);
 
@@ -62,12 +65,13 @@ public abstract class AbstractPkmFunction implements PkmFunction {
 
     @Override
     public FileMetadata url(String name, String url, Set<String> tags) throws Exception {
-        FileBaseInfo fileBaseInfo = new FileBaseInfo();
-        fileBaseInfo.setFilename(name);
-        fileBaseInfo.setResourcePath(url);
-        fileBaseInfo.setTags(tags == null ? new HashSet<>() : tags);
+        tags = tags == null ? new HashSet<>() : tags;
+        CreateUrl createUrl = new CreateUrl();
+        createUrl.setName(name);
+        createUrl.setUrl(url);
+        createUrl.setTags(tags);
 
-        byte[] serialize = BinaryOutputArchive.serialize(fileBaseInfo);
+        byte[] serialize = BinaryOutputArchive.serialize(createUrl);
 
         Response response = process(RequestType.ADD_URL, serialize);
 
@@ -78,57 +82,62 @@ public abstract class AbstractPkmFunction implements PkmFunction {
 
     @Override
     public void rename(long fileId, String newName) throws Exception {
-        RenameRequest renameRequest = new RenameRequest();
-        renameRequest.setId(fileId);
-        renameRequest.setNewName(newName);
-        byte[] serialize = BinaryOutputArchive.serialize(renameRequest);
+        FileRename fileRename = new FileRename();
+        fileRename.setFileId(fileId);
+        fileRename.setNewName(newName);
+        byte[] serialize = BinaryOutputArchive.serialize(fileRename);
 
         process(RequestType.RENAME, serialize);
     }
 
     @Override
-    public void addFileTag(long fileId, Set<String> newTags) throws Exception {
-        ModifyTagRequest modifyTagRequest = new ModifyTagRequest();
-        modifyTagRequest.setId(fileId);
-        modifyTagRequest.setNewTags(newTags == null ? new HashSet<>() : newTags);
-        byte[] serialize = BinaryOutputArchive.serialize(modifyTagRequest);
+    public void addFileTag(long fileId, Set<String> tags) throws Exception {
+        tags = tags == null ? new HashSet<>() : tags;
+        FileModifyTags fileModifyTags = new FileModifyTags();
+        fileModifyTags.setFileId(fileId);
+        fileModifyTags.setTags(tags);
+        byte[] serialize = BinaryOutputArchive.serialize(fileModifyTags);
 
         process(RequestType.ADD_RESOURCE_TAG, serialize);
     }
 
     @Override
-    public void deleteFileTag(long fileId, Set<String> newTags) throws Exception {
-        ModifyTagRequest modifyTagRequest = new ModifyTagRequest();
-        modifyTagRequest.setId(fileId);
-        modifyTagRequest.setNewTags(newTags == null ? new HashSet<>() : newTags);
-        byte[] serialize = BinaryOutputArchive.serialize(modifyTagRequest);
+    public void deleteFileTag(long fileId, Set<String> tags) throws Exception {
+        tags = tags == null ? new HashSet<>() : tags;
+        FileModifyTags fileModifyTags = new FileModifyTags();
+        fileModifyTags.setFileId(fileId);
+        fileModifyTags.setTags(tags);
+        byte[] serialize = BinaryOutputArchive.serialize(fileModifyTags);
 
         process(RequestType.DELETE_RESOURCE_TAG, serialize);
     }
 
     @Override
-    public void modifyTag(long fileId, Set<String> newTags) throws Exception{
-        ModifyTagRequest modifyTagRequest = new ModifyTagRequest();
-        modifyTagRequest.setId(fileId);
-        modifyTagRequest.setNewTags(newTags == null ? new HashSet<>() : newTags);
-        byte[] serialize = BinaryOutputArchive.serialize(modifyTagRequest);
+    public void modifyTag(long fileId, Set<String> tags) throws Exception{
+        tags = tags == null ? new HashSet<>() : tags;
+        FileModifyTags fileModifyTags = new FileModifyTags();
+        fileModifyTags.setFileId(fileId);
+        fileModifyTags.setTags(tags);
+        byte[] serialize = BinaryOutputArchive.serialize(fileModifyTags);
 
         process(RequestType.MODIFY_RESOURCE_TAG, serialize);
     }
 
     @Override
     public void open(long fileId) throws Exception {
-        OpenRequest openRequest = new OpenRequest();
-        openRequest.setId(fileId);
-        byte[] serialize = BinaryOutputArchive.serialize(openRequest);
+        FileOperate fileOperate = new FileOperate();
+        fileOperate.setFileId(fileId);
+        fileOperate.setTime(System.currentTimeMillis());
+        byte[] serialize = BinaryOutputArchive.serialize(fileOperate);
         process(RequestType.OPEN, serialize);
     }
 
     @Override
     public void select(long fileId) throws Exception {
-        OpenRequest openRequest = new OpenRequest();
-        openRequest.setId(fileId);
-        byte[] serialize = BinaryOutputArchive.serialize(openRequest);
+        FileOperate fileOperate = new FileOperate();
+        fileOperate.setFileId(fileId);
+        fileOperate.setTime(System.currentTimeMillis());
+        byte[] serialize = BinaryOutputArchive.serialize(fileOperate);
         process(RequestType.SELECT, serialize);
     }
 
@@ -156,10 +165,10 @@ public abstract class AbstractPkmFunction implements PkmFunction {
 
     @Override
     public List<FileMetadata> listByNameAndTag(Set<String> tags, String filenameReg) throws Exception {
-        QueryFileRequest queryFileRequest = new QueryFileRequest();
-        queryFileRequest.setFilenameReg(filenameReg);
-        queryFileRequest.setTags(tags == null ? new HashSet<>() : tags);
-        byte[] serialize = BinaryOutputArchive.serialize(queryFileRequest);
+        QueryFile queryFile = new QueryFile();
+        queryFile.setFilenameReg(filenameReg);
+        queryFile.setTags(tags);
+        byte[] serialize = BinaryOutputArchive.serialize(queryFile);
 
         Response response = process(RequestType.LIST_RESOURCES, serialize);
         List<FileMetadata> fileMetadataList = new LinkedList<>();
@@ -175,27 +184,30 @@ public abstract class AbstractPkmFunction implements PkmFunction {
 
     @Override
     public void renameTag(String tagName, String newName) throws Exception{
-        RenameTagRequest renameTagRequest = new RenameTagRequest();
-        renameTagRequest.setTag(tagName);
-        renameTagRequest.setNewTag(newName);
-        final byte[] serialize = BinaryOutputArchive.serialize(renameTagRequest);
+        TagRename tagRename = new TagRename();
+        tagRename.setTag(tagName);
+        tagRename.setNewTag(newName);
+        final byte[] serialize = BinaryOutputArchive.serialize(tagRename);
         process(RequestType.RENAME_TAG, serialize);
     }
 
     @Override
     public void batchModifyTags(Set<String> tags, Set<String> newTags) throws Exception {
-        BatchModifyTagsRequest request = new BatchModifyTagsRequest();
-        request.setTags(tags);
-        request.setNewTags(newTags);
-        final byte[] serialize = BinaryOutputArchive.serialize(request);
+        tags = tags == null ? new HashSet<>() : tags;
+        newTags = newTags == null ? new HashSet<>() : newTags;
+
+        TagBatchModify tagBatchModify = new TagBatchModify();
+        tagBatchModify.setTags(tags);
+        tagBatchModify.setNewTags(newTags);
+        final byte[] serialize = BinaryOutputArchive.serialize(tagBatchModify);
         process(RequestType.BATCH_MODIFY_TAGS, serialize);
     }
 
     @Override
     public List<TagInfo> listTags(Set<String> tags) throws Exception {
-        QueryTagRequest queryTagRequest = new QueryTagRequest();
-        queryTagRequest.setTags(tags == null ? new HashSet<>() : tags);
-        final byte[] serialize = BinaryOutputArchive.serialize(queryTagRequest);
+        QueryTag queryTag = new QueryTag();
+        queryTag.setTags(tags);
+        final byte[] serialize = BinaryOutputArchive.serialize(queryTag);
         Response response = process(RequestType.LIST_TAGS, serialize);
 
         List<TagInfo> tagInfos = new LinkedList<>();

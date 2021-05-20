@@ -1,10 +1,10 @@
 package com.sayyi.software.tbp.generator.parser.impl;
 
+import cn.hutool.core.lang.Assert;
 import com.sayyi.software.tbp.generator.model.ClassInfo;
 import com.sayyi.software.tbp.generator.model.ModuleInfo;
 import com.sayyi.software.tbp.generator.parser.Parser;
 import com.sayyi.software.tbp.generator.parser.ParserBuilder;
-import com.sun.tools.javac.util.Assert;
 
 import java.nio.CharBuffer;
 import java.util.*;
@@ -49,21 +49,21 @@ public class ModuleParser implements Parser<ModuleInfo> {
         // 4、空白、换行、花括号
         // 5、换行、空白、注释、class、花括号
         ParserBuilder parserBuilder = new ParserBuilder();
-        parserBuilder.add(stringParser, s -> Assert.check("module".equals(s), "module开头"))
+        parserBuilder.add(stringParser, s -> Assert.isTrue("module".equals(s), "module开头"))
                 .next()
-                .add(blankParser, c -> Assert.check(c > 0, "必须有空格"))
+                .add(blankParser, c -> Assert.isTrue(c > 0, "必须有空格"))
                 .next()
                 .add(moduleNameParser, moduleInfo::setModuleName)
                 .next()
                 .add(blankParser)
                 .add(enterParser)
-                .add(CharBuffer::get, c -> Assert.check(c == '{', "module 必须花括号开头"))
+                .add(CharBuffer::get, c -> Assert.isTrue(c == '{', "module 必须花括号开头"))
                 .next()
                 .add(blankParser)
                 .add(enterParser)
                 .add(noteParser)
                 .add(classParser, classInfos::add)
-                .add(CharBuffer::get, c -> Assert.check(c == '}', "module 必须花括号结束"));
+                .add(CharBuffer::get, c -> Assert.isTrue(c == '}', "module 必须花括号结束"));
         parserBuilder.execute(charBuffer);
         return moduleInfo;
     }

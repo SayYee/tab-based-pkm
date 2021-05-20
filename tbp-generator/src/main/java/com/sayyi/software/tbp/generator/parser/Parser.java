@@ -2,7 +2,6 @@ package com.sayyi.software.tbp.generator.parser;
 
 import java.nio.CharBuffer;
 import java.util.Arrays;
-import java.util.function.Consumer;
 
 @FunctionalInterface
 public interface Parser<T> {
@@ -21,15 +20,6 @@ public interface Parser<T> {
      */
     default boolean match(CharBuffer charBuffer) {
         return true;
-    }
-
-
-    /**
-     * 调用parse方法，并使用传入的consumer处理返回结果
-     * @param consumer
-     */
-    default void deal(Consumer<T> consumer, CharBuffer charBuffer) {
-        consumer.accept(parse(charBuffer));
     }
 
     /**
@@ -78,37 +68,6 @@ public interface Parser<T> {
             return true;
         }
         return false;
-    }
-
-    /**
-     * 跳过空白字符
-     * @param charBuffer
-     * @return
-     */
-    default int jumpEmpty(CharBuffer charBuffer) {
-        int start = charBuffer.position();
-        while (charBuffer.hasRemaining()) {
-            char c = charBuffer.get();
-            if (!isBlank(c)) {
-                break;
-            }
-        }
-        int end = charBuffer.position() - 1;
-        charBuffer.position(end);
-        return end - start;
-    }
-
-    default boolean jumpEnter(CharBuffer charBuffer) {
-        jumpEmpty(charBuffer);
-        char[] chars = System.getProperty("line.separator").toCharArray();
-        int start = charBuffer.position();
-        if (matchAndJump(charBuffer, chars)) {
-            jumpEnter(charBuffer);
-            return true;
-        } else {
-            charBuffer.position(start);
-            return false;
-        }
     }
 
     default boolean isLetter(char c) {
