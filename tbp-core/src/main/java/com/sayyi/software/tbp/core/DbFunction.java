@@ -1,6 +1,6 @@
 package com.sayyi.software.tbp.core;
 
-import com.sayyi.software.tbp.common.Snapshot;
+import com.sayyi.software.tbp.common.snap.Version;
 import com.sayyi.software.tbp.common.flow.Request;
 
 import java.io.IOException;
@@ -14,10 +14,10 @@ public interface DbFunction {
 
     /**
      * 快照信息持久化
-     * @param snapshot  快照信息
+     * @param version  快照信息
      * @throws IOException
      */
-    void storeSnap(Snapshot snapshot) throws IOException;
+    void storeSnap(long lastOpId, Version version) throws IOException;
 
     /**
      * 请求持久化
@@ -31,7 +31,7 @@ public interface DbFunction {
      * @return  快照信息
      * @throws IOException
      */
-    Snapshot loadSnap() throws IOException;
+    Version loadSnap() throws IOException;
 
     /**
      * 操作信息迭代器获取

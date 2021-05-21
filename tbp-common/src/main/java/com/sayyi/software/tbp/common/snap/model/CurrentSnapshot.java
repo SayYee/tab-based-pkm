@@ -1,8 +1,9 @@
-package com.sayyi.software.tbp.common;
+package com.sayyi.software.tbp.common.snap.model;
 
+import com.sayyi.software.tbp.common.FileMetadata;
+import com.sayyi.software.tbp.common.snap.Version;
 import com.sayyi.software.tbp.common.store.InputArchive;
 import com.sayyi.software.tbp.common.store.OutputArchive;
-import com.sayyi.software.tbp.common.store.Record;
 import lombok.Data;
 
 import java.io.IOException;
@@ -14,10 +15,15 @@ import java.util.List;
  * @author SayYi
  */
 @Data
-public class Snapshot implements Record {
+public class CurrentSnapshot implements Version {
     private long lastOpId;
     private long lastFileId;
     private List<FileMetadata> fileMetadataList;
+
+    @Override
+    public int version() {
+        return 1;
+    }
 
     @Override
     public void serialize(OutputArchive archive) throws IOException {

@@ -1,6 +1,7 @@
 package com.sayyi.software.tbp.core;
 
-import com.sayyi.software.tbp.common.Snapshot;
+import com.sayyi.software.tbp.common.snap.SnapshotUtil;
+import com.sayyi.software.tbp.common.snap.Version;
 import com.sayyi.software.tbp.common.flow.Request;
 import com.sayyi.software.tbp.common.store.BinaryInputArchive;
 import com.sayyi.software.tbp.common.store.BinaryOutputArchive;
@@ -9,6 +10,7 @@ import com.sayyi.software.tbp.common.store.OutputArchive;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.zip.Adler32;
@@ -22,6 +24,8 @@ import java.util.zip.Checksum;
  */
 @Slf4j
 public class FileBasedDbManager implements DbFunction {
+
+    private static final String VERSION_FILE_NAME = "version";
 
     private static final String SNAPSHOT_FILE_PREFIX = "snapshot-";
     private static final String REQUEST_FILE_PREFIX = "request-";
@@ -42,15 +46,31 @@ public class FileBasedDbManager implements DbFunction {
         }
     }
 
+    private int getCurrentDataVersion() throws IOException {
+        File versionFile = new File(snapDir, VERSION_FILE_NAME);
+        if (!versionFile.exists()) {
+            return 0;
+        }
+        byte[] bytes = Files.readAllBytes(versionFile.toPath());
+        // 这个搞成可读的好了。
+        String versionStr = new String(bytes, StandardCharsets.UTF_8);
+        return Integer.parseInt(versionStr);
+    }
+
+    public void setDataVersion(int version) throws IOException {
+        File versionFile = new File(snapDir, VERSION_FILE_NAME);
+        Files.write(versionFile.toPath(), String.valueOf(version).getBytes(StandardCharsets.UTF_8));
+    }
+
     @Override
-    public void storeSnap(Snapshot snapshot) throws IOException {
-        long opId = snapshot.getLastOpId();
-        File snapshotFile = new File(snapDir, SNAPSHOT_FILE_PREFIX + opId);
+    public void storeSnap(long lastOpId, Version version) throws IOException {
+        setDataVersion(version.version());
+        File snapshotFile = new File(snapDir, SNAPSHOT_FILE_PREFIX + lastOpId);
         try (FileOutputStream fileOutputStream = new FileOutputStream(snapshotFile);
              CheckedOutputStream checkedOutputStream = new CheckedOutputStream(new BufferedOutputStream(fileOutputStream), new Adler32())) {
             // 写数据
             OutputArchive outputArchive = BinaryOutputArchive.getArchive(checkedOutputStream);
-            outputArchive.writeRecord(snapshot);
+            outputArchive.writeRecord(version);
             // 写校验和
             Checksum checksum = checkedOutputStream.getChecksum();
             outputArchive.writeLong(checksum.getValue());
@@ -73,13 +93,12 @@ public class FileBasedDbManager implements DbFunction {
     }
 
     @Override
-    public Snapshot loadSnap() throws IOException {
-        Snapshot snapshot = new Snapshot();
+    public Version loadSnap() throws IOException {
+        // 加载versiond的时候，需要读取快照版本信息
         final File[] files = listSnapShotFile();
         if (files == null || files.length == 0) {
-            snapshot.setLastOpId(-1);
             log.info("未找到snapshot文件");
-            return snapshot;
+            return null;
         }
 
         File latestFile = files[0];
@@ -93,10 +112,14 @@ public class FileBasedDbManager implements DbFunction {
         }
         log.info("获取snapshot文件成功【{}】", latestFile);
 
+        int currentDataVersion = getCurrentDataVersion();
+        SnapshotUtil snapshotUtil = new SnapshotUtil();
+        Version version = snapshotUtil.get(currentDataVersion);
+
         try (final FileInputStream fileInputStream = new FileInputStream(latestFile);
         final CheckedInputStream checkedInputStream = new CheckedInputStream(new BufferedInputStream(fileInputStream), new Adler32())) {
             InputArchive inputArchive = BinaryInputArchive.getArchive(checkedInputStream);
-            inputArchive.readRecord(snapshot);
+            inputArchive.readRecord(version);
 
             final long value = checkedInputStream.getChecksum().getValue();
             log.debug("读取校验和为【{}】", value);
@@ -106,8 +129,16 @@ public class FileBasedDbManager implements DbFunction {
                 throw new IllegalArgumentException("snapshot文件校验失败");
             }
         }
-        return snapshot;
+        // 尝试更新
+        int lastDataVersion = snapshotUtil.getLastVersion();
+        if (lastDataVersion > currentDataVersion) {
+            version = snapshotUtil.convert(version, lastDataVersion);
+            log.info("更新快照数据版本【{}】->【{}】", currentDataVersion, lastDataVersion);
+        }
+        return version;
     }
+
+
 
     @Override
     public Iterator<Request> requestIterator(long lastOpId) throws IOException {

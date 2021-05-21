@@ -45,9 +45,8 @@ public class FileManager {
      * @param filePath  文件相对地址
      * @throws IOException
      */
-    public void open(String filePath) throws IOException {
-        filePath = filePath.replaceAll("\\\\", "/");
-        Desktop.getDesktop().open(new File(fileStoreDir, filePath));
+    public void open(String[] filePath) throws IOException {
+        Desktop.getDesktop().open(new File(fileStoreDir, getRelativePah(filePath)));
     }
 
     /**
@@ -64,9 +63,8 @@ public class FileManager {
      * @param filePath
      * @throws IOException
      */
-    public void select(String filePath) throws IOException {
-        filePath = filePath.replaceAll("\\\\", "/");
-        String realPath = new File(fileStoreDir, filePath).getPath();
+    public void select(String[] filePath) throws IOException {
+        String realPath = new File(fileStoreDir, getRelativePah(filePath)).getPath();
         if (isWin()) {
             Runtime.getRuntime().exec("explorer /select, " + realPath);
         } else if (isMacOS()) {
@@ -88,9 +86,8 @@ public class FileManager {
      * 删除文件
      * @param filePath  目标文件相对地址
      */
-    public void delete(String filePath) throws IOException {
-        filePath = filePath.replaceAll("\\\\", "/");
-        File file = new File(fileStoreDir, filePath);
+    public void delete(String[] filePath) throws IOException {
+        File file = new File(fileStoreDir, getRelativePah(filePath));
         delete(file);
     }
 
@@ -119,9 +116,8 @@ public class FileManager {
      * @param newName   新的文件名
      * @return  新的文件信息
      */
-    public FileMetadata rename(String filePath, String newName) throws IOException {
-        filePath = filePath.replaceAll("\\\\", "/");
-        File file = new File(fileStoreDir, filePath);
+    public FileMetadata rename(String[] filePath, String newName) throws IOException {
+        File file = new File(fileStoreDir, getRelativePah(filePath));
         Path source = file.toPath();
         Files.move(source, source.resolveSibling(newName));
         return createFromFile(new File(file.getParent(), newName));
@@ -299,9 +295,14 @@ public class FileManager {
         return storePath;
     }
 
+    private String getRelativePah(String[] paths) {
+        return String.join(File.separator, paths);
+    }
+
     private FileMetadata createFromFile(File file) {
         FileMetadata fileMetadata = new FileMetadata();
-        fileMetadata.setResourcePath(file.getAbsolutePath().substring(absolutePathStoreDir.length()));
+        String relativePath = file.getAbsolutePath().substring(absolutePathStoreDir.length() + 1);
+        fileMetadata.setResourcePath(relativePath.split(File.separator));
         fileMetadata.setFilename(file.getName());
         fileMetadata.setCreateTime(System.currentTimeMillis());
         return fileMetadata;

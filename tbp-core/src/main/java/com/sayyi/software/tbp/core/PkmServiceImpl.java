@@ -1,6 +1,7 @@
 package com.sayyi.software.tbp.core;
 
-import com.sayyi.software.tbp.common.Snapshot;
+import com.sayyi.software.tbp.common.snap.Version;
+import com.sayyi.software.tbp.common.snap.model.CurrentSnapshot;
 import com.sayyi.software.tbp.common.TbpException;
 import com.sayyi.software.tbp.common.flow.Request;
 import com.sayyi.software.tbp.common.flow.Response;
@@ -61,11 +62,13 @@ public class PkmServiceImpl implements PkmService {
         log.info("从本地恢复数据");
         long currentTime = System.currentTimeMillis();
         try {
-            Snapshot snapshot = dbFunction.loadSnap();
-            if (snapshot.getLastOpId() != -1) {
-                nextOpId.set(snapshot.getLastOpId());
-                metadataManager.recovery(snapshot);
+            Version version = dbFunction.loadSnap();
+            if (version != null) {
+                CurrentSnapshot currentSnapshot = (CurrentSnapshot) version;
+                nextOpId.set(currentSnapshot.getLastOpId());
+                metadataManager.recovery(currentSnapshot);
             }
+
             Iterator<Request> requestIterator = dbFunction.requestIterator(nextOpId.get());
             Response response = new Response();
             while (requestIterator.hasNext()) {
@@ -87,11 +90,11 @@ public class PkmServiceImpl implements PkmService {
             }
 
             // 存储新的快照
-            Snapshot currentSnap = new Snapshot();
+            CurrentSnapshot currentSnap = new CurrentSnapshot();
             currentSnap.setLastOpId(nextOpId.get());
             currentSnap.setLastFileId(metadataManager.getNextFileId());
             currentSnap.setFileMetadataList(metadataManager.listAllFile());
-            dbFunction.storeSnap(currentSnap);
+            dbFunction.storeSnap(currentSnap.getLastOpId(), currentSnap);
 
             // 清理过期的数据
             dbFunction.cleanOutOfDateFile(nextOpId.get());

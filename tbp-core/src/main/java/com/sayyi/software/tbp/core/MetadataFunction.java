@@ -1,7 +1,7 @@
 package com.sayyi.software.tbp.core;
 
 import com.sayyi.software.tbp.common.FileMetadata;
-import com.sayyi.software.tbp.common.Snapshot;
+import com.sayyi.software.tbp.common.snap.model.CurrentSnapshot;
 import com.sayyi.software.tbp.common.model.TagInfo;
 import com.sayyi.software.tbp.common.TbpException;
 
@@ -18,9 +18,9 @@ public interface MetadataFunction {
 
     /**
      * 元数据恢复
-     * @param snapshot
+     * @param currentSnapshot
      */
-    void recovery(Snapshot snapshot);
+    void recovery(CurrentSnapshot currentSnapshot);
 
     /**
      * 创建文件

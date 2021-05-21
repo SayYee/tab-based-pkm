@@ -1,7 +1,7 @@
 package com.sayyi.software.tbp.core;
 
 import com.sayyi.software.tbp.common.FileMetadata;
-import com.sayyi.software.tbp.common.Snapshot;
+import com.sayyi.software.tbp.common.snap.model.CurrentSnapshot;
 import com.sayyi.software.tbp.common.model.TagInfo;
 import com.sayyi.software.tbp.common.TbpException;
 import it.uniroma1.dis.wsngroup.gexf4j.core.*;
@@ -63,12 +63,12 @@ public class MetadataManager implements MetadataFunction {
     private final GexfGenerator gexfGenerator = new GexfGenerator();
 
     @Override
-    public void recovery(Snapshot snapshot) {
-        if (snapshot.getLastOpId() == -1) {
+    public void recovery(CurrentSnapshot currentSnapshot) {
+        if (currentSnapshot.getLastOpId() == -1) {
             return;
         }
-        nextFileId = snapshot.getLastFileId();
-        fileMetadataList.addAll(snapshot.getFileMetadataList());
+        nextFileId = currentSnapshot.getLastFileId();
+        fileMetadataList.addAll(currentSnapshot.getFileMetadataList());
         for (FileMetadata fileMetadata : fileMetadataList) {
             id2FileMap.put(fileMetadata.getId(), fileMetadata);
         }

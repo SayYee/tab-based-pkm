@@ -43,7 +43,10 @@ layui.config({
                     return d.resourceType === 1 ? '<i class="layui-icon">&#xe621;</i>' : '<i class="layui-icon">&#xe64c;</i>'
                 }
             }
-            , { field: 'resourcePath', width: 220, title: '资源定位' }
+            , { field: 'resourcePath', width: 220, title: '资源定位', templet: function(d) {
+                    return d.resourcePath.join("/");
+                }
+            }
             , { field: 'tags', title: '标签', align: 'center', width: 210, templet: '#tagList' }
             , { field: 'createTime', title: '创建时间', width: 180, sort: true, templet: '<div>{{layui.util.toDateString(d.createTime, "yyyy-MM-dd HH:mm:ss")}}</div>' }
             , { field: 'lastOpenTime', title: '最后打开时间', width: 180, sort: true, templet: '<div>{{layui.util.toDateString(d.createTime, "yyyy-MM-dd HH:mm:ss")}}</div>' }
