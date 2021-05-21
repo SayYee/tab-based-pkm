@@ -29,8 +29,10 @@ public class PerformanceTest {
 
     @Setup
     public void prepare() {
-        x = 0;
+        long startTime = System.currentTimeMillis();
         System.out.println("prepare 方法被调用");
+
+        x = 0;
         String rootPath = TestConstant.ROOT_PATH;
 
         String storeDir = rootPath + "store";
@@ -43,7 +45,9 @@ public class PerformanceTest {
         DbFunction dbFunction = new FileBasedDbManager(snapDir);
         PkmService pkmService = new PkmServiceImpl(fileManager, metadataFunction, tagTreeManager, dbFunction);
         pkmFunction = new DefaultPkmFunction(pkmService);
-        System.out.println("prepare 方法调用结束");
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("prepare 方法调用结束。共计用时【" + (endTime - startTime) + "】");
     }
 
     @TearDown

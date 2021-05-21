@@ -13,8 +13,12 @@ import java.util.Set;
  */
 public class PkmPerformanceTest {
 
+    /**
+     * 生成微基准测试需要的数据
+     * @throws Exception
+     */
     @Test
-    public void test() throws Exception {
+    public void test_generate() throws Exception {
         long startTime = System.currentTimeMillis();
 
         String rootPath = TestConstant.ROOT_PATH;
