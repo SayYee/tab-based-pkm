@@ -6,6 +6,7 @@ import com.sayyi.software.tbp.core.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * @author SayYi
@@ -14,7 +15,9 @@ import java.io.IOException;
 public class TbpServer {
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        TbpConfig tbpConfig = new TbpConfigParse(args[0]);
+        // 解析配置文件
+        TbpConfig tbpConfig = new TbpConfigParse(
+                Objects.requireNonNull(TbpServer.class.getClassLoader().getResource("tbp.cfg")).getPath());
 
         FileManager fileManager = new FileManager(tbpConfig.getStoreDir());
         MetadataFunction metadataFunction = new MetadataManager();

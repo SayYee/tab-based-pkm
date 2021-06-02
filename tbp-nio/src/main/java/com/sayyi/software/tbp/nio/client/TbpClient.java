@@ -70,7 +70,11 @@ public class TbpClient extends Thread {
                 }
             }
         } catch (Exception e) {
-            log.error("请求处理异常，断开连接", e);
+            if (e instanceof InterruptedException) {
+                log.debug("线程中断", e);
+            } else {
+                log.error("请求处理异常，断开连接", e);
+            }
             // 这个设置成false，不再继续接收请求了
             isRunning = false;
         }
@@ -94,13 +98,13 @@ public class TbpClient extends Thread {
             response.setErrorMsg("连接关闭");
             response.markFinished();
         }
-        Object[] poll  =requestPairQueue.poll();
+        Object[] poll = requestPairQueue.poll();
         while (poll != null) {
             Response response = (Response) poll[1];
             response.setError(true);
             response.setErrorMsg("连接关闭");
             response.markFinished();
-            poll  =requestPairQueue.poll();
+            poll = requestPairQueue.poll();
         }
     }
 
@@ -108,7 +112,7 @@ public class TbpClient extends Thread {
         if (channel.isConnectionPending()) {
             if (channel.finishConnect()) {
                 key.interestOps(SelectionKey.OP_WRITE);
-                log.info("连接建立成功");
+                log.debug("连接建立成功");
             }
         }
     }

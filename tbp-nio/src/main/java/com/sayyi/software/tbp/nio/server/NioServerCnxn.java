@@ -42,7 +42,11 @@ public class NioServerCnxn {
                 doWrite();
             }
         } catch (Exception e) {
-            log.warn("doIO 异常", e);
+            if (e instanceof InterruptedException) {
+                log.debug("线程中断", e);
+            } else {
+                log.warn("doIO 异常", e);
+            }
             key.channel();
             try {
                 channel.close();
@@ -57,7 +61,7 @@ public class NioServerCnxn {
         int rc = channel.read(dataBuffer);
         // 处理客户端主动断开连接的情况
         if (rc < 0) {
-            throw new IOException("连接断开");
+            throw new InterruptedException("连接断开");
         }
         if (dataBuffer.hasRemaining()) {
             return;
