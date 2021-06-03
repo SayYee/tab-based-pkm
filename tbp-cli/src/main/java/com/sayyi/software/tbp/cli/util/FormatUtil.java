@@ -1,10 +1,10 @@
 package com.sayyi.software.tbp.cli.util;
 
+import com.sayyi.software.tbp.cli.script.TbpConfigHolder;
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.model.TagInfo;
 
 import java.io.File;
-import java.util.Date;
 
 /**
  * @author xuchuang
@@ -12,7 +12,7 @@ import java.util.Date;
  */
 public class FormatUtil {
 
-    private static final String FILE_TABLE_CONTENT_FORMAT = "%-5d\t%-30s\t%-40s\t%-50s\t%-11tF%<-9tR\t%-11tF%<-9tR\n";
+    private static final String FILE_TABLE_CONTENT_FORMAT = "%-5d\t%-30s\t%-40s\t%-50s\n";
 
     private static final String TAG_INFO_FORMAT = "%-30s\t%-5d\n";
 
@@ -22,13 +22,13 @@ public class FormatUtil {
      * @return
      */
     public static String format(FileMetadata fileMetadata) {
-        Object[] params = new Object[6];
+        // 在命令行展示，我觉得只保留必要信息就可以。
+        // 需要文件的真实路径，这样和其他软件联动变成可能。
+        Object[] params = new Object[4];
         params[0] = fileMetadata.getId();
         params[1] = fileMetadata.getFilename();
-        params[2] = String.join(File.separator, fileMetadata.getResourcePath());
-        params[3] = String.join(".", fileMetadata.getTags());
-        params[4] = new Date(fileMetadata.getCreateTime());
-        params[5] = new Date(fileMetadata.getLastOpenTime());
+        params[2] = String.join(".", fileMetadata.getTags());
+        params[3] = TbpConfigHolder.get().getStoreDir() + File.separator + String.join(File.separator, fileMetadata.getResourcePath());
         return String.format(FILE_TABLE_CONTENT_FORMAT, params);
     }
 

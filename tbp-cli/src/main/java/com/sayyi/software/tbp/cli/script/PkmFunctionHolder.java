@@ -1,4 +1,4 @@
-package com.sayyi.software.tbp.cli.client;
+package com.sayyi.software.tbp.cli.script;
 
 import com.sayyi.software.tbp.core.facade.PkmFunction;
 import lombok.extern.slf4j.Slf4j;

@@ -5,8 +5,8 @@ import org.junit.Test;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -31,6 +31,14 @@ public class FileTest {
         String filename = "\\2021-03\\hello.md";
         File file = new File(filepath, filename);
         System.out.println(file.getAbsoluteFile());
+    }
+
+    @Test
+    public void test_split() throws Exception {
+        String linuxPath = "2021-06/settings.xml";
+        String winPath = "2021-06\\settings.xml";
+        System.out.println(Arrays.toString(linuxPath.split("\\\\|/")));
+        System.out.println(Arrays.toString(winPath.split("\\\\|/")));
     }
 
     @Test

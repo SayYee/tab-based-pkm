@@ -15,7 +15,7 @@ cd "$saveddir"
 # 通过这种方式调用，tbpEnv中定义的变量，可以在当前文件中使用(shell 文件包含)
 . "$TBP_HOME"/bin/tbpEnv.sh
 
-LAUNCHER=com.sayyi.software.tbp.cli.client.FileCommand
+LAUNCHER=com.sayyi.software.tbp.cli.script.FileCommand
 
 
 exec "${JAVACMD}" \

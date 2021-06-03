@@ -302,7 +302,7 @@ public class FileManager {
     private FileMetadata createFromFile(File file) {
         FileMetadata fileMetadata = new FileMetadata();
         String relativePath = file.getAbsolutePath().substring(absolutePathStoreDir.length() + 1);
-        fileMetadata.setResourcePath(relativePath.split(File.separator));
+        fileMetadata.setResourcePath(relativePath.split("\\\\|/"));
         fileMetadata.setFilename(file.getName());
         fileMetadata.setCreateTime(System.currentTimeMillis());
         return fileMetadata;

@@ -1,6 +1,6 @@
-package com.sayyi.software.tbp.cli.client.tagcli;
+package com.sayyi.software.tbp.cli.script.tagcli;
 
-import com.sayyi.software.tbp.cli.client.PkmFunctionHolder;
+import com.sayyi.software.tbp.cli.script.PkmFunctionHolder;
 import com.sayyi.software.tbp.cli.util.FormatUtil;
 import com.sayyi.software.tbp.common.model.TagInfo;
 import lombok.SneakyThrows;

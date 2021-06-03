@@ -1,8 +1,7 @@
-package com.sayyi.software.tbp.cli.client.filecli;
+package com.sayyi.software.tbp.cli.script.filecli;
 
-import com.sayyi.software.tbp.cli.client.PkmFunctionHolder;
+import com.sayyi.software.tbp.cli.script.PkmFunctionHolder;
 import com.sayyi.software.tbp.cli.util.FormatUtil;
-import com.sayyi.software.tbp.cli.util.PrintUtil;
 import com.sayyi.software.tbp.common.FileMetadata;
 import lombok.SneakyThrows;
 import picocli.CommandLine;

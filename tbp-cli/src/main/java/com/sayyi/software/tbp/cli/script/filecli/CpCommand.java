@@ -1,9 +1,10 @@
-package com.sayyi.software.tbp.cli.client.filecli;
+package com.sayyi.software.tbp.cli.script.filecli;
 
-import com.sayyi.software.tbp.cli.client.PkmFunctionHolder;
+import com.sayyi.software.tbp.cli.script.PkmFunctionHolder;
 import com.sayyi.software.tbp.cli.util.FormatUtil;
 import com.sayyi.software.tbp.common.FileMetadata;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
 import java.io.File;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
  * @author xuchuang
  * @date 2021/6/1
  */
+@Slf4j
 @CommandLine.Command(name = "cp", description = "复制本地文件", mixinStandardHelpOptions = true)
 public class CpCommand implements Runnable {
 
@@ -29,7 +31,6 @@ public class CpCommand implements Runnable {
     @SneakyThrows
     @Override
     public void run() {
-        System.out.println(path);
         String basedir = System.getProperty("basedir");
         File file;
         if (!isAbsolutePath(path)) {

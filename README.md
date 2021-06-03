@@ -158,7 +158,7 @@ mvn clean package
 
 
 
-### web模式启动（建议）
+### web模式启动
 
 #### 配置
 
@@ -182,9 +182,15 @@ tbp:
 
 
 
-### tcp模式启动
+### tcp模式启动（web+cli）
 
-tcp模式主要是为了cli、web同时操作而开发的，目前cli使用不多，没有做界面优化，使用起来没有web舒适，推荐还是使用web。
+tcp模式主要是为了cli、web同时操作而开发的。提供命令行操作，可以为系统提供更多可能性，有些批量处理操作，通过命令行会更加便捷。
+
+需要首先启动tbpServer，作为nio服务器接受请求。web客户端会将接受的请求，通过nio发送给tbpServer来获取数据。cli客户端会把用户的命令发送给tbpServer，每个命令都会创建tcp连接与tbpServer交互。
+
+ 
+
+![](http://assets.processon.com/chart_image/60b857f51e08537af3d633b3.png)
 
 
 
@@ -224,11 +230,25 @@ tbp:
 
 #### 启动
 
-启动tbpServer.cmd，启动tcp server
+为了操作方便，推荐将`bin`目录加入环境变量，这样可以直接进行操作，而不用进入目录下进行交互。
 
-启动tbpWeb.cmd，启动web server
 
-启动tbpCli.cmd，启动cli client
+
+启动tbpServer
+
+```
+tbpServer
+```
+
+
+
+启动tbpWeb服务
+
+```
+tbpWeb
+```
+
+
 
 
 
@@ -238,13 +258,18 @@ web：
 
 访问<http://localhost:8080/static/index.html>，其中端口号是application.yml中配置的`server.port`参数
 
-cli：
+cli：具体的命令内容，可以通过输入`<command> -h` 查看帮助
 
-启动tbpCli.cmd时会自动打开cmd交互窗口。
+```
+tbp-file：资源操作指令
+tbp-tag：标签操作指令
+```
 
 
 
-## 使用建议（Web）
+
+
+## 使用建议
 
 ### chrome app
 
@@ -272,6 +297,17 @@ cli：
 
 
 个人觉得，应该是不需要担心性能问题。
+
+
+
+## 升级
+
+系统升级时，可能修改数据格式，因此每次升级之前，需要提前处理元数据。
+
+1. 使用原版本，重启一次服务端。这会将增量数据添加到全量快照文件中。
+2. 备份snap中的元数据。主要是避免升级失败，需要重新恢复数据。
+3. 删除snap中的request文件。
+4. 使用新版本启动。系统会自动将全量数据的格式升级成新版数据，之后就可以正常使用了。
 
 
 

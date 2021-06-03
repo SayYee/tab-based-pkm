@@ -1,6 +1,8 @@
-package com.sayyi.software.tbp.cli.client;
+package com.sayyi.software.tbp.cli.script;
 
-import com.sayyi.software.tbp.cli.client.filecli.*;
+import com.sayyi.software.tbp.cli.script.tagcli.LsCommand;
+import com.sayyi.software.tbp.cli.script.tagcli.MvCommand;
+import com.sayyi.software.tbp.cli.script.tagcli.RmCommand;
 import com.sayyi.software.tbp.common.TbpConfig;
 import com.sayyi.software.tbp.common.TbpConfigParse;
 import com.sayyi.software.tbp.core.facade.PkmFunction;
@@ -12,25 +14,22 @@ import java.io.IOException;
 import java.util.Objects;
 
 /**
- * 文件操作相关的命令
+ * 标签操作命令
  * @author xuchuang
  * @date 2021/6/1
  */
-@CommandLine.Command(name = "tbp-file", description = "TBP系统文件操作命令", mixinStandardHelpOptions = true, subcommands = {
-        UrlCommand.class,
-        TouchCommand.class,
-        CpCommand.class,
-        RmCommand.class,
-        MvCommand.class,
+@CommandLine.Command(name = "tbp-tag", description = "TBP系统标签操作命令", mixinStandardHelpOptions = true, subcommands = {
         LsCommand.class,
-        OpenCommand.class
+        MvCommand.class,
+        RmCommand.class
 })
-public class FileCommand {
+public class TagCommand {
 
     public static void main(String[] args) throws IOException {
         // 解析配置文件
         TbpConfig tbpConfig = new TbpConfigParse(
-                Objects.requireNonNull(FileCommand.class.getClassLoader().getResource("tbp.cfg")).getPath());
+                Objects.requireNonNull(TagCommand.class.getClassLoader().getResource("tbp.cfg")).getPath());
+        TbpConfigHolder.set(tbpConfig);
         // 启动 nio 客户端
         TbpClient tbpClient = new TbpClient(tbpConfig.getPort());
         tbpClient.start();
@@ -38,7 +37,7 @@ public class FileCommand {
         PkmFunction pkmFunction = new NioPkmFunction(tbpClient);
         PkmFunctionHolder.set(pkmFunction);
         // 执行命令
-        int exitCode = new CommandLine(new FileCommand()).execute(args);
+        int exitCode = new CommandLine(new TagCommand()).execute(args);
         // 关闭 nio 连接
         tbpClient.shutdown();
         System.exit(exitCode);
