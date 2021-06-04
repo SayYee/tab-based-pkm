@@ -22,7 +22,6 @@ public class LsCommand implements Runnable {
     @CommandLine.Parameters(index = "0", description = "标签集合，点号分割")
     private String tags;
 
-
     @SneakyThrows
     @Override
     public void run() {

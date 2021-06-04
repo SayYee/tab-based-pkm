@@ -1,0 +1,58 @@
+// 使用模版生成，请不要手动修改
+package ${package};
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class ${controllerName} implements ${functionName} {
+
+    @Autowired
+    private ${functionInfo.functionName} pkmFunction;
+
+<%
+  for(methodInfo in functionInfo.methodInfos){
+    println("@Override");
+    print("public ");
+    print(methodInfo.returnType);
+    print(" ");
+    print(methodInfo.methodName);
+    print(" ");
+    print("(");
+    for (fieldInfo in methodInfo.fieldInfos) {
+        if (!fieldInfoLP.first) {
+            print(", ");
+        }
+        print(fieldInfo.paramType);
+        print(" ");
+        print(fieldInfo.paramName);
+    }
+    print(")");
+    for (exception in methodInfo.exceptions) {
+        if (exceptionLP.first) {
+            print(" throws ");
+        }
+        print(exception);
+        if (!exceptionLP.last) {
+            print(", ");
+        }
+    }
+    println(" {");
+    if (methodInfo.returnType != "void") {
+        print("return ");
+    }
+    print("pkmFunction.");
+    print(methodInfo.methodName);
+    print("(");
+    for (fieldInfo in methodInfo.fieldInfos) {
+        if (!fieldInfoLP.first) {
+            print(", ");
+        }
+        print(fieldInfo.paramName);
+    }
+    print(");");
+
+    println("}");
+  }
+%>
+}

@@ -16,6 +16,24 @@
             <groupId>com.sayyi.software</groupId>
             <artifactId>tbp-nio</artifactId>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/io.github.openfeign/feign-spring4 -->
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-spring4</artifactId>
+            <version>11.2</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.github.openfeign/feign-jackson -->
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-jackson</artifactId>
+            <version>11.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sayyi.software</groupId>
+            <artifactId>tbp-web-api</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

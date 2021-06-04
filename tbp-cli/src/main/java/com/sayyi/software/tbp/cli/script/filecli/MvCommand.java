@@ -20,10 +20,10 @@ public class MvCommand implements Runnable {
     @CommandLine.Parameters(index = "0", description = "资源id")
     private long id;
 
-    @CommandLine.Option(names = {"-f", "--file"}, description = "新的文件名（带后缀）")
+    @CommandLine.Option(names = {"-f", "--file"}, description = "新的文件名（带后缀）", defaultValue = "")
     private String newname;
 
-    @CommandLine.Option(names = {"-t", "--tags"}, description = "新的标签集合（点号分割）")
+    @CommandLine.Option(names = {"-t", "--tags"}, description = "新的标签集合（点号分割）", defaultValue = "")
     private String newtags;
 
     @SneakyThrows

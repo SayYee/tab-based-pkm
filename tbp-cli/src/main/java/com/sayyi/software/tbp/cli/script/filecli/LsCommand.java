@@ -23,9 +23,9 @@ public class LsCommand implements Runnable {
     @CommandLine.Option(names = {"-i", "--id"}, description = "文件id。指定id查询，其他参数不会生效")
     private Long id;
 
-    @CommandLine.Option(names = {"-f", "--filereg"}, description = "文件名称正则表达式")
+    @CommandLine.Option(names = {"-f", "--filereg"}, description = "文件名称正则表达式", defaultValue = "")
     private String filereg;
-    @CommandLine.Option(names = {"-t", "--tags"}, description = "tag集合（点号分割）")
+    @CommandLine.Option(names = {"-t", "--tags"}, description = "tag集合（点号分割）", defaultValue = "")
     private String tags;
 
     @SneakyThrows

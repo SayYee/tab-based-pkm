@@ -186,7 +186,11 @@ tbp:
 
 tcp模式主要是为了cli、web同时操作而开发的。提供命令行操作，可以为系统提供更多可能性，有些批量处理操作，通过命令行会更加便捷。
 
-需要首先启动tbpServer，作为nio服务器接受请求。web客户端会将接受的请求，通过nio发送给tbpServer来获取数据。cli客户端会把用户的命令发送给tbpServer，每个命令都会创建tcp连接与tbpServer交互。
+> 原本的cli交互需要启动tbpServer，通过nio进行交互，但是觉得有点多此一举，因此提供了直接访问web接口的方法。 
+>
+> 需要首先启动tbpServer，作为nio服务器接受请求。web客户端会将接受的请求，通过nio发送给tbpServer来获取数据。cli客户端会把用户的命令发送给tbpServer，每个命令都会创建tcp连接与tbpServer交互。
+>
+> nio的代码依然保留，但是不再启用。
 
  
 
@@ -194,51 +198,23 @@ tcp模式主要是为了cli、web同时操作而开发的。提供命令行操�
 
 
 
+现在的交互模式：
+
+cli通过feign远程调用web接口的方式提供服务。
+
+feign interface和对应的feign controller通过代码自动生成，降低维护成本。
+
+
+
 #### 配置
 
-修改`conf/tbp.cfg`，主要还是snap、store属性修改
-
-```properties
-# 服务端监听端口
-port=9000
-
-# 文件存储路径
-storeDir=D:\\pkm\\store
-# 元数据存储路径
-snapDir=D:\\pkm\\snap
-
-# tree数据历史版本保留数量
-treeRetainNum=10
-```
-
-
-
-修改`conf/application.yml`，只需要启用，并配置server监听端口就可以
-
-```yaml
-tbp:
-  # nio配置。如果启用nio，需要先启动tbpServer.cmd
-  nio:
-    enable: true
-    # tcp server 监听端口，需要和tbp.cfg中配置的端口相同
-    port: 9000
-```
-
-
+和web模式配置相同，只要设置好`application.yml`文件就可以
 
 
 
 #### 启动
 
 为了操作方便，推荐将`bin`目录加入环境变量，这样可以直接进行操作，而不用进入目录下进行交互。
-
-
-
-启动tbpServer
-
-```
-tbpServer
-```
 
 
 
@@ -257,6 +233,8 @@ tbpWeb
 web：
 
 访问<http://localhost:8080/static/index.html>，其中端口号是application.yml中配置的`server.port`参数
+
+
 
 cli：具体的命令内容，可以通过输入`<command> -h` 查看帮助
 
