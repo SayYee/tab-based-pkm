@@ -84,7 +84,14 @@ public class TbpController {
     @GetMapping("/query")
     public ResultBean<List<FileMetadata>> query(String tags, String filename) throws Exception {
         Set<String> tagSet = tagStrToSet(tags);
-        List<FileMetadata> fileMetadata = pkmFunction.listByNameAndTag(tagSet, filename);
+        List<FileMetadata> fileMetadata;
+        // 参数为空的情况下，默认查询最近打开的文件。因为查询所有文件是没有意义的。
+        if (tagSet.isEmpty()
+                && (filename == null || "".equals(filename))) {
+            fileMetadata = pkmFunction.listRecentOpened();
+        } else {
+            fileMetadata = pkmFunction.listByNameAndTag(tagSet, filename);
+        }
         return ResultBean.ok(fileMetadata);
     }
 
