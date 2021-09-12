@@ -24,7 +24,7 @@ import java.util.Map;
 public class RecordGenerator {
 
     public static void main(String[] args) throws IOException {
-        String dslFilePath = "/tbp.dsl";
+        String dslFilePath = "/new-tbp.dsl";
         String templateDir = "template/";
         String templatePath = "/RecordTemplate.txt";
 

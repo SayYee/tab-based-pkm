@@ -1,6 +1,6 @@
 package com.sayyi.software.tbp.client.component.tree;
 
-import com.sayyi.software.tbp.client.model.Tree;
+import com.sayyi.software.tbp.common.Tree;
 import javafx.geometry.Pos;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
@@ -13,7 +13,10 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.util.converter.DefaultStringConverter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.function.Consumer;
 
 public class TagTreeView {

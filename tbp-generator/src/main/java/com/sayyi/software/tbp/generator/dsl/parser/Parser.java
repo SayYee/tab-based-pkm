@@ -83,6 +83,10 @@ public interface Parser<T> {
         return c == '\t' || c == ' ';
     }
 
+    default boolean isEnter(char c) {
+        return c == '\n' || c == '\r';
+    }
+
     /**
      * 后续的数字可以是 字母、数字、下划线
      * @param c

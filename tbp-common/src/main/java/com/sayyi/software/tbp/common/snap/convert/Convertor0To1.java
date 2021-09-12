@@ -3,8 +3,8 @@ package com.sayyi.software.tbp.common.snap.convert;
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.snap.Convertor;
 import com.sayyi.software.tbp.common.snap.Version;
-import com.sayyi.software.tbp.common.snap.model.CurrentSnapshot;
 import com.sayyi.software.tbp.common.snap.model.SnapshotV00;
+import com.sayyi.software.tbp.common.snap.model.SnapshotV01;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,14 +20,14 @@ public class Convertor0To1 implements Convertor {
     @Override
     public Version convert(Version source) {
         SnapshotV00 snapshotV00 = (SnapshotV00) source;
-        CurrentSnapshot snapshot = new CurrentSnapshot();
+        SnapshotV01 snapshot = new SnapshotV01();
         snapshot.setLastOpId(snapshotV00.getLastOpId());
         snapshot.setLastFileId(snapshotV00.getLastFileId());
 
-        List<FileMetadata> fileMetadataList = new ArrayList<>(snapshotV00.getInnerList().size());
-        snapshot.setFileMetadataList(fileMetadataList);
+        List<SnapshotV01.Inner> fileMetadataList = new ArrayList<>(snapshotV00.getInnerList().size());
+        snapshot.setInnerList(fileMetadataList);
         for (SnapshotV00.Inner inner : snapshotV00.getInnerList()) {
-            FileMetadata fileMetadata = new FileMetadata();
+            SnapshotV01.Inner fileMetadata = new SnapshotV01.Inner();
             fileMetadataList.add(fileMetadata);
 
             fileMetadata.setId(inner.getId());

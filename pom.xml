@@ -18,6 +18,7 @@
         <module>tbp-generator</module>
         <module>tbp-web-api</module>
         <module>tbp-client</module>
+        <module>tbp-db</module>
     </modules>
 <!--    <parent>-->
 <!--        <groupId>org.springframework.boot</groupId>-->

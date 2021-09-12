@@ -1,6 +1,5 @@
-package com.sayyi.software.tbp.client.model;
+package com.sayyi.software.tbp.common;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Tree {

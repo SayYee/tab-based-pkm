@@ -1,7 +1,6 @@
 package com.sayyi.software.tbp.client.component.tree;
 
-import com.sayyi.software.tbp.client.model.Tree;
-import javafx.scene.Node;
+import com.sayyi.software.tbp.common.Tree;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.Region;
