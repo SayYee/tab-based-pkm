@@ -2,36 +2,33 @@ package com.sayyi.software.tbp.client.component.table.menuitem;
 
 import com.sayyi.software.tbp.client.model.ObservableMetadata;
 import com.sayyi.software.tbp.common.FileMetadata;
+import com.sayyi.software.tbp.common.FileUtil;
 import com.sayyi.software.tbp.db.DbHelper;
 import javafx.collections.ObservableList;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableView;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 
 import java.io.File;
-import java.util.StringJoiner;
+import java.io.IOException;
 
-/**
- * 复制文件路径
- */
-public class CopyPathMenuItemProvider implements MenuItemProvider{
+public class ShowFileLocationMenuItemProvider implements MenuItemProvider {
 
     @Override
     public MenuItem get(TableView<ObservableMetadata> tableView) {
-        MenuItem menuItem = new MenuItem("复制路径");
+        MenuItem menuItem = new MenuItem("打开文件所在位置");
+        // 点击按钮时要执行的操作
         menuItem.setOnAction(event -> {
             ObservableList<ObservableMetadata> selectedItems = tableView.getSelectionModel().getSelectedItems();
-            StringJoiner joiner = new StringJoiner("\r\n");
+            // 获取文件地址，然后放入剪切板
             selectedItems.forEach(observableMetadata -> {
                 FileMetadata fileMetadata = DbHelper.getInstance().getSelector().get(observableMetadata.getId());
                 File file = DbHelper.getInstance().getFileHelper().getFile(fileMetadata);
-                joiner.add(file.getAbsolutePath());
+                try {
+                    FileUtil.select(file);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             });
-            ClipboardContent content = new ClipboardContent();
-            content.putString(joiner.toString());
-            Clipboard clipboard = Clipboard.getSystemClipboard();
-            clipboard.setContent(content);
         });
         return menuItem;
     }

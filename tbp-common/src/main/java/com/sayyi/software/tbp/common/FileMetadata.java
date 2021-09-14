@@ -35,7 +35,7 @@ public class FileMetadata implements Comparable<FileMetadata>, Record {
     /**
      * 标签集合
      */
-    private Set<String> tags = new HashSet<>();
+    private Set<String> tags;
 
     /**
      * 创建时间戳
@@ -65,9 +65,13 @@ public class FileMetadata implements Comparable<FileMetadata>, Record {
             }
         }
 
-        archive.writeInt(tags.size());
-        for (String tag : tags) {
-            archive.writeString(tag);
+        if (tags == null) {
+            archive.writeInt(-1);
+        } else {
+            archive.writeInt(tags.size());
+            for (String tag : tags) {
+                archive.writeString(tag);
+            }
         }
 
         archive.writeLong(createTime);
@@ -88,13 +92,15 @@ public class FileMetadata implements Comparable<FileMetadata>, Record {
                 resourcePath[i] = archive.readString();
             }
         }
-
         int tagSize = archive.readInt();
-        tags = new HashSet<>(tagSize);
-        for (int i = 0; i < tagSize; i++) {
-            tags.add(archive.readString());
+        if (tagSize == -1) {
+            tags = new HashSet<>();
+        } else {
+            tags = new HashSet<>(tagSize);
+            for (int i = 0; i < tagSize; i++) {
+                tags.add(archive.readString());
+            }
         }
-
         createTime = archive.readLong();
         lastOpenTime = archive.readLong();
     }

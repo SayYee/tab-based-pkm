@@ -41,3 +41,7 @@
     -fx-background-size: cover;
     -fx-background-image: url(../img/tree-tag.png);
 }
+.tree-save {
+    -fx-background-size: cover;
+    -fx-background-image: url(../img/save.png);
+}

@@ -2,6 +2,7 @@ package com.sayyi.software.tbp.db;
 
 import com.sayyi.software.tbp.common.TbpConfig;
 import com.sayyi.software.tbp.common.TbpConfigParse;
+import com.sayyi.software.tbp.common.TbpException;
 import com.sayyi.software.tbp.common.flow.Request;
 import com.sayyi.software.tbp.common.snap.Version;
 import com.sayyi.software.tbp.common.snap.model.CurrentSnapshot;
@@ -34,8 +35,9 @@ public class DbHelper {
     private DbHelper(){
         try {
             init();
-        } catch (IOException e) {
-            log.error(e.getMessage());
+        } catch (Exception e) {
+            log.error("元数据管理组件启动失败", e);
+            throw new TbpException("元数据管理组件启动失败");
         }
     }
 
@@ -81,6 +83,7 @@ public class DbHelper {
         }
         // 这个给个不含持久化的Db好了，对外暴露的，是包含持久化逻辑的Db
         metadataDb.setSelector(selector);
+        selector.setMetadataDb(metadataDb);
 
         Recovery recovery = new Recovery(metadataDb);
 

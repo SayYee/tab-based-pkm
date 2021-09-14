@@ -41,7 +41,7 @@ public class FileBasedPersistenceComponent implements PersistenceComponent {
         snapDirFile = new File(snapDir);
         if (!snapDirFile.exists()) {
             if (!snapDirFile.mkdirs()) {
-                throw new IllegalArgumentException(snapDirFile.toString() + " file is missing and create failed");
+                throw new IllegalArgumentException(snapDirFile + " file is missing and create failed");
             }
         }
     }

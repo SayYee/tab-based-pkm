@@ -1,93 +1,146 @@
 package com.sayyi.software.tbp.client.component;
 
-import javafx.geometry.Side;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextField;
-import javafx.util.StringConverter;
+import com.sayyi.software.tbp.client.component.table.converter.SetStringConverter;
+import com.sayyi.software.tbp.common.model.TagInfo;
+import com.sayyi.software.tbp.db.DbHelper;
+import javafx.collections.FXCollections;
+import javafx.geometry.Point2D;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.stage.Popup;
 
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  *
- * 带检索提示框的输入框。检索提示信息使用contextMenu实现
+ * 带检索提示框的输入框。检索提示信息使用Popup实现
  */
 public class SearchableTextField extends TextField {
 
-    /** 用于将字符串转换成 menuitem，以及从menuitem中获取字符串 */
-    private final MenuItemStringConvert convert = new MenuItemStringConvert();
+    private List<TagInfo> tagInfos;
+    private String lastTagsStr;
 
-    /** 点击item后要执行的操作 */
-    private Consumer<String> itemAction;
+    private final Popup popup;
+    private final ListView<TagInfo> tagInfoListView;
 
-    public void setItemAction(Consumer<String> itemAction) {
-        this.itemAction = itemAction;
+    private boolean allowShowPopup = true;
+
+    public SearchableTextField() {
+        popup = new Popup();
+        popup.setConsumeAutoHidingEvents(false);
+        popup.setAutoHide(true);
+        popup.setAutoFix(true);
+        popup.setHideOnEscape(true);
+
+        tagInfoListView = new ListView<>();
+        tagInfoListView.prefWidthProperty().bind(this.widthProperty().subtract(5));
+        tagInfoListView.setPrefHeight(300);
+        popup.getContent().add(tagInfoListView);
+        init();
+    }
+
+    private void init() {
+        tagInfoListView.setCellFactory(param -> new TagInfoCell());
+        tagInfoListView.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                TagInfo selectedItem = tagInfoListView.getSelectionModel().getSelectedItem();
+                if (selectedItem == null) {
+                    return;
+                }
+                allowShowPopup = false;
+                hidePopup();
+                String tag = selectedItem.getTag();
+                String[] strings = parseText(SearchableTextField.this.getText());
+                String newText = strings[0].equals("") ? tag : strings[0] + "." + tag;
+                SearchableTextField.this.setText(newText);
+                SearchableTextField.this.positionCaret(newText.length());
+
+            }
+        });
+        updateList("", "");
+        tagInfoListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+
+        // 随着输入内容，变更下拉列表内容
+        this.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!allowShowPopup) {
+                allowShowPopup = true;
+                return;
+            }
+            showPopup();
+            String[] parseText = parseText(newValue);
+            updateList(parseText[0], parseText[1]);
+        });
+
     }
 
     /**
-     * 展示contextMenu
+     * 将输入文本解析为 搜索标签 和 过滤词 两个部分
+     * @param text
+     * @return
      */
-    public void showMenu() {
-        ContextMenu contextMenu = this.getContextMenu();
-        if (contextMenu == null) {
-            contextMenu = new ContextMenu();
-            this.setContextMenu(contextMenu);
-        }
-        contextMenu.show(this, Side.BOTTOM, 0, 0);
-    }
-
-    /**
-     * 调用item提供程序，更新菜单项
-     */
-    public boolean updateItems(List<String> items) {
-        ContextMenu contextMenu = this.getContextMenu();
-        if (contextMenu == null) {
-            contextMenu = new ContextMenu();
-            this.setContextMenu(contextMenu);
+    private String[] parseText(String text) {
+        int i = text.lastIndexOf('.');
+        // 没有标点符号，全量查询+过滤
+        String tagsStr;
+        String filterWord;
+        if (i == -1) {
+            tagsStr = "";
+            filterWord = text;
+        } else if (i < text.length() - 1) {
+            tagsStr = text.substring(0, i);
+            filterWord = text.substring(i + 1);
         } else {
-            // 清空原有的数据
-            contextMenu.getItems().clear();
+            tagsStr = text.substring(0, i);
+            filterWord = "";
         }
-        if (items == null || items.isEmpty()) {
-            return false;
-        }
-        for (String item : items) {
-            MenuItem menuItem =convert.fromString(item);
-            // item点击事件
-            menuItem.setOnAction(event -> {
-                String text = convert.toString((MenuItem)event.getSource());
-                itemAction.accept(text);
-            });
-            contextMenu.getItems().add(menuItem);
-        }
-        return true;
+        return new String[]{tagsStr, filterWord};
     }
 
     /**
-     * 根据字符串生成MenuItem，以及从MenuItem获取字符串
+     * 更新下拉列表内容
+     * @param tagsStr
+     * @param word
      */
-    private class MenuItemStringConvert extends StringConverter<MenuItem> {
-
-        @Override
-        public String toString(MenuItem menuItem) {
-            Label label = (Label) menuItem.getGraphic();
-            return label.getText();
+    private void updateList(String tagsStr, String word) {
+        if (!tagsStr.equals(lastTagsStr)) {
+            lastTagsStr = tagsStr;
+            Set<String> set = SetStringConverter.getInstance().fromString(tagsStr);
+            tagInfos = DbHelper.getInstance().getSelector().listTags(set);
         }
+        word = word.toLowerCase();
+        String finalWord = word;
+        List<TagInfo> collect = tagInfos.stream().filter(tagInfo -> tagInfo.getTag().toLowerCase().contains(finalWord)).collect(Collectors.toList());
+        tagInfoListView.setItems(FXCollections.observableList(collect));
+        tagInfoListView.getSelectionModel().select(0);
+    }
+
+    private void hidePopup() {
+        popup.hide();
+    }
+
+    private void showPopup() {
+        if (popup.isShowing()) {
+            return;
+        }
+        Point2D point2D = this.localToScreen(1, this.getHeight());
+        popup.show(this.getScene().getWindow(), point2D.getX(), point2D.getY());
+    }
+
+    private static class TagInfoCell extends ListCell<TagInfo> {
 
         @Override
-        public MenuItem fromString(String s) {
-            MenuItem menuItem = new MenuItem();
-            // menuItem宽度设置，通过内部组件实现
-            Label label = new Label(s);
-            label.setWrapText(true);
-            // 宽度绑定
-            // 为啥总是多了22？应该是MenuItem内部有一些额外的空间占用吧
-            label.prefWidthProperty().bind(SearchableTextField.this.widthProperty().subtract(22));
-            menuItem.setGraphic(label);
-            return menuItem;
+        protected void updateItem(TagInfo item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty || item == null) {
+                this.setText("");
+                this.setGraphic(null);
+                return;
+            }
+            this.setText(item.getTag());
+            this.setGraphic(new Button(item.getFileNum() + ""));
         }
     }
+
 }

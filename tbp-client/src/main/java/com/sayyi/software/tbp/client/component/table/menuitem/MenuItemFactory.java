@@ -16,11 +16,18 @@ public class MenuItemFactory {
     private static final List<MenuItemProvider> menuItemProviders = new ArrayList<>();
 
     static {
-        // TODO 开放插件注册程序。需要添加扫描逻辑
+        // 加载内置的tableView右键菜单
+        menuItemProviders.add(new NewDirectoryMenuItemProvider());
+        menuItemProviders.add(new NewFileMenuItemProvider());
         menuItemProviders.add(new OpenFileMenuItemProvider());
+        menuItemProviders.add(new ShowFileLocationMenuItemProvider());
         menuItemProviders.add(new DeleteFileMenuItemProvider());
         menuItemProviders.add(new CopyFileMenuItemProvider());
         menuItemProviders.add(new CopyPathMenuItemProvider());
+    }
+
+    public static void registry(MenuItemProvider menuItemProvider) {
+        menuItemProviders.add(menuItemProvider);
     }
 
     /**

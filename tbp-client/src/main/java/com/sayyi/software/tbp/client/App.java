@@ -1,34 +1,33 @@
 package com.sayyi.software.tbp.client;
 
 import com.sayyi.software.tbp.client.component.util.Scheduler;
-import com.sayyi.software.tbp.client.component.SearchTab;
-import com.sayyi.software.tbp.client.component.tree.TagTree;
+import com.sayyi.software.tbp.db.DbHelper;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.binding.DoubleBinding;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 public class App extends Application {
 
     @Override
     public void init() throws Exception {
-        super.init();
-        System.out.println("init--------current_thread=" + Thread.currentThread().getName());
+        log.info("init--------current_thread=" + Thread.currentThread().getName());
+        // TODO 插件加载
     }
 
     @Override
     public void start(Stage stage) throws Exception {
+        ModelStage.init(stage);
+
         HBox root = new HBox(5);
         root.setPadding(new Insets(10));
         root.setStyle("-fx-background-color: #23a8f2");
@@ -60,12 +59,43 @@ public class App extends Application {
         sideBox.prefHeightProperty().bind(heightBinding);
         // main区域宽度绑定
         mainBox.prefWidthProperty().bind(stage.widthProperty().subtract(sideBox.prefWidthProperty()).subtract(30));
+
+        initDb();
     }
 
     @Override
     public void stop() throws Exception {
         super.stop();
         Scheduler.get().shutdown();
-        System.out.println("stop--------current_thread=" + Thread.currentThread().getName());
+        log.info("stop--------current_thread=" + Thread.currentThread().getName());
+    }
+
+    private void initDb() {
+        ModelStage.get().show();
+        // 启动一个Task来初始化元数据管理组件
+        new Thread(new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                log.info("初始化元数据管理组件");
+                long currentTimeMillis = System.currentTimeMillis();
+                DbHelper.getInstance();
+                log.info("元数据管理组件初始化完毕，耗时【{}ms】", System.currentTimeMillis() - currentTimeMillis);
+                return null;
+            }
+
+            @Override
+            protected void succeeded() {
+                ModelStage.get().close();
+            }
+
+            @Override
+            protected void failed() {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "组件启动失败");
+                alert.show();
+                alert.setOnCloseRequest(event -> {
+                    Platform.exit();
+                });
+            }
+        }).start();
     }
 }

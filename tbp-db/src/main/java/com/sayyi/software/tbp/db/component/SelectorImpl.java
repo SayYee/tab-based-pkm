@@ -73,7 +73,6 @@ public class SelectorImpl implements Selector {
     public List<FileMetadata> list(Set<String> tags, String name) {
         readLock.lock();
         try {
-
             boolean noTags = tags == null || tags.isEmpty();
             boolean noFilename = name == null || "".equals(name.trim());
             if (noTags && noFilename) {
@@ -178,15 +177,17 @@ public class SelectorImpl implements Selector {
             writeLock.lock();
             try {
                 // 这个就不用break了，一路匹配下来就好
-                switch (tbpEvent.getEventType()) {
-                    case TbpEventType.ADD:
-                        dealAdd((FileMetadata) tbpEvent.getNewValue());
-                    case TbpEventType.REMOVE:
-                        dealRemove((FileMetadata) tbpEvent.getOldValue());
-                    case TbpEventType.MODIFY_TAGS:
-                        dealModifyTag((FileMetadata) tbpEvent.getOldValue(), (FileMetadata) tbpEvent.getNewValue());
-                    case TbpEventType.TAG_UPDATE:
-                        dealTagUpdate((Set<String>) tbpEvent.getOldValue(), (Set<String>) tbpEvent.getNewValue());
+                if ((tbpEvent.getEventType() & TbpEventType.ADD) != 0) {
+                    dealAdd((FileMetadata) tbpEvent.getNewValue());
+                }
+                if ((tbpEvent.getEventType() & TbpEventType.REMOVE) != 0) {
+                    dealRemove((FileMetadata) tbpEvent.getOldValue());
+                }
+                if ((tbpEvent.getEventType() & TbpEventType.MODIFY_TAGS) != 0) {
+                    dealModifyTag((FileMetadata) tbpEvent.getOldValue(), (FileMetadata) tbpEvent.getNewValue());
+                }
+                if ((tbpEvent.getEventType() & TbpEventType.TAG_UPDATE) != 0) {
+                    dealTagUpdate((Set<String>) tbpEvent.getOldValue(), (Set<String>) tbpEvent.getNewValue());
                 }
             } finally {
                 writeLock.unlock();

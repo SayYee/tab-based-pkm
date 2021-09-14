@@ -4,8 +4,13 @@ import com.sayyi.software.tbp.client.component.table.converter.LongDataStringCon
 import com.sayyi.software.tbp.client.component.table.converter.SetStringConverter;
 import com.sayyi.software.tbp.client.component.table.menuitem.MenuItemFactory;
 import com.sayyi.software.tbp.client.component.table.skin.CustomTableCellSkin;
+import com.sayyi.software.tbp.client.component.util.File2ObservableConverter;
 import com.sayyi.software.tbp.client.model.ObservableMetadata;
+import com.sayyi.software.tbp.common.FileMetadata;
+import com.sayyi.software.tbp.common.FileUtil;
 import com.sayyi.software.tbp.common.constant.ResourceType;
+import com.sayyi.software.tbp.db.DbHelper;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -14,18 +19,32 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.*;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.FlowPane;
 import javafx.util.StringConverter;
 import javafx.util.converter.DefaultStringConverter;
 import javafx.util.converter.LongStringConverter;
+import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Set;
 
 /**
  * 这个tableView自身不进行任何数据的持久化操作。仅仅支持一般的排序、编辑，自定义的右键菜单。编辑操作也仅仅是修改可观察对象，持久化的逻辑在对象监听中处理
  */
+@Slf4j
 public class MetadataTableView {
+
+    public static class ColumnName {
+        public static final String ID = "ID";
+        public static final String NAME = "名称";
+        public static final String TYPE = "类型";
+        public static final String TAGS = "标签";
+        public static final String UPDATE_TIME = "修改时间";
+    }
 
     private TableView<ObservableMetadata> tableView;
 
@@ -39,21 +58,26 @@ public class MetadataTableView {
         tableView.setPlaceholder(new Label("未获取到数据"));
 
         // 初始化各个列渲染、编辑
-        TableColumn<ObservableMetadata, Long> idCol = new TableColumn<>("ID");
+        TableColumn<ObservableMetadata, Long> idCol = new TableColumn<>(ColumnName.ID);
         idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         idCol.setPrefWidth(80);
-        TableColumn<ObservableMetadata, String> nameCol = new TableColumn<>("名称");
+        idCol.setMinWidth(80);
+        TableColumn<ObservableMetadata, String> nameCol = new TableColumn<>(ColumnName.NAME);
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         nameCol.setPrefWidth(350);
-        TableColumn<ObservableMetadata, Integer> typeCol = new TableColumn<>("类型");
+        nameCol.setMinWidth(350);
+        TableColumn<ObservableMetadata, Integer> typeCol = new TableColumn<>(ColumnName.TYPE);
         typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
         typeCol.setPrefWidth(50);
-        TableColumn<ObservableMetadata, Set<String>> tagsCol = new TableColumn<>("标签");
+        typeCol.setMinWidth(50);
+        TableColumn<ObservableMetadata, Set<String>> tagsCol = new TableColumn<>(ColumnName.TAGS);
         tagsCol.setCellValueFactory(new PropertyValueFactory<>("tags"));
         tagsCol.setPrefWidth(350);
-        TableColumn<ObservableMetadata, Long> updateTimeCol = new TableColumn<>("修改时间");
+        tagsCol.setMinWidth(350);
+        TableColumn<ObservableMetadata, Long> updateTimeCol = new TableColumn<>(ColumnName.UPDATE_TIME);
         updateTimeCol.setCellValueFactory(new PropertyValueFactory<>("lastUpdateTime"));
         updateTimeCol.setPrefWidth(150);
+        updateTimeCol.setMinWidth(150);
         tableView.getColumns().addAll(idCol, nameCol, typeCol, tagsCol, updateTimeCol);
         // 允许多选
         tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -62,7 +86,28 @@ public class MetadataTableView {
         idCol.setCellFactory(param -> new SimpleCellTableCell<>(Pos.CENTER, new LongStringConverter()));
         // 使用自定义的Skin，双击不再触发编辑
         nameCol.setCellFactory(param -> {
-            TextFieldTableCell<ObservableMetadata, String> textFieldTableCell = new TextFieldTableCell<>(new DefaultStringConverter());
+            TextFieldTableCell<ObservableMetadata, String> textFieldTableCell = new TextFieldTableCell<>(new DefaultStringConverter()) {
+                @Override
+                public void commitEdit(String newValue) {
+                    ObservableMetadata item = getTableRow().getItem();
+                    FileMetadata metadata = DbHelper.getInstance().getSelector().get(item.getId());
+                    File file = DbHelper.getInstance().getFileHelper().getFile(metadata);
+                    try {
+                        FileUtil.rename(file, newValue);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        cancelEdit();
+                        return;
+                    }
+                    FileMetadata fileMetadata = new FileMetadata();
+                    fileMetadata.setId(item.getId());
+                    fileMetadata.setFilename(newValue);
+                    DbHelper.getInstance().getMetadata().update(fileMetadata);
+                    super.commitEdit(newValue);
+                }
+            };
+            textFieldTableCell.setAlignment(Pos.CENTER_LEFT);
+            // 禁止双击触发编辑
             textFieldTableCell.setSkin(new CustomTableCellSkin<>(textFieldTableCell));
             return textFieldTableCell;
         });
@@ -70,6 +115,7 @@ public class MetadataTableView {
         // 使用文本域的方式更新标签，主要在于这样方便提交，不用点击别的地方，直接回车就可以提交更新
         tagsCol.setCellFactory(param -> {
             TagsCell tagsCell = new TagsCell(SetStringConverter.getInstance());
+            // 禁止双击触发编辑
             tagsCell.setSkin(new CustomTableCellSkin<>(tagsCell));
             return tagsCell;
         });
@@ -80,13 +126,50 @@ public class MetadataTableView {
         ContextMenu contextMenu = new ContextMenu();
         contextMenu.getItems().addAll(MenuItemFactory.getAll(tableView));
         tableView.setContextMenu(contextMenu);
+
+        // 拖拽进入。
+        // 这个功能放在这里，因为tableRow只允许拖拽进入有数据的行，如果没有数据就不允许触发拖拽，逻辑不同。
+        tableView.setOnDragOver(event -> {
+            event.acceptTransferModes(TransferMode.COPY);
+        });
+        tableView.setOnDragDropped(event -> {
+            Dragboard dragboard = event.getDragboard();
+            if (dragboard.hasFiles()) {
+                for (File file : dragboard.getFiles()) {
+                    // 这个功能，可以更加有用一点，拖拽进来后，自带当前页面的标签如何？
+                    FileMetadata fileMetadata = new FileMetadata();
+                    fileMetadata.setFilename(file.getName());
+                    fileMetadata.setResourceType(ResourceType.LOCAL);
+                    // 跟随当前页面标签
+                    fileMetadata.setTags((Set<String>) tableView.getUserData());
+                    // 请求分配一个存储路径
+                    fileMetadata.setResourcePath(DbHelper.getInstance().getFileHelper().assignPath());
+                    File storeFile = DbHelper.getInstance().getFileHelper().getFile(fileMetadata);
+                    try {
+                        if (file.isDirectory()) {
+                            FileUtil.copyDir(file, storeFile);
+                        } else {
+                            FileUtil.copyFile(file, storeFile);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    DbHelper.getInstance().getMetadata().insert(fileMetadata);
+                    ObservableMetadata observableMetadata = File2ObservableConverter.convert(fileMetadata);
+                    tableView.getItems().add(observableMetadata);
+                }
+            }
+        });
     }
 
     /**
      * 更新TableView中的数据条目
      * @param metadata
      */
-    public void setMetadata(ObservableList<ObservableMetadata> metadata) {
+    public void setMetadata(String tagsStr, ObservableList<ObservableMetadata> metadata) {
+        Set<String> set = SetStringConverter.getInstance().fromString(tagsStr);
+        log.debug("设置tableView查询tag集合【{}】", set);
+        tableView.setUserData(set);
         tableView.setItems(metadata);
     }
 
@@ -116,7 +199,9 @@ public class MetadataTableView {
         @Override
         protected void updateItem(Integer item, boolean empty) {
             super.updateItem(item, empty);
+            // 这种为空的情况，不要直接返回，有可能原本有数据，后来删除了，此时应该将单元格渲染为空白样式
             if (empty || item == null) {
+                imageView.setImage(null);
                 return;
             }
             Image image = item == ResourceType.LOCAL ? new Image("img/local-file.png") : new Image("img/web-file.png");
@@ -129,10 +214,9 @@ public class MetadataTableView {
      */
     private static class TagsCell extends TableCell<ObservableMetadata, Set<String>> {
 
-        private TextArea textField;
+        private TextArea textArea;
         private Group showPane;
         private FlowPane pane;
-
 
         private final StringConverter<Set<String>> setStringConverter;
 
@@ -145,18 +229,20 @@ public class MetadataTableView {
             showPane = new Group();
             showPane.getChildren().add(pane);
             this.setGraphic(showPane);
+
+            pane.prefWidthProperty().bind(this.widthProperty().subtract(3));
         }
 
         @Override
         protected void updateItem(Set<String> item, boolean empty) {
             super.updateItem(item, empty);
+            // javafx应该是针对大量数据进行过优化，条目划出屏幕就会释放，进来后重新渲染
+            // 因此这里需要先清空一下label
+            pane.getChildren().clear();
             if (empty || item.isEmpty()) {
                 return;
             }
             this.setGraphic(showPane);
-            // javafx应该是针对大量数据进行过优化，条目划出屏幕就会释放，进来后重新渲染
-            // 因此这里需要先清空一下label
-            pane.getChildren().clear();
             for (String s : item) {
                 Label label = new Label(s);
                 label.getStyleClass().add("tag");
@@ -168,15 +254,15 @@ public class MetadataTableView {
         public void startEdit() {
             super.startEdit();
             // 新增功能：放入一个textField，多个标签点号分隔，回车提交
-            if (textField == null) {
-                textField = new TextArea();
+            if (textArea == null) {
+                textArea = new TextArea();
                 // 自动换行
-                textField.setWrapText(true);
+                textArea.setWrapText(true);
                 // enter提交，esc取消
-                textField.setOnKeyReleased(event -> {
+                textArea.setOnKeyReleased(event -> {
                     if (event.getCode() == KeyCode.ENTER) {
                         // 这里提交的时候，需要把回车给干掉
-                        String text = textField.getText();
+                        String text = textArea.getText();
                         text = text.replace("\n", "").replace("\r", "");
                         this.commitEdit(setStringConverter.fromString(text));
                         event.consume();
@@ -186,10 +272,12 @@ public class MetadataTableView {
                     }
                 });
             }
-            this.setGraphic(textField);
-            textField.setPrefSize(this.getWidth(), this.getHeight());
-            textField.setText(setStringConverter.toString(this.getItem()));
-            textField.requestFocus();
+            this.setGraphic(textArea);
+            textArea.setPrefSize(this.getWidth(), this.getHeight());
+            textArea.setText(setStringConverter.toString(this.getItem()));
+            // 姑且和TextFile的行为保持一致
+            textArea.selectAll();
+            textArea.requestFocus();
         }
 
         @Override
@@ -200,8 +288,14 @@ public class MetadataTableView {
 
         @Override
         public void commitEdit(Set<String> newValue) {
-            // 提交后持久化逻辑，都交给外边统一处理了
-            super.commitEdit(newValue);
+            long id = getTableRow().getItem().getId();
+            FileMetadata fileMetadata = new FileMetadata();
+            fileMetadata.setId(id);
+            fileMetadata.setTags(newValue);
+            DbHelper.getInstance().getMetadata().update(fileMetadata);
+            // 这里如果是空的集合，就不会联动展示，非空集合就可以。奇了怪了
+            // updateItem，写的有问题，改下就好了
+            super.commitEdit(FXCollections.observableSet(newValue));
         }
     }
 

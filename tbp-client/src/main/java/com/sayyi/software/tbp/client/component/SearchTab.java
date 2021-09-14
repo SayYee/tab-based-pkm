@@ -2,20 +2,32 @@ package com.sayyi.software.tbp.client.component;
 
 import com.sayyi.software.tbp.client.component.table.MetadataTableView;
 import com.sayyi.software.tbp.client.component.table.converter.SetStringConverter;
+import com.sayyi.software.tbp.client.component.util.File2ObservableConverter;
 import com.sayyi.software.tbp.client.model.ObservableMetadata;
+import com.sayyi.software.tbp.common.FileMetadata;
+import com.sayyi.software.tbp.common.FileUtil;
+import com.sayyi.software.tbp.db.DbHelper;
+import com.sayyi.software.tbp.db.component.Selector;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 这个类，自己具有完备的逻辑
@@ -26,41 +38,45 @@ public class SearchTab {
     private final Tab tab;
     private final VBox vBox;
     private SearchableTextField inputField;
+    private TextField nameField;
     private MetadataTableView metadataTableView;
 
     public SearchTab(TabPane parent) {
-        this("", parent);
+        this(null, parent);
     }
 
+    private final String TITLE_PREFIX = "检索：";
+
     public SearchTab(String title, TabPane parent) {
+        title = title == null ? "" : title;
         this.parent = parent;
         tab = new Tab(title);
         vBox = new VBox(10);
         vBox.setPadding(new Insets(10, 0, 0, 0));
         initTextField();
+        HBox hBox = new HBox(10);
+        hBox.getChildren().addAll(inputField, nameField);
+
         initTableView();
         bindTextAndTable();
         TableView<ObservableMetadata> tableView = metadataTableView.getTableView();
-        vBox.getChildren().addAll(inputField, tableView);
+        vBox.getChildren().addAll(hBox, tableView);
         tab.setContent(vBox);
 
         tableView.prefHeightProperty().bind(parent.heightProperty().subtract(35));
+        inputField.prefWidthProperty().bind(hBox.widthProperty().subtract(nameField.prefWidthProperty()).subtract(10));
+
+        inputField.setText(title);
+        inputField.fireEvent(new ActionEvent());
     }
 
     public void initTextField() {
         inputField = new SearchableTextField();
         inputField.setPromptText("输入检索信息");
-        inputField.textProperty().addListener((observable, oldValue, newValue) -> {
-            // 输入点号，触发数据更新，并展示下拉框
-            if (newValue.endsWith(".")) {
-                // TODO 提供下拉菜单数据
-                inputField.updateItems(Arrays.asList("just for test", "default message"));
-                inputField.showMenu();
-            }
-            // TODO 否则进行下拉框的数据过滤
-        });
-        // TODO 点击item时执行的操作
-        inputField.setItemAction(inputField::appendText);
+
+        nameField = new TextField();
+        nameField.setPromptText("名称正则表达式");
+        nameField.setPrefWidth(200);
     }
 
     public void initTableView() {
@@ -77,24 +93,38 @@ public class SearchTab {
      */
     private TableRow<ObservableMetadata> initTableRow() {
         TableRow<ObservableMetadata> tableRow = new TableRow<>();
-        // 双击事件
+        // 双击事件：打开文件
         tableRow.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() >= 2) {
                 ObservableMetadata item = tableRow.getItem();
-                // TODO 打开文件
-                System.out.println("row clicked");
+                if (item == null) {
+                    return;
+                }
+                FileMetadata fileMetadata = DbHelper.getInstance().getSelector().get(item.getId());
+                File file = DbHelper.getInstance().getFileHelper().getFile(fileMetadata);
+                try {
+                    FileUtil.open(file);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 event.consume();
             }
         });
         // 多选拖拽，挺常见的吧……
-        // 这里做成多个的，感觉也可以接收吧
+        // 这里做成多个的，感觉也可以接受吧
         tableRow.setOnDragDetected(event -> {
+            // 发起复制操作
             Dragboard dragboard = tableRow.startDragAndDrop(TransferMode.COPY);
-            // TODO 多文件拖拽功能实现
+
+            ObservableList<ObservableMetadata> selectedItems = tableRow.getTableView().getSelectionModel().getSelectedItems();
+            List<File> list = new ArrayList<>();
+            for (ObservableMetadata selectedItem : selectedItems) {
+                FileMetadata fileMetadata = DbHelper.getInstance().getSelector().get(selectedItem.getId());
+                File file = DbHelper.getInstance().getFileHelper().getFile(fileMetadata);
+                list.add(file);
+            }
             ClipboardContent content = new ClipboardContent();
-            content.putString("hello");
-//            WritableImage snapshot = tableRow.snapshot(new SnapshotParameters(), null);
-//            dragboard.setDragView(snapshot);
+            content.putFiles(list);
             dragboard.setContent(content);
         });
 
@@ -115,10 +145,18 @@ public class SearchTab {
             if (dragboard.hasString()) {
                 String tagsStr = dragboard.getString();
                 Set<String> toAddTags = SetStringConverter.getInstance().fromString(tagsStr);
-                tableRow.getItem().tagsProperty().addAll(toAddTags);
+                ObservableMetadata item = tableRow.getItem();
+                Set<String> tags = new HashSet<>();
+                tags.addAll(toAddTags);
+                tags.addAll(item.getTags());
+                FileMetadata fileMetadata = new FileMetadata();
+                fileMetadata.setId(item.getId());
+                fileMetadata.setTags(tags);
+                DbHelper.getInstance().getMetadata().update(fileMetadata);
+
+                item.getTags().addAll(toAddTags);
                 event.consume();
             }
-            // TODO 是不是可以考虑接收文件？拖拽进入，添加文件
         });
         return tableRow;
     }
@@ -127,10 +165,14 @@ public class SearchTab {
      * 建立text和tableView组件直接的关联
      */
     private void bindTextAndTable() {
-        inputField.setOnAction(event -> {
-            ObservableList<ObservableMetadata> observableMetadata = loadMetadata(inputField.getText());
-            metadataTableView.setMetadata(observableMetadata);
-        });
+        inputField.setOnAction(event -> search());
+        nameField.setOnAction(event -> search());
+    }
+
+    private void search() {
+        ObservableList<ObservableMetadata> observableMetadata = loadMetadata(inputField.getText(), nameField.getText());
+        metadataTableView.setMetadata(inputField.getText(), observableMetadata);
+        tab.setText(TITLE_PREFIX + inputField.getText());
     }
 
     public Tab getSearchTab() {
@@ -150,57 +192,16 @@ public class SearchTab {
      * @param tagStr
      * @return
      */
-    private ObservableList<ObservableMetadata> loadMetadata(String tagStr) {
-        // TODO 加载真正的数据
-        List<ObservableMetadata> list = Arrays.asList(
-                new ObservableMetadata(1, "one", 1, new HashSet<>(Arrays.asList("hello", "world")), new Date().getTime()),
-                new ObservableMetadata(2, "one", 2, new HashSet<>(Arrays.asList("hello", "world")), new Date().getTime()),
-                new ObservableMetadata(3, "one", 1, new HashSet<>(Arrays.asList("hello", "world", "wrap", "please", "help")), new Date().getTime()),
-                new ObservableMetadata(4, "one", 1, new HashSet<>(Arrays.asList("hello", "world")), new Date().getTime()),
-                new ObservableMetadata(5, "one", 2, new HashSet<>(Arrays.asList("hello", "world")), new Date().getTime()),
-                new ObservableMetadata(6, "one", 2, new HashSet<>(Arrays.asList("hello", "world")), new Date().getTime()),
-                new ObservableMetadata(7, "one", 2, new HashSet<>(Arrays.asList("hello", "world")), new Date().getTime()),
-                new ObservableMetadata(8, "one", 1, new HashSet<>(Arrays.asList("hello", "world")), new Date().getTime()),
-                new ObservableMetadata(9, "one", 1, new HashSet<>(Arrays.asList("hello", "world")), new Date().getTime()),
-                new ObservableMetadata(10, "one", 1, new HashSet<>(Arrays.asList("hello", "world")), new Date().getTime()),
-                new ObservableMetadata(11, "one", 2, new HashSet<>(Arrays.asList("hello", "world")), new Date().getTime()),
-                new ObservableMetadata(12, "one", 1, new HashSet<>(Arrays.asList("hello", "world")), new Date().getTime()),
-                new ObservableMetadata(13, "one", 2, new HashSet<>(Arrays.asList("hello", "world")), new Date().getTime()),
-                new ObservableMetadata(14, "one", 1, new HashSet<>(Arrays.asList("hello", "world")), new Date().getTime()),
-                new ObservableMetadata(15, "one", 1, new HashSet<>(Arrays.asList("hello", "world")), new Date().getTime()),
-                new ObservableMetadata(16, "one", 1, new HashSet<>(Arrays.asList("hello", "world")), new Date().getTime()),
-                new ObservableMetadata(17, "one", 1, new HashSet<>(Arrays.asList("hello", "world")), new Date().getTime())
-        );
+    private ObservableList<ObservableMetadata> loadMetadata(String tagStr, String nameReg) {
+        Selector selector = DbHelper.getInstance().getSelector();
+        List<FileMetadata> fileMetadataList = selector.list(SetStringConverter.getInstance().fromString(tagStr), nameReg);
+        List<ObservableMetadata> observableMetadataList = fileMetadataList.stream()
+                .map(File2ObservableConverter::convert)
+                .collect(Collectors.toList());
         // 针对 name、tags、lastUpdateTime 字段的更新，会被观测到。
-        ObservableList<ObservableMetadata> observableMetadata = FXCollections.observableList(list,
+        // 这里不监听数据的变化，因为应该先修改持久化数据，成功来再展示页面
+        return FXCollections.observableList(observableMetadataList,
                 param -> new Observable[]{param.nameProperty(), param.tagsProperty(), param.lastUpdateTimeProperty()});
-        // TODO 执行持久化操作
-        observableMetadata.addListener((ListChangeListener<ObservableMetadata>) c -> {
-            while (c.next()) {
-                if (c.wasPermutated()) {
-                    // 排序相关，不用管
-                    for (int i = c.getFrom(); i < c.getTo(); ++i) {
-                        //permutate
-                    }
-                } else if (c.wasUpdated()) {
-                    for (int i = c.getFrom(); i < c.getTo(); i++) {
-                        // 这里获取到的，是更新后的数据
-                        ObservableMetadata updated = observableMetadata.get(i);
-                        System.out.println("name: " + updated.getName() + ", tags: " + updated.getTags());
-                    }
-                } else {
-                    for (ObservableMetadata remitem : c.getRemoved()) {
-                        //删除
-                        System.out.println("remove: " + c);
-                    }
-                    for (ObservableMetadata additem : c.getAddedSubList()) {
-                        // 添加
-                        System.out.println("add: " + c);
-                    }
-                }
-            }
-        });
-        return observableMetadata;
 
     }
 

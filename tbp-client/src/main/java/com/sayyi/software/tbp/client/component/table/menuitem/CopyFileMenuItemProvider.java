@@ -1,13 +1,17 @@
 package com.sayyi.software.tbp.client.component.table.menuitem;
 
 import com.sayyi.software.tbp.client.model.ObservableMetadata;
+import com.sayyi.software.tbp.common.FileMetadata;
+import com.sayyi.software.tbp.db.DbHelper;
 import javafx.collections.ObservableList;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 
-import java.util.StringJoiner;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CopyFileMenuItemProvider implements MenuItemProvider{
 
@@ -19,12 +23,13 @@ public class CopyFileMenuItemProvider implements MenuItemProvider{
             ObservableList<ObservableMetadata> selectedItems = tableView.getSelectionModel().getSelectedItems();
             // 获取文件地址，然后放入剪切板
             ClipboardContent content = new ClipboardContent();
-            // TODO 填充文件内容
-//            content.putFiles();
-            // 暂时先用文件名演示
-            StringJoiner joiner = new StringJoiner(", ");
-            selectedItems.forEach(observableMetadata -> joiner.add(observableMetadata.getName()));
-            content.putString(joiner.toString());
+            List<File> files = new ArrayList<>();
+            selectedItems.forEach(observableMetadata -> {
+                FileMetadata fileMetadata = DbHelper.getInstance().getSelector().get(observableMetadata.getId());
+                File file = DbHelper.getInstance().getFileHelper().getFile(fileMetadata);
+                files.add(file);
+            });
+            content.putFiles(files);
             Clipboard clipboard = Clipboard.getSystemClipboard();
             clipboard.setContent(content);
         });

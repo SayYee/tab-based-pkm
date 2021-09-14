@@ -1,9 +1,9 @@
 package com.sayyi.software.tbp.client.component.table.converter;
 
-import javafx.collections.FXCollections;
 import javafx.util.StringConverter;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -32,7 +32,7 @@ public class SetStringConverter extends StringConverter<Set<String>> {
 
     @Override
     public Set<String> fromString(String string) {
-        Set<String> result = FXCollections.observableSet();
+        Set<String> result = new HashSet<>();
         if (string == null || "".equals(string)) {
             return result;
         }

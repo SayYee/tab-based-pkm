@@ -1,38 +1,59 @@
 package com.sayyi.software.tbp.client.component.tree;
 
+import com.sayyi.software.tbp.client.ID;
+import com.sayyi.software.tbp.client.component.SearchTab;
 import com.sayyi.software.tbp.common.Tree;
+import com.sayyi.software.tbp.db.DbHelper;
+import com.sayyi.software.tbp.db.component.TreeComponent;
+import javafx.scene.control.Button;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TreeView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * 这个类，自己就是一个完备的组件了，提供数据加载展示功能。
  */
 public class TagTree {
 
-    public TreeView<String> getTree() {
-        return new TreeView<>();
-    }
-
     public Region getNode() {
-        // TODO 数据保存
         VBox vBox = new VBox(10);
         vBox.setStyle("-fx-background-color: #2b2b2b");
 
+        HBox hBox = new HBox(5);
+        Button saveBtn = new Button();
+        saveBtn.setPrefSize(20, 20);
+        saveBtn.getStyleClass().add("tree-save");
         TextField textField = new TextField();
         textField.setPromptText("检索信息");
-        // TODO 数据记载
-        TagTreeView treeView = new TagTreeView(getTestTree(), System.out::println);
+        hBox.getChildren().addAll(saveBtn, textField);
 
-        vBox.getChildren().addAll(textField, treeView.getTreeView());
+        TagTreeView treeView = new TagTreeView(getTreeData(), tags -> {
+            TabPane lookup = (TabPane) vBox.getScene().lookup("#" + ID.TAB_PANE);
+            SearchTab searchTab = new SearchTab(tags, lookup);
+            lookup.getTabs().add(searchTab.getSearchTab());
+            lookup.getSelectionModel().select(searchTab.getSearchTab());
+        });
 
-        textField.setOnAction(event -> treeView.filter(textField.getText()));
+        vBox.getChildren().addAll(hBox, treeView.getTreeView());
 
+        // 点击按钮时，保存新的tree数据
+        saveBtn.setOnAction(event -> {
+            TreeComponent treeComponent = DbHelper.getInstance().getTreeComponent();
+            treeComponent.store(treeView.getCurrentTree());
+        });
+        saveBtn.disableProperty().bind(treeView.getModified().not());
+        textField.setOnAction(event -> {
+            if (textField.getText().equals("")) {
+                treeView.setTree(getTreeData());
+            } else {
+                treeView.filter(textField.getText());
+            }
+        });
+
+        textField.prefWidthProperty().bind(hBox.widthProperty().subtract(25));
+        hBox.prefWidthProperty().bind(vBox.widthProperty());
         treeView.getTreeView().prefHeightProperty().bind(vBox.heightProperty().subtract(30));
 
         return vBox;
@@ -42,17 +63,9 @@ public class TagTree {
      * 创建假数据
      * @return
      */
-    private Tree getTestTree() {
-        Tree root = new Tree();
-        root.setName("root");
-        List<Tree> children = new ArrayList<>();
-        children.add(new Tree("one", Arrays.asList(new Tree("sh"), new Tree("check"), new Tree("alisi"))));
-        children.add(new Tree("two", Arrays.asList(new Tree("lll1"), new Tree("li"), new Tree("fa"))));
-        children.add(new Tree("three", Arrays.asList(new Tree("wennd"), new Tree("six"), new Tree("fu"))));
-        children.add(new Tree("four", Arrays.asList(new Tree("xxd"), new Tree("man"), new Tree("dis"))));
-        children.add(new Tree("five", Arrays.asList(new Tree("111"), new Tree("manue"))));
-        root.setChildren(children);
-        return root;
+    private Tree getTreeData() {
+        TreeComponent treeComponent = DbHelper.getInstance().getTreeComponent();
+        return treeComponent.load();
     }
 
 }

@@ -12,6 +12,14 @@ import java.nio.file.Path;
 public class FileUtil {
 
     /**
+     * 创建文件夹
+     * @param file
+     */
+    public static void mkdirs(File file) {
+        file.mkdirs();
+    }
+
+    /**
      * 复制文件夹及其子文件
      * @param sourceDir
      * @param targetDir

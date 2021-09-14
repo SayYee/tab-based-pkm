@@ -1,7 +1,10 @@
 package com.sayyi.software.tbp.client.component.tree;
 
 import com.sayyi.software.tbp.common.Tree;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTreeCell;
@@ -26,6 +29,8 @@ public class TagTreeView {
     private Tree tree;
     /** 点击小图标时要执行的动作，会将对应的标签字符串作为参数传入 */
     private final Consumer<String> onClick;
+
+    private final BooleanProperty modified = new SimpleBooleanProperty(false);
 
     public TagTreeView(Tree tree, Consumer<String> onClick) {
         this.tree = tree;
@@ -64,6 +69,7 @@ public class TagTreeView {
             TreeItem<String> selectedItem = treeView.getSelectionModel().getSelectedItem();
             // 整个节点及其子节点全部移除
             selectedItem.getParent().getChildren().remove(selectedItem);
+            modified.set(true);
         });
 
         MenuItem addMenuItem = new MenuItem();
@@ -80,6 +86,7 @@ public class TagTreeView {
             selectedItem.getChildren().add(newItem);
             selectedItem.setExpanded(true);
             treeView.getSelectionModel().select(newItem);
+            modified.set(true);
         });
 
         MenuItem modifyItem = new MenuItem();
@@ -92,6 +99,7 @@ public class TagTreeView {
         modifyField.setOnAction(event -> {
             TreeItem<String> selectedItem = treeView.getSelectionModel().getSelectedItem();
             selectedItem.setValue(modifyField.getText());
+            modified.set(true);
         });
 
         contextMenu.getItems().addAll(delMenuItem, addMenuItem, modifyItem);
@@ -119,6 +127,7 @@ public class TagTreeView {
     public void setTree(Tree tree) {
         this.tree = tree;
         treeView.setRoot(toItem(tree));
+        modified.set(false);
     }
 
     /**
@@ -126,7 +135,15 @@ public class TagTreeView {
      * @return
      */
     public Tree getCurrentTree() {
-        return toTree(treeView.getRoot());
+        try {
+            return toTree(treeView.getRoot());
+        } finally {
+            modified.set(false);
+        }
+    }
+
+    public BooleanProperty getModified() {
+        return modified;
     }
 
     /**
@@ -211,6 +228,8 @@ public class TagTreeView {
         tagPane.setOnMouseClicked(event -> {
             onClick.accept(getItemTagStr(treeItem));
         });
+        // 鼠标放上去变成小手
+        tagPane.setCursor(Cursor.HAND);
         treeItem.setGraphic(tagPane);
         return treeItem;
     }
