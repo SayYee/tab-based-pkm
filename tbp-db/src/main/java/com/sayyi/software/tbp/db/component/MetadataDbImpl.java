@@ -88,7 +88,7 @@ public class MetadataDbImpl implements MetadataDb {
         // 复制还是直接使用？
         metadata.setId(nextFileId++);
         // 空标签集合，应该使用空集合，而不是null来表示
-        metadata.setTags(metadata.getTags() == null ? new HashSet<>() : metadata.getTags());
+        metadata.setTags(metadata.getTags() == null ? new HashSet<>() : new HashSet<>(metadata.getTags()));
         metadata.setCreateTime(System.currentTimeMillis());
         metadata.setLastOpenTime(System.currentTimeMillis());
 
@@ -123,7 +123,7 @@ public class MetadataDbImpl implements MetadataDb {
                 && !fileMetadata.getTags().equals(metadata.getTags())) {
             tbpEventType |= TbpEventType.MODIFY_TAGS;
             oldMetadata.setTags(fileMetadata.getTags());
-            fileMetadata.setTags(metadata.getTags());
+            fileMetadata.setTags(new HashSet<>(metadata.getTags()));
         }
         // 最后更新时间变更
         if (metadata.getLastOpenTime() != 0 &&

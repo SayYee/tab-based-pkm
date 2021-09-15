@@ -226,7 +226,6 @@ public class MetadataTableView {
             showPane.getChildren().add(pane);
             this.setGraphic(showPane);
 
-            pane.prefWidthProperty().bind(this.widthProperty().subtract(3));
         }
 
         @Override

@@ -6,6 +6,7 @@ import com.sayyi.software.tbp.common.store.Record;
 import lombok.Data;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -94,7 +95,7 @@ public class FileMetadata implements Comparable<FileMetadata>, Record {
         }
         int tagSize = archive.readInt();
         if (tagSize == -1) {
-            tags = new HashSet<>();
+            tags = null;
         } else {
             tags = new HashSet<>(tagSize);
             for (int i = 0; i < tagSize; i++) {
@@ -103,5 +104,18 @@ public class FileMetadata implements Comparable<FileMetadata>, Record {
         }
         createTime = archive.readLong();
         lastOpenTime = archive.readLong();
+    }
+
+    @Override
+    public String toString() {
+        return "FileMetadata{" +
+                "id=" + id +
+                ", filename='" + filename + '\'' +
+                ", resourceType=" + resourceType +
+                ", resourcePath=" + Arrays.toString(resourcePath) +
+                ", tags=" + tags +
+                ", createTime=" + createTime +
+                ", lastOpenTime=" + lastOpenTime +
+                '}';
     }
 }

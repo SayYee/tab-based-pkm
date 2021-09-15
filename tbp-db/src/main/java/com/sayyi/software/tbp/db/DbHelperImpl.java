@@ -179,7 +179,6 @@ public class DbHelperImpl implements DbHelper {
                 Integer type = methodIntegerMap.get(method);
                 if (type == null) {
                     return method.invoke(updater, args);
-//                    throw new UnsupportedOperationException("未知方法调用【" + method.getName() + "】");
                 }
                 Request request = new Request();
                 request.setOpId(lastOpId++);
