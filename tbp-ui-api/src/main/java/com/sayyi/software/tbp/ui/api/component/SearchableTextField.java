@@ -1,8 +1,8 @@
-package com.sayyi.software.tbp.client.component;
+package com.sayyi.software.tbp.ui.api.component;
 
-import com.sayyi.software.tbp.client.component.table.converter.SetStringConverter;
 import com.sayyi.software.tbp.common.model.TagInfo;
-import com.sayyi.software.tbp.db.DbHelperImpl;
+import com.sayyi.software.tbp.db.api.component.Selector;
+import com.sayyi.software.tbp.ui.api.converter.SetStringConverter;
 import javafx.collections.FXCollections;
 import javafx.geometry.Point2D;
 import javafx.scene.control.*;
@@ -15,23 +15,21 @@ import java.util.stream.Collectors;
 
 /**
  *
- * 带检索提示框的输入框。检索提示信息使用Popup实现
+ * 带检索提示框的输入框。检索提示信息使用Popup实现。这个应该挺有用，作为通用组件放在这里吧。
  */
 public class SearchableTextField extends TextField {
 
     private List<TagInfo> tagInfos;
     private String lastTagsStr;
+    private Selector selector;
 
     private final Popup popup;
     private final ListView<TagInfo> tagInfoListView;
 
     private boolean allowShowPopup = true;
 
-    public SearchableTextField() {
-        this("");
-    }
-
-    public SearchableTextField(String initText) {
+    public SearchableTextField(String initText, Selector selector) {
+        this.selector = selector;
         this.setText(initText);
         popup = new Popup();
         popup.setConsumeAutoHidingEvents(false);
@@ -112,7 +110,7 @@ public class SearchableTextField extends TextField {
         if (!tagsStr.equals(lastTagsStr)) {
             lastTagsStr = tagsStr;
             Set<String> set = SetStringConverter.getInstance().fromString(tagsStr);
-            tagInfos = DbHelperImpl.getInstance().getSelector().listTags(set);
+            tagInfos = selector.listTags(set);
         }
         word = word.toLowerCase();
         String finalWord = word;

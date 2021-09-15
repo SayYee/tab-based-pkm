@@ -1,7 +1,8 @@
 package com.sayyi.software.tbp.client.component;
 
 import com.sayyi.software.tbp.client.component.table.MetadataTableView;
-import com.sayyi.software.tbp.client.component.table.converter.SetStringConverter;
+import com.sayyi.software.tbp.ui.api.component.SearchableTextField;
+import com.sayyi.software.tbp.ui.api.converter.SetStringConverter;
 import com.sayyi.software.tbp.ui.api.File2ObservableConverter;
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.FileUtil;
@@ -75,7 +76,7 @@ public class SearchTab {
     }
 
     public void initTextField(String initStr) {
-        inputField = new SearchableTextField(initStr);
+        inputField = new SearchableTextField(initStr, DbHelperImpl.getInstance().getSelector());
         inputField.setPromptText("输入检索信息");
 
         nameField = new TextField();

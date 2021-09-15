@@ -1,7 +1,7 @@
 package com.sayyi.software.tbp.client.component.table;
 
-import com.sayyi.software.tbp.client.component.table.converter.LongDataStringConverter;
-import com.sayyi.software.tbp.client.component.table.converter.SetStringConverter;
+import com.sayyi.software.tbp.ui.api.converter.LongDataStringConverter;
+import com.sayyi.software.tbp.ui.api.converter.SetStringConverter;
 import com.sayyi.software.tbp.client.component.table.skin.CustomTableCellSkin;
 import com.sayyi.software.tbp.ui.api.File2ObservableConverter;
 import com.sayyi.software.tbp.common.FileMetadata;
