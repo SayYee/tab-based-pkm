@@ -170,11 +170,10 @@ public class SelectorImpl implements Selector {
 
         @Override
         public int getInterestEvent() {
-            return TbpEventType.ADD | TbpEventType.REMOVE | TbpEventType.MODIFY_TAGS | TbpEventType.TAG_UPDATE;
+            return TbpEventType.ADD | TbpEventType.REMOVE | TbpEventType.MODIFY_TAGS;
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public void call(TbpEvent tbpEvent) {
             writeLock.lock();
             try {
@@ -187,9 +186,6 @@ public class SelectorImpl implements Selector {
                 }
                 if ((tbpEvent.getEventType() & TbpEventType.MODIFY_TAGS) != 0) {
                     dealModifyTag((FileMetadata) tbpEvent.getOldValue(), (FileMetadata) tbpEvent.getNewValue());
-                }
-                if ((tbpEvent.getEventType() & TbpEventType.TAG_UPDATE) != 0) {
-                    dealTagUpdate((Set<String>) tbpEvent.getOldValue(), (Set<String>) tbpEvent.getNewValue());
                 }
             } finally {
                 writeLock.unlock();
@@ -220,20 +216,6 @@ public class SelectorImpl implements Selector {
                 untaggedMap.put(newData.getId(), newData);
             } else {
                 untaggedMap.remove(newData.getId());
-            }
-        }
-
-        private void dealTagUpdate(Set<String> oldTags, Set<String> newTags) {
-            Set<String> toAddTags = newTags.stream().filter(s -> !oldTags.contains(s)).collect(Collectors.toSet());
-            Set<String> toRemoveTags = oldTags.stream().filter(s -> !newTags.contains(s)).collect(Collectors.toSet());
-            List<FileMetadata> fileMetadataList = list(oldTags, null);
-            for (FileMetadata fileMetadata : fileMetadataList) {
-                updateTagMap(fileMetadata, toAddTags, toRemoveTags);
-                if (fileMetadata.getTags().isEmpty()) {
-                    untaggedMap.put(fileMetadata.getId(), fileMetadata);
-                } else {
-                    untaggedMap.remove(fileMetadata.getId());
-                }
             }
         }
 

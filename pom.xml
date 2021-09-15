@@ -22,6 +22,7 @@
         <module>tbp-db-api</module>
         <module>tbp-ui-api</module>
         <module>tbp-plugin-url</module>
+        <module>tbp-plugin-tags</module>
     </modules>
 <!--    <parent>-->
 <!--        <groupId>org.springframework.boot</groupId>-->

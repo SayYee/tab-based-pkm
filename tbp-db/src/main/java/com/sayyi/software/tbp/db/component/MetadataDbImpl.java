@@ -9,6 +9,7 @@ import com.sayyi.software.tbp.db.api.component.Selector;
 import com.sayyi.software.tbp.db.api.listener.TbpEvent;
 import com.sayyi.software.tbp.db.api.listener.TbpEventType;
 import com.sayyi.software.tbp.db.api.listener.TbpListener;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
  * 因为这里涉及一个请求有序性处理的问题，保证操作id大的数据是在id小的请求前被处理
  * 而且个人使用的软件，不太有必要做太多并发方面的设计。一切从简
  */
+@Slf4j
 public class MetadataDbImpl implements MetadataDb {
 
     /**
@@ -152,12 +154,18 @@ public class MetadataDbImpl implements MetadataDb {
         Set<String> newTags = updateTagsOp.getNewTags();
         Set<String> toAddTags = newTags.stream().filter(s -> !oldTags.contains(s)).collect(Collectors.toSet());
         Set<String> toRemoveTags = oldTags.stream().filter(s -> !newTags.contains(s)).collect(Collectors.toSet());
+        log.debug("toAddTags: {}", toAddTags);
+        log.debug("toRemoveTags: {}", toRemoveTags);
         List<FileMetadata> fileMetadatas = selector.list(oldTags, null);
         for (FileMetadata fileMetadata : fileMetadatas) {
+            FileMetadata oldMetadata = new FileMetadata();
+            oldMetadata.setId(fileMetadata.getId());
+            oldMetadata.setTags(new HashSet<>(fileMetadata.getTags()));
+
             fileMetadata.getTags().addAll(toAddTags);
             fileMetadata.getTags().removeAll(toRemoveTags);
+
+            fireEvent(new TbpEvent(TbpEventType.MODIFY_TAGS, oldMetadata, fileMetadata));
         }
-        // 这个事件，是否应该这样处理，还不太确定，先用着吧。
-        fireEvent(new TbpEvent(TbpEventType.TAG_UPDATE, oldTags, newTags));
     }
 }

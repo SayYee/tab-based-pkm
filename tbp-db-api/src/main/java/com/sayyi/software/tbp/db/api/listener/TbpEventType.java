@@ -16,6 +16,4 @@ public class TbpEventType {
     public static final int MODIFY_UPDATE_TIME = 1 << 4;
     public static final int REMOVE = 1 << 5;
 
-    public static final int TAG_UPDATE = 1 << 6;
-
 }
