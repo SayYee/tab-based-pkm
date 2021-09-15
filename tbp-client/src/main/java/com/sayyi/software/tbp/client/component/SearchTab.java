@@ -2,24 +2,28 @@ package com.sayyi.software.tbp.client.component;
 
 import com.sayyi.software.tbp.client.component.table.MetadataTableView;
 import com.sayyi.software.tbp.client.component.table.converter.SetStringConverter;
-import com.sayyi.software.tbp.client.component.util.File2ObservableConverter;
-import com.sayyi.software.tbp.client.model.ObservableMetadata;
+import com.sayyi.software.tbp.ui.api.File2ObservableConverter;
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.FileUtil;
-import com.sayyi.software.tbp.db.DbHelper;
-import com.sayyi.software.tbp.db.component.Selector;
+import com.sayyi.software.tbp.db.DbHelperImpl;
+import com.sayyi.software.tbp.db.api.component.Selector;
+import com.sayyi.software.tbp.ui.api.model.ObservableMetadata;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
-import javafx.scene.control.*;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,28 +36,28 @@ import java.util.stream.Collectors;
 /**
  * 这个类，自己具有完备的逻辑
  */
+@Slf4j
 public class SearchTab {
 
-    private final TabPane parent;
     private final Tab tab;
     private final VBox vBox;
     private SearchableTextField inputField;
     private TextField nameField;
     private MetadataTableView metadataTableView;
 
-    public SearchTab(TabPane parent) {
-        this(null, parent);
+    public SearchTab() {
+        this(null);
     }
 
     private final String TITLE_PREFIX = "检索：";
 
-    public SearchTab(String title, TabPane parent) {
+    public SearchTab(String title) {
+        log.debug("初始化检索条件【{}】", title);
         title = title == null ? "" : title;
-        this.parent = parent;
         tab = new Tab(title);
         vBox = new VBox(10);
         vBox.setPadding(new Insets(10, 0, 0, 0));
-        initTextField();
+        initTextField(title);
         HBox hBox = new HBox(10);
         hBox.getChildren().addAll(inputField, nameField);
 
@@ -63,15 +67,15 @@ public class SearchTab {
         vBox.getChildren().addAll(hBox, tableView);
         tab.setContent(vBox);
 
-        tableView.prefHeightProperty().bind(parent.heightProperty().subtract(35));
+        tableView.prefHeightProperty().bind(vBox.heightProperty().subtract(35));
         inputField.prefWidthProperty().bind(hBox.widthProperty().subtract(nameField.prefWidthProperty()).subtract(10));
 
-        inputField.setText(title);
+        // 发布事件，执行查询
         inputField.fireEvent(new ActionEvent());
     }
 
-    public void initTextField() {
-        inputField = new SearchableTextField();
+    public void initTextField(String initStr) {
+        inputField = new SearchableTextField(initStr);
         inputField.setPromptText("输入检索信息");
 
         nameField = new TextField();
@@ -100,8 +104,8 @@ public class SearchTab {
                 if (item == null) {
                     return;
                 }
-                FileMetadata fileMetadata = DbHelper.getInstance().getSelector().get(item.getId());
-                File file = DbHelper.getInstance().getFileHelper().getFile(fileMetadata);
+                FileMetadata fileMetadata = DbHelperImpl.getInstance().getSelector().get(item.getId());
+                File file = DbHelperImpl.getInstance().getFileHelper().getFile(fileMetadata);
                 try {
                     FileUtil.open(file);
                 } catch (IOException e) {
@@ -119,8 +123,8 @@ public class SearchTab {
             ObservableList<ObservableMetadata> selectedItems = tableRow.getTableView().getSelectionModel().getSelectedItems();
             List<File> list = new ArrayList<>();
             for (ObservableMetadata selectedItem : selectedItems) {
-                FileMetadata fileMetadata = DbHelper.getInstance().getSelector().get(selectedItem.getId());
-                File file = DbHelper.getInstance().getFileHelper().getFile(fileMetadata);
+                FileMetadata fileMetadata = DbHelperImpl.getInstance().getSelector().get(selectedItem.getId());
+                File file = DbHelperImpl.getInstance().getFileHelper().getFile(fileMetadata);
                 list.add(file);
             }
             ClipboardContent content = new ClipboardContent();
@@ -152,7 +156,7 @@ public class SearchTab {
                 FileMetadata fileMetadata = new FileMetadata();
                 fileMetadata.setId(item.getId());
                 fileMetadata.setTags(tags);
-                DbHelper.getInstance().getMetadata().update(fileMetadata);
+                DbHelperImpl.getInstance().getMetadata().update(fileMetadata);
 
                 item.getTags().addAll(toAddTags);
                 event.consume();
@@ -193,7 +197,7 @@ public class SearchTab {
      * @return
      */
     private ObservableList<ObservableMetadata> loadMetadata(String tagStr, String nameReg) {
-        Selector selector = DbHelper.getInstance().getSelector();
+        Selector selector = DbHelperImpl.getInstance().getSelector();
         List<FileMetadata> fileMetadataList = selector.list(SetStringConverter.getInstance().fromString(tagStr), nameReg);
         List<ObservableMetadata> observableMetadataList = fileMetadataList.stream()
                 .map(File2ObservableConverter::convert)

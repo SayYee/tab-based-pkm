@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.sayyi.software.tbp.common.FileUtil;
 import com.sayyi.software.tbp.common.TbpException;
 import com.sayyi.software.tbp.common.Tree;
+import com.sayyi.software.tbp.db.api.component.TreeComponent;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +14,7 @@ import java.util.Objects;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class TreeComponentImpl implements TreeComponent{
+public class TreeComponentImpl implements TreeComponent {
 
     private final String snapDir;
 

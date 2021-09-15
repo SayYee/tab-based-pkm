@@ -2,14 +2,14 @@ package com.sayyi.software.tbp.client.component.table;
 
 import com.sayyi.software.tbp.client.component.table.converter.LongDataStringConverter;
 import com.sayyi.software.tbp.client.component.table.converter.SetStringConverter;
-import com.sayyi.software.tbp.client.component.table.menuitem.MenuItemFactory;
 import com.sayyi.software.tbp.client.component.table.skin.CustomTableCellSkin;
-import com.sayyi.software.tbp.client.component.util.File2ObservableConverter;
-import com.sayyi.software.tbp.client.model.ObservableMetadata;
+import com.sayyi.software.tbp.ui.api.File2ObservableConverter;
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.FileUtil;
 import com.sayyi.software.tbp.common.constant.ResourceType;
-import com.sayyi.software.tbp.db.DbHelper;
+import com.sayyi.software.tbp.db.DbHelperImpl;
+import com.sayyi.software.tbp.client.component.util.MenuItemFactory;
+import com.sayyi.software.tbp.ui.api.model.ObservableMetadata;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -32,19 +32,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
+import static com.sayyi.software.tbp.ui.api.constant.MetadataColumnName.*;
+
 /**
- * 这个tableView自身不进行任何数据的持久化操作。仅仅支持一般的排序、编辑，自定义的右键菜单。编辑操作也仅仅是修改可观察对象，持久化的逻辑在对象监听中处理
+ *
  */
 @Slf4j
 public class MetadataTableView {
 
-    public static class ColumnName {
-        public static final String ID = "ID";
-        public static final String NAME = "名称";
-        public static final String TYPE = "类型";
-        public static final String TAGS = "标签";
-        public static final String UPDATE_TIME = "修改时间";
-    }
+
 
     private TableView<ObservableMetadata> tableView;
 
@@ -58,23 +54,23 @@ public class MetadataTableView {
         tableView.setPlaceholder(new Label("未获取到数据"));
 
         // 初始化各个列渲染、编辑
-        TableColumn<ObservableMetadata, Long> idCol = new TableColumn<>(ColumnName.ID);
+        TableColumn<ObservableMetadata, Long> idCol = new TableColumn<>(ID);
         idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         idCol.setPrefWidth(80);
         idCol.setMinWidth(80);
-        TableColumn<ObservableMetadata, String> nameCol = new TableColumn<>(ColumnName.NAME);
+        TableColumn<ObservableMetadata, String> nameCol = new TableColumn<>(NAME);
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         nameCol.setPrefWidth(350);
         nameCol.setMinWidth(350);
-        TableColumn<ObservableMetadata, Integer> typeCol = new TableColumn<>(ColumnName.TYPE);
+        TableColumn<ObservableMetadata, Integer> typeCol = new TableColumn<>(TYPE);
         typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
         typeCol.setPrefWidth(50);
         typeCol.setMinWidth(50);
-        TableColumn<ObservableMetadata, Set<String>> tagsCol = new TableColumn<>(ColumnName.TAGS);
+        TableColumn<ObservableMetadata, Set<String>> tagsCol = new TableColumn<>(TAGS);
         tagsCol.setCellValueFactory(new PropertyValueFactory<>("tags"));
         tagsCol.setPrefWidth(350);
         tagsCol.setMinWidth(350);
-        TableColumn<ObservableMetadata, Long> updateTimeCol = new TableColumn<>(ColumnName.UPDATE_TIME);
+        TableColumn<ObservableMetadata, Long> updateTimeCol = new TableColumn<>(UPDATE_TIME);
         updateTimeCol.setCellValueFactory(new PropertyValueFactory<>("lastUpdateTime"));
         updateTimeCol.setPrefWidth(150);
         updateTimeCol.setMinWidth(150);
@@ -90,8 +86,8 @@ public class MetadataTableView {
                 @Override
                 public void commitEdit(String newValue) {
                     ObservableMetadata item = getTableRow().getItem();
-                    FileMetadata metadata = DbHelper.getInstance().getSelector().get(item.getId());
-                    File file = DbHelper.getInstance().getFileHelper().getFile(metadata);
+                    FileMetadata metadata = DbHelperImpl.getInstance().getSelector().get(item.getId());
+                    File file = DbHelperImpl.getInstance().getFileHelper().getFile(metadata);
                     try {
                         FileUtil.rename(file, newValue);
                     } catch (IOException e) {
@@ -102,7 +98,7 @@ public class MetadataTableView {
                     FileMetadata fileMetadata = new FileMetadata();
                     fileMetadata.setId(item.getId());
                     fileMetadata.setFilename(newValue);
-                    DbHelper.getInstance().getMetadata().update(fileMetadata);
+                    DbHelperImpl.getInstance().getMetadata().update(fileMetadata);
                     super.commitEdit(newValue);
                 }
             };
@@ -124,7 +120,7 @@ public class MetadataTableView {
         // 右键菜单初始化。
         // 这个就姑且放tableView中实现好了，问题不大，也不涉及持久化的各种操作
         ContextMenu contextMenu = new ContextMenu();
-        contextMenu.getItems().addAll(MenuItemFactory.getAll(tableView));
+        contextMenu.getItems().addAll(MenuItemFactory.getInstance().generateMenuItem(tableView));
         tableView.setContextMenu(contextMenu);
 
         // 拖拽进入。
@@ -143,8 +139,8 @@ public class MetadataTableView {
                     // 跟随当前页面标签
                     fileMetadata.setTags((Set<String>) tableView.getUserData());
                     // 请求分配一个存储路径
-                    fileMetadata.setResourcePath(DbHelper.getInstance().getFileHelper().assignPath());
-                    File storeFile = DbHelper.getInstance().getFileHelper().getFile(fileMetadata);
+                    fileMetadata.setResourcePath(DbHelperImpl.getInstance().getFileHelper().assignPath());
+                    File storeFile = DbHelperImpl.getInstance().getFileHelper().getFile(fileMetadata);
                     try {
                         if (file.isDirectory()) {
                             FileUtil.copyDir(file, storeFile);
@@ -154,7 +150,7 @@ public class MetadataTableView {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    DbHelper.getInstance().getMetadata().insert(fileMetadata);
+                    DbHelperImpl.getInstance().getMetadata().insert(fileMetadata);
                     ObservableMetadata observableMetadata = File2ObservableConverter.convert(fileMetadata);
                     tableView.getItems().add(observableMetadata);
                 }
@@ -292,7 +288,7 @@ public class MetadataTableView {
             FileMetadata fileMetadata = new FileMetadata();
             fileMetadata.setId(id);
             fileMetadata.setTags(newValue);
-            DbHelper.getInstance().getMetadata().update(fileMetadata);
+            DbHelperImpl.getInstance().getMetadata().update(fileMetadata);
             // 这里如果是空的集合，就不会联动展示，非空集合就可以。奇了怪了
             // updateItem，写的有问题，改下就好了
             super.commitEdit(FXCollections.observableSet(newValue));

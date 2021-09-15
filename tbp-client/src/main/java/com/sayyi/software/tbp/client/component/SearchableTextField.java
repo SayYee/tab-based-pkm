@@ -2,7 +2,7 @@ package com.sayyi.software.tbp.client.component;
 
 import com.sayyi.software.tbp.client.component.table.converter.SetStringConverter;
 import com.sayyi.software.tbp.common.model.TagInfo;
-import com.sayyi.software.tbp.db.DbHelper;
+import com.sayyi.software.tbp.db.DbHelperImpl;
 import javafx.collections.FXCollections;
 import javafx.geometry.Point2D;
 import javafx.scene.control.*;
@@ -28,6 +28,11 @@ public class SearchableTextField extends TextField {
     private boolean allowShowPopup = true;
 
     public SearchableTextField() {
+        this("");
+    }
+
+    public SearchableTextField(String initText) {
+        this.setText(initText);
         popup = new Popup();
         popup.setConsumeAutoHidingEvents(false);
         popup.setAutoHide(true);
@@ -107,7 +112,7 @@ public class SearchableTextField extends TextField {
         if (!tagsStr.equals(lastTagsStr)) {
             lastTagsStr = tagsStr;
             Set<String> set = SetStringConverter.getInstance().fromString(tagsStr);
-            tagInfos = DbHelper.getInstance().getSelector().listTags(set);
+            tagInfos = DbHelperImpl.getInstance().getSelector().listTags(set);
         }
         word = word.toLowerCase();
         String finalWord = word;

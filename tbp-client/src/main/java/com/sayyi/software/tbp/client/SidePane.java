@@ -1,12 +1,11 @@
 package com.sayyi.software.tbp.client;
 
+import com.sayyi.software.tbp.client.component.util.SidebarToolFactory;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
@@ -16,6 +15,7 @@ import javafx.scene.layout.VBox;
 public class SidePane {
 
     private VBox pane;
+    private VBox pluginBar;
 
     public SidePane() {
         // 侧边栏，预留位置放设置按钮，后续可能放置其他功能按钮
@@ -25,24 +25,13 @@ public class SidePane {
         pane.setMinWidth(45);
         pane.setMaxWidth(45);
         // 插件区域，
-        VBox pluginBar = new VBox();
+        pluginBar = new VBox();
         pluginBar.setStyle("-fx-background-color: #ffd767");
         pluginBar.setPrefWidth(45);
         pluginBar.setPrefHeight(100);
-
-        Label addPluginLabel = new Label();
-        addPluginLabel.setPrefSize(45, 45);
-        addPluginLabel.setMinSize(45, 45);
-        addPluginLabel.setMaxSize(45, 45);
-        addPluginLabel.setAlignment(Pos.CENTER);
-        ImageView addPluginImage = new ImageView();
-        addPluginImage.setPreserveRatio(true);
-        addPluginImage.setFitWidth(25);
-        addPluginImage.setImage(new Image("img/add.png"));
-        addPluginLabel.setGraphic(addPluginImage);
-        addPluginLabel.setTooltip(new Tooltip("新增"));
-
-        pluginBar.getChildren().add(addPluginLabel);
+        for (Label label : SidebarToolFactory.getInstance().getLabels()) {
+            addPlugin(label);
+        }
 
         // 最下边的设置按钮，固定45的大小
         Label settingLabel = new Label();
@@ -64,5 +53,13 @@ public class SidePane {
 
     public Region getPane() {
         return pane;
+    }
+
+    public void addPlugin(Label label) {
+        label.setPrefSize(45, 45);
+        label.setMinSize(45, 45);
+        label.setMaxSize(45, 45);
+        label.setAlignment(Pos.CENTER);
+        pluginBar.getChildren().add(label);
     }
 }

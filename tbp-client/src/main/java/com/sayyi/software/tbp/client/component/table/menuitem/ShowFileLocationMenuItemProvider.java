@@ -1,9 +1,10 @@
 package com.sayyi.software.tbp.client.component.table.menuitem;
 
-import com.sayyi.software.tbp.client.model.ObservableMetadata;
+import com.sayyi.software.tbp.ui.api.menu.MenuItemProvider;
+import com.sayyi.software.tbp.ui.api.model.ObservableMetadata;
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.FileUtil;
-import com.sayyi.software.tbp.db.DbHelper;
+import com.sayyi.software.tbp.db.DbHelperImpl;
 import javafx.collections.ObservableList;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableView;
@@ -21,8 +22,8 @@ public class ShowFileLocationMenuItemProvider implements MenuItemProvider {
             ObservableList<ObservableMetadata> selectedItems = tableView.getSelectionModel().getSelectedItems();
             // 获取文件地址，然后放入剪切板
             selectedItems.forEach(observableMetadata -> {
-                FileMetadata fileMetadata = DbHelper.getInstance().getSelector().get(observableMetadata.getId());
-                File file = DbHelper.getInstance().getFileHelper().getFile(fileMetadata);
+                FileMetadata fileMetadata = DbHelperImpl.getInstance().getSelector().get(observableMetadata.getId());
+                File file = DbHelperImpl.getInstance().getFileHelper().getFile(fileMetadata);
                 try {
                     FileUtil.select(file);
                 } catch (IOException e) {

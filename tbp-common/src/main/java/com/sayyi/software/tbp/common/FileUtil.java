@@ -11,6 +11,16 @@ import java.nio.file.Path;
 
 public class FileUtil {
 
+    private final static String OS = System.getProperty("os.name").toLowerCase();
+
+    private static boolean isWin() {
+        return OS.startsWith("win");
+    }
+
+    private static boolean isMacOS() {
+        return OS.startsWith("mac");
+    }
+
     /**
      * 创建文件夹
      * @param file
@@ -113,13 +123,4 @@ public class FileUtil {
         Desktop.getDesktop().open(file);
     }
 
-    private final static String OS = System.getProperty("os.name").toLowerCase();
-
-    private static boolean isWin() {
-        return OS.startsWith("win");
-    }
-
-    private static boolean isMacOS() {
-        return OS.startsWith("mac");
-    }
 }

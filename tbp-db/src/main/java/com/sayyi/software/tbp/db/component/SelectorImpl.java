@@ -2,9 +2,11 @@ package com.sayyi.software.tbp.db.component;
 
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.model.TagInfo;
-import com.sayyi.software.tbp.db.listener.TbpEvent;
-import com.sayyi.software.tbp.db.listener.TbpEventType;
-import com.sayyi.software.tbp.db.listener.TbpListener;
+import com.sayyi.software.tbp.db.api.component.MetadataDb;
+import com.sayyi.software.tbp.db.api.component.Selector;
+import com.sayyi.software.tbp.db.api.listener.TbpEvent;
+import com.sayyi.software.tbp.db.api.listener.TbpEventType;
+import com.sayyi.software.tbp.db.api.listener.TbpListener;
 
 import java.util.*;
 import java.util.concurrent.locks.Lock;

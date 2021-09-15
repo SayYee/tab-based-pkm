@@ -1,12 +1,13 @@
 package com.sayyi.software.tbp.db.component;
 
 import com.sayyi.software.tbp.common.FileMetadata;
+import com.sayyi.software.tbp.db.api.component.FileHelper;
 
 import java.io.File;
 import java.time.YearMonth;
 import java.util.StringJoiner;
 
-public class FileHelperImpl implements FileHelper{
+public class FileHelperImpl implements FileHelper {
 
     private final String fileStoreDir;
 

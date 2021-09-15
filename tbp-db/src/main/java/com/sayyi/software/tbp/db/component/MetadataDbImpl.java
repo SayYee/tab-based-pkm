@@ -4,9 +4,11 @@ import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.model.update.DeleteOp;
 import com.sayyi.software.tbp.common.model.update.UpdateTagsOp;
 import com.sayyi.software.tbp.common.snap.model.CurrentSnapshot;
-import com.sayyi.software.tbp.db.listener.TbpEvent;
-import com.sayyi.software.tbp.db.listener.TbpEventType;
-import com.sayyi.software.tbp.db.listener.TbpListener;
+import com.sayyi.software.tbp.db.api.component.MetadataDb;
+import com.sayyi.software.tbp.db.api.component.Selector;
+import com.sayyi.software.tbp.db.api.listener.TbpEvent;
+import com.sayyi.software.tbp.db.api.listener.TbpEventType;
+import com.sayyi.software.tbp.db.api.listener.TbpListener;
 
 import java.util.*;
 import java.util.stream.Collectors;

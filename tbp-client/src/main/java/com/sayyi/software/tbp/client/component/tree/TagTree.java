@@ -1,12 +1,11 @@
 package com.sayyi.software.tbp.client.component.tree;
 
-import com.sayyi.software.tbp.client.ID;
+import com.sayyi.software.tbp.client.MainPane;
 import com.sayyi.software.tbp.client.component.SearchTab;
 import com.sayyi.software.tbp.common.Tree;
-import com.sayyi.software.tbp.db.DbHelper;
-import com.sayyi.software.tbp.db.component.TreeComponent;
+import com.sayyi.software.tbp.db.DbHelperImpl;
+import com.sayyi.software.tbp.db.api.component.TreeComponent;
 import javafx.scene.control.Button;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -30,17 +29,15 @@ public class TagTree {
         hBox.getChildren().addAll(saveBtn, textField);
 
         TagTreeView treeView = new TagTreeView(getTreeData(), tags -> {
-            TabPane lookup = (TabPane) vBox.getScene().lookup("#" + ID.TAB_PANE);
-            SearchTab searchTab = new SearchTab(tags, lookup);
-            lookup.getTabs().add(searchTab.getSearchTab());
-            lookup.getSelectionModel().select(searchTab.getSearchTab());
+            SearchTab searchTab = new SearchTab(tags);
+            MainPane.getInstance().registry(searchTab.getSearchTab());
         });
 
         vBox.getChildren().addAll(hBox, treeView.getTreeView());
 
         // 点击按钮时，保存新的tree数据
         saveBtn.setOnAction(event -> {
-            TreeComponent treeComponent = DbHelper.getInstance().getTreeComponent();
+            TreeComponent treeComponent = DbHelperImpl.getInstance().getTreeComponent();
             treeComponent.store(treeView.getCurrentTree());
         });
         saveBtn.disableProperty().bind(treeView.getModified().not());
@@ -64,7 +61,7 @@ public class TagTree {
      * @return
      */
     private Tree getTreeData() {
-        TreeComponent treeComponent = DbHelper.getInstance().getTreeComponent();
+        TreeComponent treeComponent = DbHelperImpl.getInstance().getTreeComponent();
         return treeComponent.load();
     }
 

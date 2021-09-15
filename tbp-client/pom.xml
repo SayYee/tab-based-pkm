@@ -12,7 +12,6 @@
     <artifactId>tbp-client</artifactId>
 
     <properties>
-        <javafx.version>16</javafx.version>
         <javafx.maven.plugin.version>0.0.6</javafx.maven.plugin.version>
     </properties>
 
@@ -20,12 +19,15 @@
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>${javafx.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.sayyi.software</groupId>
             <artifactId>tbp-db</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sayyi.software</groupId>
+            <artifactId>tbp-ui-api</artifactId>
         </dependency>
 
         <dependency>

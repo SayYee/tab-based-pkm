@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>com.sayyi.software</groupId>
-            <artifactId>tbp-common</artifactId>
+            <artifactId>tbp-db-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
