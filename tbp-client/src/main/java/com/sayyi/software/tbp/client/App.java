@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Properties;
@@ -43,9 +45,14 @@ public class App extends Application {
         loadPlugin();
     }
 
-    private void loadPlugin() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        String property = System.getProperty("user.dir");
-        File pluginDirectory = new File(property + "/../plugin");
+    private void loadPlugin() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, URISyntaxException {
+        // 获取class文件所属的文件夹地址
+        URI uri = App.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+        File classLocation = new File(uri);
+        String rootPath = classLocation.getParent();
+        // 从同级的plugin文件夹中加载插件
+        File pluginDirectory = new File(rootPath + "/../plugin");
+        log.debug("插件文件夹位置【{}】", pluginDirectory);
         File[] jars = pluginDirectory.listFiles(pathname -> pathname.getName().endsWith(".jar"));
         if (jars == null) {
             log.info("未找到jar文件");

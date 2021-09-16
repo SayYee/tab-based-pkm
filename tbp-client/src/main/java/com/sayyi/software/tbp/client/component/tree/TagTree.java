@@ -5,7 +5,6 @@ import com.sayyi.software.tbp.client.component.SearchTab;
 import com.sayyi.software.tbp.common.Tree;
 import com.sayyi.software.tbp.db.DbHelperImpl;
 import com.sayyi.software.tbp.db.api.component.TreeComponent;
-import com.sayyi.software.tbp.ui.api.component.SearchableTextField;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;

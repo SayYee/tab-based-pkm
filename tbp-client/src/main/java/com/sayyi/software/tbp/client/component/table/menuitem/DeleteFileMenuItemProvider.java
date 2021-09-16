@@ -4,7 +4,7 @@ import com.sayyi.software.tbp.ui.api.menu.MenuItemProvider;
 import com.sayyi.software.tbp.ui.api.model.ObservableMetadata;
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.FileUtil;
-import com.sayyi.software.tbp.common.model.update.DeleteOp;
+import com.sayyi.software.tbp.common.model.DeleteOp;
 import com.sayyi.software.tbp.db.DbHelperImpl;
 import javafx.collections.ObservableList;
 import javafx.scene.control.MenuItem;

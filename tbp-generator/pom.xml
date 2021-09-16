@@ -29,9 +29,5 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.sayyi.software</groupId>
-            <artifactId>tbp-core</artifactId>
-        </dependency>
     </dependencies>
 </project>

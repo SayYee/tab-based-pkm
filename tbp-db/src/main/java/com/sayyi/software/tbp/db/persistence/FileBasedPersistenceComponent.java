@@ -1,6 +1,6 @@
 package com.sayyi.software.tbp.db.persistence;
 
-import com.sayyi.software.tbp.common.flow.Request;
+import com.sayyi.software.tbp.common.store.Request;
 import com.sayyi.software.tbp.common.snap.SnapshotUtil;
 import com.sayyi.software.tbp.common.snap.Version;
 import com.sayyi.software.tbp.common.store.BinaryInputArchive;

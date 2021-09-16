@@ -3,7 +3,7 @@ package com.sayyi.software.tbp.db;
 import com.sayyi.software.tbp.common.TbpConfig;
 import com.sayyi.software.tbp.common.TbpConfigParse;
 import com.sayyi.software.tbp.common.TbpException;
-import com.sayyi.software.tbp.common.flow.Request;
+import com.sayyi.software.tbp.common.store.Request;
 import com.sayyi.software.tbp.common.snap.Version;
 import com.sayyi.software.tbp.common.snap.model.CurrentSnapshot;
 import com.sayyi.software.tbp.common.store.BinaryInputArchive;

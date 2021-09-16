@@ -1,6 +1,6 @@
 package com.sayyi.software.tbp.plugin.tags;
 
-import com.sayyi.software.tbp.common.model.update.UpdateTagsOp;
+import com.sayyi.software.tbp.common.model.UpdateTagsOp;
 import com.sayyi.software.tbp.db.api.component.DbHelper;
 import com.sayyi.software.tbp.ui.api.component.SearchableTextField;
 import com.sayyi.software.tbp.ui.api.converter.SetStringConverter;

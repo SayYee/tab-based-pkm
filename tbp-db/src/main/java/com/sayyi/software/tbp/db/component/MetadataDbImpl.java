@@ -1,8 +1,8 @@
 package com.sayyi.software.tbp.db.component;
 
 import com.sayyi.software.tbp.common.FileMetadata;
-import com.sayyi.software.tbp.common.model.update.DeleteOp;
-import com.sayyi.software.tbp.common.model.update.UpdateTagsOp;
+import com.sayyi.software.tbp.common.model.DeleteOp;
+import com.sayyi.software.tbp.common.model.UpdateTagsOp;
 import com.sayyi.software.tbp.common.snap.model.CurrentSnapshot;
 import com.sayyi.software.tbp.db.api.component.MetadataDb;
 import com.sayyi.software.tbp.db.api.component.Selector;

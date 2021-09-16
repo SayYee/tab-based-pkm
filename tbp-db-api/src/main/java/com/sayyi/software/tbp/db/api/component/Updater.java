@@ -1,8 +1,8 @@
 package com.sayyi.software.tbp.db.api.component;
 
 import com.sayyi.software.tbp.common.FileMetadata;
-import com.sayyi.software.tbp.common.model.update.DeleteOp;
-import com.sayyi.software.tbp.common.model.update.UpdateTagsOp;
+import com.sayyi.software.tbp.common.model.DeleteOp;
+import com.sayyi.software.tbp.common.model.UpdateTagsOp;
 
 /**
  * 这个类，为了方便对请求进行增量持久化存储

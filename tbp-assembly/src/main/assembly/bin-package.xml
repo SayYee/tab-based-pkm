@@ -39,12 +39,13 @@
             <useAllReactorProjects>true</useAllReactorProjects>
             <!-- Now, select which projects to include in this module-set. -->
             <includes>
-                <include>com.sayyi.software:tbp-web</include>
+                <include>com.sayyi.software:tbp-plugin-tags</include>
+                <include>com.sayyi.software:tbp-plugin-url</include>
             </includes>
             <binaries>
                 <!-- 这个设置为false，这样就只有项目自身的构建文件了 -->
                 <includeDependencies>false</includeDependencies>
-                <outputDirectory>web</outputDirectory>
+                <outputDirectory>plugin</outputDirectory>
                 <unpack>false</unpack>
                 <!-- 这个重设输出文件名 -->
                 <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>

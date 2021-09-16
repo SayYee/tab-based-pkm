@@ -9,20 +9,17 @@ import lombok.Data;
 import java.io.IOException;
 
 @Data
-public class TagInfo implements Record  {
-    private String tag;
-    private int fileNum;
-    public TagInfo(){}
+public class DeleteOp implements Record  {
+    private long id;
+    public DeleteOp(){}
 
     @Override
     public void serialize(OutputArchive archive) throws IOException {
-        archive.writeString(tag);
-        archive.writeInt(fileNum);
+        archive.writeLong(id);
     }
 
     @Override
     public void deserialize(InputArchive archive) throws IOException {
-        tag = archive.readString();
-        fileNum = archive.readInt();
+        id = archive.readLong();
     }
 }
