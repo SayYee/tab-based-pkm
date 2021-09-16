@@ -1,14 +1,14 @@
 package com.sayyi.software.tbp.client.component.table;
 
-import com.sayyi.software.tbp.ui.api.converter.LongDataStringConverter;
-import com.sayyi.software.tbp.ui.api.converter.SetStringConverter;
 import com.sayyi.software.tbp.client.component.table.skin.CustomTableCellSkin;
-import com.sayyi.software.tbp.ui.api.File2ObservableConverter;
+import com.sayyi.software.tbp.client.component.util.MenuItemFactory;
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.FileUtil;
 import com.sayyi.software.tbp.common.constant.ResourceType;
 import com.sayyi.software.tbp.db.DbHelperImpl;
-import com.sayyi.software.tbp.client.component.util.MenuItemFactory;
+import com.sayyi.software.tbp.ui.api.File2ObservableConverter;
+import com.sayyi.software.tbp.ui.api.converter.LongDataStringConverter;
+import com.sayyi.software.tbp.ui.api.converter.SetStringConverter;
 import com.sayyi.software.tbp.ui.api.model.ObservableMetadata;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -70,6 +70,8 @@ public class MetadataTableView {
         tagsCol.setCellValueFactory(new PropertyValueFactory<>("tags"));
         tagsCol.setPrefWidth(350);
         tagsCol.setMinWidth(350);
+        // 这一列，就不要调整列宽了。这个功能说到底也没啥特别的意义
+        tagsCol.setResizable(false);
         TableColumn<ObservableMetadata, Long> updateTimeCol = new TableColumn<>(UPDATE_TIME);
         updateTimeCol.setCellValueFactory(new PropertyValueFactory<>("lastUpdateTime"));
         updateTimeCol.setPrefWidth(150);
@@ -222,16 +224,18 @@ public class MetadataTableView {
             pane.setVgap(5);
             pane.setHgap(5);
             // FlowPane 需要包裹一下，才能刚好满足内部组件需要的大小
+            // 我猜测，这里奇怪的高度展示，大概率是因为TableCell的高度计算问题
             showPane = new Group();
             showPane.getChildren().add(pane);
             this.setGraphic(showPane);
 
+            // 绑定一下宽度，不然标签可能展示不全
+            pane.prefWidthProperty().bind(this.widthProperty());
         }
 
         @Override
         protected void updateItem(Set<String> item, boolean empty) {
             super.updateItem(item, empty);
-            // javafx应该是针对大量数据进行过优化，条目划出屏幕就会释放，进来后重新渲染
             // 因此这里需要先清空一下label
             pane.getChildren().clear();
             if (empty || item.isEmpty()) {
