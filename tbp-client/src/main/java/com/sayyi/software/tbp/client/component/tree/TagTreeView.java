@@ -339,6 +339,7 @@ public class TagTreeView {
                 parent.getChildren().add(index + 1, toItem);
             }
             treeView.getSelectionModel().select(toItem);
+            modified.set(true);
             event.setDropCompleted(true);
             event.consume();
         });
