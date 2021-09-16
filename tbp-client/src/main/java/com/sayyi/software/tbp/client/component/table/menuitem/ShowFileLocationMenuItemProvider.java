@@ -8,10 +8,12 @@ import com.sayyi.software.tbp.db.DbHelperImpl;
 import javafx.collections.ObservableList;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableView;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
 
+@Slf4j
 public class ShowFileLocationMenuItemProvider implements MenuItemProvider {
 
     @Override
@@ -25,9 +27,10 @@ public class ShowFileLocationMenuItemProvider implements MenuItemProvider {
                 FileMetadata fileMetadata = DbHelperImpl.getInstance().getSelector().get(observableMetadata.getId());
                 File file = DbHelperImpl.getInstance().getFileHelper().getFile(fileMetadata);
                 try {
+                    log.debug("打开文件所在位置【{}】", file);
                     FileUtil.select(file);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    log.error("打开文件所在位置异常", e);
                 }
             });
         });

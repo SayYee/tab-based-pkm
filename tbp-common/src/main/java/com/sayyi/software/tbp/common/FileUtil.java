@@ -106,7 +106,7 @@ public class FileUtil {
     public static void select(File file) throws IOException {
         String realPath = file.getPath();
         if (isWin()) {
-            Runtime.getRuntime().exec("explorer /select, " + realPath);
+            Runtime.getRuntime().exec("explorer /select, \"" + realPath + "\"");
         } else if (isMacOS()) {
             Runtime.getRuntime().exec("open -R " + realPath);
         } else {

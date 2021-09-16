@@ -5,15 +5,18 @@ import com.sayyi.software.tbp.client.component.SearchTab;
 import com.sayyi.software.tbp.common.Tree;
 import com.sayyi.software.tbp.db.DbHelperImpl;
 import com.sayyi.software.tbp.db.api.component.TreeComponent;
+import com.sayyi.software.tbp.ui.api.component.SearchableTextField;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 这个类，自己就是一个完备的组件了，提供数据加载展示功能。
  */
+@Slf4j
 public class TagTree {
 
     public Region getNode() {
@@ -45,6 +48,7 @@ public class TagTree {
             if (textField.getText().equals("")) {
                 treeView.setTree(getTreeData());
             } else {
+                log.debug("过滤数据【{}】", textField.getText());
                 treeView.filter(textField.getText());
             }
         });

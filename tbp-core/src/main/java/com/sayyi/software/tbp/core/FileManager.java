@@ -66,7 +66,7 @@ public class FileManager {
     public void select(String[] filePath) throws IOException {
         String realPath = new File(fileStoreDir, getRelativePah(filePath)).getPath();
         if (isWin()) {
-            Runtime.getRuntime().exec("explorer /select, " + realPath);
+            Runtime.getRuntime().exec("explorer /select, \"" + realPath + "\"");
         } else if (isMacOS()) {
             Runtime.getRuntime().exec("open -R " + realPath);
         } else {
