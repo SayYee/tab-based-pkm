@@ -1,0 +1,47 @@
+/** tableView中单元格的设置 */
+.table-view .table-cell{
+    -fx-text-fill: black;
+    /* -fx-alignment: center; */
+}
+
+/** 这俩CSS还有顺序讲究，厉害了…… */
+/** tableView中鼠标停留在行上的效果 */
+.table-row-cell:hover{
+    -fx-background-color: #e5f3ff;
+}
+/** tableView中行数据被选中的效果 */
+.table-row-cell:selected {
+    -fx-background-color: #cde8ff;
+}
+/** tableView中标签的样式设置 */
+.tag {
+    -fx-border-radius: 5;
+    -fx-border-style: solid;
+    -fx-border-width: 1;
+    -fx-border-color: #1ba4d4;
+    -fx-label-padding: 3;
+    -fx-text-fill: black;
+}
+/** tableView条目拖动进入时的样式 */
+.tag-drag-enter {
+    -fx-background-color: #cde8ff;
+}
+
+
+/** treeView中单元格的设置 */
+.tree-view .tree-cell{
+    -fx-text-fill: black;
+}
+/** treeView中行数据被选中的效果 */
+.tree-cell:selected {
+    -fx-background-color: #cde8ff;
+}
+/** treeView中每个节点前的图片设置 */
+.tree-tag {
+    -fx-background-size: cover;
+    -fx-background-image: url(../img/tree-tag.png);
+}
+.tree-save {
+    -fx-background-size: cover;
+    -fx-background-image: url(../img/save.png);
+}

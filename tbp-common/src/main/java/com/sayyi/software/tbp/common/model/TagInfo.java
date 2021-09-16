@@ -12,6 +12,7 @@ import java.io.IOException;
 public class TagInfo implements Record  {
     private String tag;
     private int fileNum;
+    public TagInfo(){}
 
     @Override
     public void serialize(OutputArchive archive) throws IOException {

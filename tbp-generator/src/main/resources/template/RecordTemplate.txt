@@ -29,6 +29,7 @@ for(field in fields){
 %>
     ${@jType.declareStr(fieldName)}
 <%}%>
+    public ${class}(){}
 
     @Override
     public void serialize(OutputArchive archive) throws IOException {

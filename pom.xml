@@ -9,23 +9,19 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>tbp-core</module>
         <module>tbp-common</module>
-        <module>tbp-web</module>
-        <module>tbp-nio</module>
-        <module>tbp-assembly</module>
-        <module>tbp-cli</module>
         <module>tbp-generator</module>
-        <module>tbp-web-api</module>
+        <module>tbp-client</module>
+        <module>tbp-db</module>
+        <module>tbp-db-api</module>
+        <module>tbp-ui-api</module>
+        <module>tbp-plugin-url</module>
+        <module>tbp-plugin-tags</module>
+        <!-- 这个打包的模块放在最后边，避免依赖的组件还没有打包 -->
+        <module>tbp-assembly</module>
     </modules>
-<!--    <parent>-->
-<!--        <groupId>org.springframework.boot</groupId>-->
-<!--        <artifactId>spring-boot-starter-parent</artifactId>-->
-<!--        <version>2.3.5.RELEASE</version>-->
-<!--        <relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
-<!--    </parent>-->
     <properties>
-        <java.version>8</java.version>
+        <java.version>11</java.version>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -37,34 +33,44 @@
         <dependencies>
             <dependency>
                 <groupId>com.sayyi.software</groupId>
-                <artifactId>tbp-web-api</artifactId>
-                <version>1.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sayyi.software</groupId>
-                <artifactId>tbp-cli</artifactId>
-                <version>1.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sayyi.software</groupId>
-                <artifactId>tbp-nio</artifactId>
-                <version>1.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sayyi.software</groupId>
-                <artifactId>tbp-core</artifactId>
-                <version>1.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sayyi.software</groupId>
                 <artifactId>tbp-common</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sayyi.software</groupId>
+                <artifactId>tbp-db</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sayyi.software</groupId>
+                <artifactId>tbp-db-api</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sayyi.software</groupId>
+                <artifactId>tbp-ui-api</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sayyi.software</groupId>
+                <artifactId>tbp-client</artifactId>
                 <version>1.0-SNAPSHOT</version>
             </dependency>
 
             <dependency>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-controls</artifactId>
+                <version>16</version>
+            </dependency>
+            <dependency>
                 <groupId>cn.hutool</groupId>
                 <artifactId>hutool-all</artifactId>
                 <version>5.6.5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>1.26</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>

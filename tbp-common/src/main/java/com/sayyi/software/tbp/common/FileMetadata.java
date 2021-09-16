@@ -6,6 +6,7 @@ import com.sayyi.software.tbp.common.store.Record;
 import lombok.Data;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,7 +36,7 @@ public class FileMetadata implements Comparable<FileMetadata>, Record {
     /**
      * 标签集合
      */
-    private Set<String> tags = new HashSet<>();
+    private Set<String> tags;
 
     /**
      * 创建时间戳
@@ -65,9 +66,13 @@ public class FileMetadata implements Comparable<FileMetadata>, Record {
             }
         }
 
-        archive.writeInt(tags.size());
-        for (String tag : tags) {
-            archive.writeString(tag);
+        if (tags == null) {
+            archive.writeInt(-1);
+        } else {
+            archive.writeInt(tags.size());
+            for (String tag : tags) {
+                archive.writeString(tag);
+            }
         }
 
         archive.writeLong(createTime);
@@ -88,14 +93,29 @@ public class FileMetadata implements Comparable<FileMetadata>, Record {
                 resourcePath[i] = archive.readString();
             }
         }
-
         int tagSize = archive.readInt();
-        tags = new HashSet<>(tagSize);
-        for (int i = 0; i < tagSize; i++) {
-            tags.add(archive.readString());
+        if (tagSize == -1) {
+            tags = null;
+        } else {
+            tags = new HashSet<>(tagSize);
+            for (int i = 0; i < tagSize; i++) {
+                tags.add(archive.readString());
+            }
         }
-
         createTime = archive.readLong();
         lastOpenTime = archive.readLong();
+    }
+
+    @Override
+    public String toString() {
+        return "FileMetadata{" +
+                "id=" + id +
+                ", filename='" + filename + '\'' +
+                ", resourceType=" + resourceType +
+                ", resourcePath=" + Arrays.toString(resourcePath) +
+                ", tags=" + tags +
+                ", createTime=" + createTime +
+                ", lastOpenTime=" + lastOpenTime +
+                '}';
     }
 }
