@@ -112,7 +112,7 @@ public class MetadataTableView {
         typeCol.setCellFactory(param -> new TypeCell());
         // 使用文本域的方式更新标签，主要在于这样方便提交，不用点击别的地方，直接回车就可以提交更新
         tagsCol.setCellFactory(param -> {
-            TagsCell tagsCell = new TagsCell(SetStringConverter.getInstance(), param.getPrefWidth());
+            TagsCell tagsCell = new TagsCell(SetStringConverter.getInstance(), param);
             // 禁止双击触发编辑
             tagsCell.setSkin(new CustomTableCellSkin<>(tagsCell));
             return tagsCell;
@@ -218,7 +218,8 @@ public class MetadataTableView {
 
         private final StringConverter<Set<String>> setStringConverter;
 
-        public TagsCell(StringConverter<Set<String>> setStringConverter, double preWidth) {
+        public TagsCell(StringConverter<Set<String>> setStringConverter,
+                        TableColumn<ObservableMetadata, Set<String>> column) {
             this.setStringConverter = setStringConverter;
             pane = new FlowPane();
             pane.setVgap(5);
@@ -229,7 +230,7 @@ public class MetadataTableView {
             showPane.getChildren().add(pane);
             this.setGraphic(showPane);
 
-            pane.prefWidth(preWidth);
+            pane.setPrefWrapLength(column.getPrefWidth());
         }
 
         @Override
