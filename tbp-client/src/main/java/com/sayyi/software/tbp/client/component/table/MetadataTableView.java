@@ -1,7 +1,9 @@
 package com.sayyi.software.tbp.client.component.table;
 
+import com.sayyi.software.tbp.client.component.cell.EditableTableCell;
 import com.sayyi.software.tbp.client.component.table.skin.CustomTableCellSkin;
 import com.sayyi.software.tbp.client.component.util.MenuItemFactory;
+import com.sayyi.software.tbp.client.component.util.Scheduler;
 import com.sayyi.software.tbp.common.FileMetadata;
 import com.sayyi.software.tbp.common.FileUtil;
 import com.sayyi.software.tbp.common.constant.ResourceType;
@@ -16,7 +18,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
@@ -36,6 +37,7 @@ import static com.sayyi.software.tbp.ui.api.constant.MetadataColumnName.*;
 
 /**
  *
+ * @author xuchuang
  */
 @Slf4j
 public class MetadataTableView {
@@ -84,7 +86,7 @@ public class MetadataTableView {
         idCol.setCellFactory(param -> new SimpleCellTableCell<>(Pos.CENTER, new LongStringConverter()));
         // 使用自定义的Skin，双击不再触发编辑
         nameCol.setCellFactory(param -> {
-            TextFieldTableCell<ObservableMetadata, String> textFieldTableCell = new TextFieldTableCell<>(new DefaultStringConverter()) {
+            EditableTableCell<ObservableMetadata, String> textFieldTableCell = new EditableTableCell<>(new DefaultStringConverter()) {
                 @Override
                 public void commitEdit(String newValue) {
                     ObservableMetadata item = getTableRow().getItem();
@@ -253,6 +255,7 @@ public class MetadataTableView {
         public void startEdit() {
             super.startEdit();
             // 新增功能：放入一个textField，多个标签点号分隔，回车提交
+            // Mac下，这里会有问题，如果执行了初始化逻辑，输入数据的时候会出问题：会把拼音一块儿输入到文本框中
             if (textArea == null) {
                 textArea = new TextArea();
                 // 自动换行
@@ -271,12 +274,16 @@ public class MetadataTableView {
                     }
                 });
             }
-            this.setGraphic(textArea);
             textArea.setPrefSize(this.getWidth(), this.getHeight());
             textArea.setText(setStringConverter.toString(this.getItem()));
-            // 姑且和TextFile的行为保持一致
-            textArea.selectAll();
-            textArea.requestFocus();
+            this.setGraphic(textArea);
+            // 延迟执行 select focus 的操作，避免出现奇怪的问题
+            Scheduler.delayUIop(() -> {
+                textArea.selectAll();
+                textArea.positionCaret(textArea.getText().length());
+                textArea.requestFocus();
+            }, 20);
+
         }
 
         @Override

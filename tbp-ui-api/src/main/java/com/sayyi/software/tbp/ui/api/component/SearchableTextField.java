@@ -59,7 +59,8 @@ public class SearchableTextField extends TextField {
                 String newText = strings[0].equals("") ? tag : strings[0] + "." + tag;
                 SearchableTextField.this.setText(newText);
                 SearchableTextField.this.positionCaret(newText.length());
-
+            } else if (event.getCode() == KeyCode.ESCAPE) {
+                hidePopup();
             }
         });
         updateList("", "");
@@ -75,7 +76,6 @@ public class SearchableTextField extends TextField {
             String[] parseText = parseText(newValue);
             updateList(parseText[0], parseText[1]);
         });
-
     }
 
     /**

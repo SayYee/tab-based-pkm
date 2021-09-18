@@ -24,6 +24,7 @@ public class CustomTableCellBehavior<S, T> extends TableCellBehavior<S,T> {
         super(control);
     }
 
+    @Override
     protected void handleClicks(MouseButton button, int clickCount, boolean isAlreadySelected) {
         // handle editing, which only occurs with the primary mouse button
         if (button == MouseButton.PRIMARY) {

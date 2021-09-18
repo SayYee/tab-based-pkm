@@ -1,13 +1,13 @@
 package com.sayyi.software.tbp.client.component.tree;
 
+import com.sayyi.software.tbp.client.component.cell.EditableTreeCell;
+import com.sayyi.software.tbp.client.component.tree.skin.CustomTreeCellSkin;
 import com.sayyi.software.tbp.common.Tree;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.TextFieldTreeCell;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+/**
+ * @author xuchuang
+ */
 public class TagTreeView {
 
     private TreeView<String> treeView;
@@ -47,7 +50,8 @@ public class TagTreeView {
         treeView.setShowRoot(false);
         treeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        // 这里只处理拖拽，不再使用默认的编辑功能了，太难受了这玩意儿
+        // 开启编辑功能，但是禁止点击触发编辑
+        treeView.setEditable(true);
         treeView.setCellFactory(param -> getTreeCell());
 
         // 右键菜单：增删改
@@ -60,11 +64,7 @@ public class TagTreeView {
     private void initContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
 
-        MenuItem delMenuItem = new MenuItem();
-        HBox delBox = new HBox(5);
-        delBox.getChildren().add(new Label("删除"));
-        delBox.setAlignment(Pos.CENTER_LEFT);
-        delMenuItem.setGraphic(delBox);
+        MenuItem delMenuItem = new MenuItem("删除");
         delMenuItem.setOnAction(event -> {
             TreeItem<String> selectedItem = treeView.getSelectionModel().getSelectedItem();
             // 整个节点及其子节点全部移除
@@ -72,43 +72,28 @@ public class TagTreeView {
             modified.set(true);
         });
 
-        MenuItem addMenuItem = new MenuItem();
-        HBox addBox = new HBox(5);
-        Label addLabel = new Label("新增");
-        TextField addField = new TextField();
-        addField.setPromptText("输入子节点名称");
-        addBox.getChildren().addAll(addLabel, addField);
-        addBox.setAlignment(Pos.CENTER_LEFT);
-        addMenuItem.setGraphic(addBox);
-        addField.setOnAction(event -> {
+        MenuItem addMenuItem = new MenuItem("新增");
+        addMenuItem.setOnAction(event -> {
             TreeItem<String> selectedItem = treeView.getSelectionModel().getSelectedItem();
-            TreeItem<String> newItem = create(addField.getText());
-            selectedItem.getChildren().add(newItem);
-            selectedItem.setExpanded(true);
-            treeView.getSelectionModel().select(newItem);
+            TreeItem<String> newNode = create("未命名");
+            selectedItem.getChildren().add(newNode);
+            treeView.getSelectionModel().clearSelection();
+            treeView.getSelectionModel().select(newNode);
+            int selectedIndex = treeView.getSelectionModel().getSelectedIndex();
+            treeView.getFocusModel().focus(selectedIndex);
+            treeView.edit(newNode);
             modified.set(true);
         });
 
-        MenuItem modifyItem = new MenuItem();
-        HBox modifyBox = new HBox(5);
-        Label modifyLabel = new Label("修改");
-        TextField modifyField = new TextField();
-        modifyBox.getChildren().addAll(modifyLabel, modifyField);
-        modifyBox.setAlignment(Pos.CENTER_LEFT);
-        modifyItem.setGraphic(modifyBox);
-        modifyField.setOnAction(event -> {
+        MenuItem modifyItem = new MenuItem("修改");
+        modifyItem.setOnAction(event -> {
             TreeItem<String> selectedItem = treeView.getSelectionModel().getSelectedItem();
-            selectedItem.setValue(modifyField.getText());
+            treeView.edit(selectedItem);
             modified.set(true);
         });
+
 
         contextMenu.getItems().addAll(delMenuItem, addMenuItem, modifyItem);
-        // 打开右键菜单时，初始化文本框内容
-        contextMenu.setOnShown(event -> {
-            addField.setText("");
-            TreeItem<String> selectedItem = treeView.getSelectionModel().getSelectedItem();
-            modifyField.setText(selectedItem.getValue());
-        });
         treeView.setContextMenu(contextMenu);
     }
 
@@ -273,9 +258,9 @@ public class TagTreeView {
      * @return
      */
     private TreeCell<String> getTreeCell() {
-        // 禁止编辑
-        TextFieldTreeCell<String> treeCell = new TextFieldTreeCell<>(new DefaultStringConverter());
-        treeCell.setEditable(false);
+        // 禁止通过点击的方式触发编辑
+        EditableTreeCell<String> treeCell = new EditableTreeCell<>(new DefaultStringConverter());
+        treeCell.setSkin(new CustomTreeCellSkin<>(treeCell));
 
         // 拖动
         treeCell.setOnDragDetected(event -> {
