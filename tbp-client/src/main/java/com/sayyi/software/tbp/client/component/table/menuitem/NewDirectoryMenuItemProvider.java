@@ -45,7 +45,9 @@ public class NewDirectoryMenuItemProvider implements MenuItemProvider {
             ObservableMetadata observableMetadata = File2ObservableConverter.convert(fileMetadata);
             tableView.getItems().add(observableMetadata);
             int index = tableView.getItems().indexOf(observableMetadata);
-            tableView.getSelectionModel().select(observableMetadata);
+            tableView.getSelectionModel().clearAndSelect(index);
+            tableView.scrollTo(index);
+            tableView.getFocusModel().focus(index);
             for (TableColumn<ObservableMetadata, ?> column : tableView.getColumns()) {
                 if (MetadataColumnName.NAME.equals(column.getText())) {
                     tableView.edit(index, column);

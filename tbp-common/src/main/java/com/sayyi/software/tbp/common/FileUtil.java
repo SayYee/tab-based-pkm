@@ -108,7 +108,8 @@ public class FileUtil {
         if (isWin()) {
             Runtime.getRuntime().exec("explorer /select, \"" + realPath + "\"");
         } else if (isMacOS()) {
-            Runtime.getRuntime().exec("open -R " + realPath);
+            // TODO 不起作用，不知为何
+            Runtime.getRuntime().exec("open -R \"" + realPath + "\"");
         } else {
             throw new IOException("未支持的平台");
         }

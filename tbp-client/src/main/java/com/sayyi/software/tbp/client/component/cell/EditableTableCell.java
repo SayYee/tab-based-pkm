@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import javafx.util.converter.DefaultStringConverter;
@@ -33,6 +34,7 @@ public class EditableTableCell<S,T> extends TableCell<S,T> {
     public EditableTableCell(StringConverter<T> converter) {
         this.getStyleClass().add("text-field-table-cell");
         setConverter(converter);
+        this.setTooltip(new Tooltip());
     }
     private ObjectProperty<StringConverter<T>> converter =
             new SimpleObjectProperty<StringConverter<T>>(this, "converter");
@@ -67,6 +69,7 @@ public class EditableTableCell<S,T> extends TableCell<S,T> {
     }
     @Override public void updateItem(T item, boolean empty) {
         super.updateItem(item, empty);
+        this.getTooltip().setText(getConverter().toString(item));
         CellUtils.updateItem(this, getConverter(), null, null, textField);
     }
 }

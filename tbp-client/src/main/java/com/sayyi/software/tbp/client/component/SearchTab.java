@@ -160,6 +160,7 @@ public class SearchTab {
                 DbHelperImpl.getInstance().getMetadata().update(fileMetadata);
 
                 item.getTags().addAll(toAddTags);
+                tableRow.getTableView().getSelectionModel().clearAndSelect(tableRow.getIndex());
                 event.consume();
             }
         });
