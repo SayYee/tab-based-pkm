@@ -75,7 +75,8 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.16</version>
+                <!-- 1.18.16 在 JDK 16 及以上版本中会因模块访问限制导致编译失败 -->
+                <version>1.18.48</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>

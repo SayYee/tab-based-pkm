@@ -8,9 +8,8 @@ import com.sayyi.software.tbp.db.api.component.TreeComponent;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.Objects;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -58,11 +57,14 @@ public class TreeComponentImpl implements TreeComponent {
     }
 
     private String loadDefaultTree() {
-        try {
-            File file = new File(Objects.requireNonNull(this.getClass().getResource("/" + DEFAULT_TREE)).toURI());
-            byte[] content = Files.readAllBytes(file.toPath());
-            return new String(content, UTF_8);
-        } catch (IOException | URISyntaxException e) {
+        // 从jar包中读取资源时，getResource返回的是jar协议的URL，不能直接转换为File；
+        // 这里按流读取，保证从classes目录和jar包中启动时都能正常工作
+        try (InputStream inputStream = this.getClass().getResourceAsStream("/" + DEFAULT_TREE)) {
+            if (inputStream == null) {
+                throw new TbpException("默认tree文件不存在");
+            }
+            return new String(inputStream.readAllBytes(), UTF_8);
+        } catch (IOException e) {
             throw new TbpException("加载默认tree文件失败");
         }
     }
